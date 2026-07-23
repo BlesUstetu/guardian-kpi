@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <base target="_top">
+
+  <?!= include('partials/head'); ?>
+
+</head>
+
+<body>
+
+<div id="app">
+
+    <?!= include('partials/sidebar'); ?>
+
+    <main class="main-content">
+
+        <?!= include('partials/navbar'); ?>
+
+        <div id="content">
+
+            <?!= render(page); ?>
+
+        </div>
+
+    </main>
+
+</div>
+
+<?!= include('partials/script'); ?>
+
+</body>
+
+</html>
