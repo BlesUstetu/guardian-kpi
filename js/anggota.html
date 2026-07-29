@@ -1,51 +1,255 @@
 <script>
 
+let anggotaData = [];
+
+/* ===============================
+   LOAD DATA
+================================ */
+
 function loadAnggota(){
 
-google.script.run
+    google.script.run
+        .withSuccessHandler(function(data){
 
-.withSuccessHandler(showAnggota)
+            anggotaData = data;
+            renderTable(data);
 
-.getAnggota();
+        })
+        .withFailureHandler(function(err){
+
+            alert(err.message);
+
+        })
+        .getAnggota();
 
 }
 
-function showAnggota(data){
+/* ===============================
+   RENDER TABLE
+================================ */
 
-let html="";
+function renderTable(data){
 
-data.forEach(item=>{
+    const tbody = document.getElementById("tblAnggota");
 
-html+=`
+    if(data.length===0){
 
-<tr>
+        tbody.innerHTML=`
+        <tr>
+            <td colspan="6" class="text-center">
+                Tidak ada data.
+            </td>
+        </tr>`;
 
-<td>${item.id}</td>
+        return;
 
-<td>${item.nama}</td>
+    }
 
-<td>${item.jabatan}</td>
+    let html="";
 
-<td>${item.group}</td>
+    data.forEach(item=>{
 
-<td>${item.status}</td>
+        html+=`
 
-<td>
+        <tr>
 
-<button>Edit</button>
+            <td>${item.id}</td>
 
-<button>Hapus</button>
+            <td>${item.nama}</td>
 
-</td>
+            <td>${item.jabatan}</td>
 
-</tr>
+            <td>${item.group}</td>
 
-`;
+            <td>
+
+                <span class="badge ${item.status==="Aktif"?"bg-success":"bg-danger"}">
+
+                    ${item.status}
+
+                </span>
+
+            </td>
+
+            <td>
+
+                <button
+                    class="btn btn-warning btn-sm"
+                    onclick="editAnggota('${item.id}')">
+
+                    Edit
+
+                </button>
+
+                <button
+                    class="btn btn-danger btn-sm"
+                    onclick="hapusAnggota('${item.id}')">
+
+                    Hapus
+
+                </button>
+
+            </td>
+
+        </tr>
+
+        `;
+
+    });
+
+    tbody.innerHTML = html;
+
+}
+
+/* ===============================
+   FILTER
+================================ */
+
+function filterAnggota(){
+
+    const keyword =
+        document
+        .getElementById("searchAnggota")
+        .value
+        .toLowerCase();
+
+    const status =
+        document
+        .getElementById("filterStatus")
+        .value;
+
+    const result = anggotaData.filter(item=>{
+
+        const cocokNama =
+            item.nama.toLowerCase().includes(keyword);
+
+        const cocokStatus =
+            status==="" || item.status===status;
+
+        return cocokNama && cocokStatus;
+
+    });
+
+    renderTable(result);
+
+}
+
+/* ===============================
+   SAVE
+================================ */
+
+function saveAnggota(){
+
+    const data = {
+
+        nama :
+            document.getElementById("nama").value.trim(),
+
+        jabatan :
+            document.getElementById("jabatan").value,
+
+        group :
+            document.getElementById("group").value.trim(),
+
+        status :
+            document.getElementById("status").value
+
+    };
+
+    google.script.run
+
+        .withSuccessHandler(function(res){
+
+            alert(res.message);
+
+            bootstrap.Modal
+                .getInstance(
+                    document.getElementById("anggotaModal")
+                )
+                .hide();
+
+            clearForm();
+
+            loadAnggota();
+
+        })
+
+        .withFailureHandler(function(err){
+
+            alert(err.message);
+
+        })
+
+        .saveAnggota(data);
+
+}
+
+/* ===============================
+   EDIT
+================================ */
+
+function editAnggota(id){
+
+    alert("Sprint berikutnya.");
+
+}
+
+/* ===============================
+   DELETE
+================================ */
+
+function hapusAnggota(id){
+
+    if(!confirm("Yakin ingin menghapus data?")){
+
+        return;
+
+    }
+
+    google.script.run
+
+        .withSuccessHandler(function(res){
+
+            alert(res.message);
+
+            loadAnggota();
+
+        })
+
+        .withFailureHandler(function(err){
+
+            alert(err.message);
+
+        })
+
+        .deleteAnggota(id);
+
+}
+
+/* ===============================
+   CLEAR FORM
+================================ */
+
+function clearForm(){
+
+    document.getElementById("nama").value="";
+
+    document.getElementById("jabatan").selectedIndex=0;
+
+    document.getElementById("group").value="";
+
+    document.getElementById("status").selectedIndex=0;
+
+}
+
+/* ===============================
+   START
+================================ */
+
+document.addEventListener("DOMContentLoaded",function(){
+
+    loadAnggota();
 
 });
-
-document.getElementById("tblAnggota").innerHTML=html;
-
-}
 
 </script>
