@@ -1,37 +1,49 @@
 /**
- * Mengambil semua data anggota
+ * ==========================================
+ * Anggota.gs
+ * ==========================================
  */
+
 function getAnggota() {
   return DB.getData(CONFIG.SHEET.ANGGOTA);
 }
 
-/**
- * Menyimpan anggota baru
- */
+function getAnggotaById(id) {
+  return DB.find(CONFIG.SHEET.ANGGOTA, "id", id);
+}
+
 function saveAnggota(data) {
 
-  data.id = Utils.generateId(
-      CONFIG.SHEET.ANGGOTA,
-      "S"
-  );
+  if (!data.nama) throw new Error("Nama wajib diisi");
+  if (!data.jabatan) throw new Error("Jabatan wajib diisi");
+  if (!data.group) throw new Error("Group wajib dipilih");
+
+  data.id = Utils.generateId(CONFIG.SHEET.ANGGOTA, "S");
 
   DB.insert(CONFIG.SHEET.ANGGOTA, data);
 
   return Utils.success("Data berhasil disimpan");
-
 }
 
-/**
- * Menghapus anggota
- */
-function deleteAnggota(id){
+function updateAnggota(id, data) {
 
-   DB.remove(
-      CONFIG.SHEET.ANGGOTA,
-      "id",
-      id
-   );
+  DB.update(
+    CONFIG.SHEET.ANGGOTA,
+    "id",
+    id,
+    data
+  );
 
-   return Utils.success("Data berhasil dihapus");
+  return Utils.success("Data berhasil diupdate");
+}
 
+function deleteAnggota(id) {
+
+  DB.remove(
+    CONFIG.SHEET.ANGGOTA,
+    "id",
+    id
+  );
+
+  return Utils.success("Data berhasil dihapus");
 }
