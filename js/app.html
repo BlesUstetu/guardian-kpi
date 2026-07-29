@@ -20,4 +20,35 @@ year:"numeric"
 
 });
 
+const ctx=document.getElementById('chartKPI');
+
+if(ctx){
+
+new Chart(ctx,{
+
+type:'line',
+
+data:{
+
+labels:['Jan','Feb','Mar','Apr','Mei','Jun'],
+
+datasets:[{
+
+label:'KPI',
+
+data:[82,84,90,88,94,96],
+
+borderColor:'#00E5FF',
+
+tension:.4,
+
+fill:false
+
+}]
+
+}
+
+});
+
+}
 </script>
