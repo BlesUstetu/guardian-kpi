@@ -51,25 +51,33 @@
 
     <main class="content">
 
-        <div class="header">
+        <div class="topbar">
 
             <div>
 
                 <div class="title">
-
                     Dashboard
-
                 </div>
 
                 <div class="subtitle">
-
-                    Guardian KPI Web3 Dashboard
-
+                   Guardian KPI Web3 Dashboard
                 </div>
 
-            </div>
+             </div>
 
-        </div>
+             <div class="topbar-right">
+
+                 <div class="clock" id="clock">
+                     --:--:--
+                 </div>
+
+               <button class="refresh-btn" onclick="init()">
+                  🔄 Refresh
+               </button>
+
+         </div>
+
+     </div>
 
         <!-- KPI CARD -->
 
