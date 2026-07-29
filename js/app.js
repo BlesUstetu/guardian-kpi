@@ -5,7 +5,27 @@
  * ==========================================================
  */
 
-document.addEventListener("DOMContentLoaded", init);
+let dashboardChart = null;
+
+/**
+ * ==========================================================
+ * INIT
+ * ==========================================================
+ */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    startClock();
+
+    init();
+
+});
+
+/**
+ * ==========================================================
+ * LOAD DASHBOARD
+ * ==========================================================
+ */
 
 async function init() {
 
@@ -27,17 +47,26 @@ async function init() {
 
         const data = res.data;
 
-        document.getElementById("totalAnggota").textContent =
-            data.totalAnggota;
+        animateValue(
+            "totalAnggota",
+            data.totalAnggota
+        );
 
-        document.getElementById("totalGroup").textContent =
-            data.totalGroup;
+        animateValue(
+            "totalGroup",
+            data.totalGroup
+        );
 
-        document.getElementById("totalKPI").textContent =
-            data.totalKPI;
+        animateValue(
+            "totalKPI",
+            data.totalKPI
+        );
 
-        document.getElementById("averageKPI").textContent =
-            data.averageKPI + "%";
+        animateValue(
+            "averageKPI",
+            data.averageKPI,
+            "%"
+        );
 
         document.getElementById("apiStatus").innerHTML =
             "🟢 API Connected";
@@ -51,66 +80,139 @@ async function init() {
         console.error(err);
 
         document.getElementById("apiStatus").innerHTML =
-            "🔴 Gagal terhubung";
+            "🔴 Gagal Terhubung";
 
     }
 
 }
 
-function loadChart(data){
+/**
+ * ==========================================================
+ * COUNT UP ANIMATION
+ * ==========================================================
+ */
+
+function animateValue(id, endValue, suffix = "") {
+
+    const element = document.getElementById(id);
+
+    let start = 0;
+
+    const duration = 800;
+
+    const increment = Math.max(1, endValue / 40);
+
+    const timer = setInterval(() => {
+
+        start += increment;
+
+        if (start >= endValue) {
+
+            start = endValue;
+
+            clearInterval(timer);
+
+        }
+
+        element.textContent =
+            Math.floor(start) + suffix;
+
+    }, duration / 40);
+
+}
+
+/**
+ * ==========================================================
+ * CHART
+ * ==========================================================
+ */
+
+function loadChart(data) {
 
     const ctx =
         document.getElementById("chartKPI");
 
-    new Chart(ctx,{
+    if (dashboardChart) {
 
-        type:"bar",
+        dashboardChart.destroy();
 
-        data:{
+    }
 
-            labels:[
+    dashboardChart = new Chart(ctx, {
+
+        type: "bar",
+
+        data: {
+
+            labels: [
 
                 "Anggota",
 
                 "Group",
 
-                "KPI"
+                "Master KPI"
 
             ],
 
-            datasets:[{
+            datasets: [
 
-                label:"Guardian KPI",
+                {
 
-                data:[
+                    label: "Guardian KPI",
 
-                    data.totalAnggota,
+                    data: [
 
-                    data.totalGroup,
+                        data.totalAnggota,
 
-                    data.totalKPI
+                        data.totalGroup,
 
-                ],
+                        data.totalKPI
 
-                borderWidth:2,
+                    ],
 
-                borderRadius:10
+                    backgroundColor: [
 
-            }]
+                        "#2563eb",
+
+                        "#06b6d4",
+
+                        "#22c55e"
+
+                    ],
+
+                    borderColor: [
+
+                        "#3b82f6",
+
+                        "#22d3ee",
+
+                        "#4ade80"
+
+                    ],
+
+                    borderWidth: 2,
+
+                    borderRadius: 12
+
+                }
+
+            ]
 
         },
 
-        options:{
+        options: {
 
-            responsive:true,
+            responsive: true,
 
-            plugins:{
+            maintainAspectRatio: false,
 
-                legend:{
+            plugins: {
 
-                    labels:{
+                legend: {
 
-                        color:"#ffffff"
+                    labels: {
+
+                        color: "#ffffff"
 
                     }
 
@@ -118,25 +220,37 @@ function loadChart(data){
 
             },
 
-            scales:{
+            scales: {
 
-                x:{
+                x: {
 
-                    ticks:{
+                    ticks: {
 
-                        color:"#ffffff"
+                        color: "#ffffff"
+
+                    },
+
+                    grid: {
+
+                        color: "rgba(255,255,255,.05)"
 
                     }
 
                 },
 
-                y:{
+                y: {
 
-                    beginAtZero:true,
+                    beginAtZero: true,
 
-                    ticks:{
+                    ticks: {
 
-                        color:"#ffffff"
+                        color: "#ffffff"
+
+                    },
+
+                    grid: {
+
+                        color: "rgba(255,255,255,.05)"
 
                     }
 
@@ -150,15 +264,29 @@ function loadChart(data){
 
 }
 
-function startClock(){
+/**
+ * ==========================================================
+ * CLOCK
+ * ==========================================================
+ */
 
-    setInterval(()=>{
+function startClock() {
 
-        const now = new Date();
+    updateClock();
 
-        document.getElementById("clock").textContent =
-            now.toLocaleTimeString("id-ID");
+    setInterval(updateClock, 1000);
 
-    },1000);
+}
+
+function updateClock() {
+
+    const el = document.getElementById("clock");
+
+    if (!el) return;
+
+    const now = new Date();
+
+    el.textContent =
+        now.toLocaleTimeString("id-ID");
 
 }
