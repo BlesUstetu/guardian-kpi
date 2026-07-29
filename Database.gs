@@ -1,73 +1,133 @@
 /**
- * ==========================================
+ * ==========================================================
  * Guardian KPI Web3
- * Database.gs
- * Version : 1.0
- * ==========================================
+ * File : Database.gs
+ * ==========================================================
+ * Database Layer
+ * ==========================================================
  */
 
-const DB = (() => {
+const DB = {
 
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  /**
+   * Mengambil objek Sheet
+   */
+  getSheet(sheetName) {
 
-  function sheet(name) {
-    const sh = ss.getSheetByName(name);
-    if (!sh) {
-      throw new Error(`Sheet "${name}" tidak ditemukan.`);
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+
+    if (!sheet) {
+      throw new Error("Sheet '" + sheetName + "' tidak ditemukan.");
     }
-    return sh;
-  }
 
-  function getData(sheetName) {
-    const sh = sheet(sheetName);
-    const values = sh.getDataRange().getValues();
+    return sheet;
 
-    if (values.length <= 1) return [];
+  },
+
+  /**
+   * Mengambil semua data menjadi array object
+   */
+  getData(sheetName) {
+
+    const sheet = this.getSheet(sheetName);
+
+    const values = sheet.getDataRange().getValues();
+
+    if (values.length <= 1) {
+      return [];
+    }
 
     const headers = values.shift();
 
-    return values.map(row => {
+    return values.map(function (row) {
+
       let obj = {};
-      headers.forEach((header, index) => {
-        obj[header] = row[index];
+
+      headers.forEach(function (header, index) {
+
+        obj[String(header).trim()] = row[index];
+
       });
+
       return obj;
+
     });
-  }
 
-  function insert(sheetName, data) {
-    const sh = sheet(sheetName);
-    const headers = sh.getRange(1,1,1,sh.getLastColumn()).getValues()[0];
+  },
 
-    const row = headers.map(h => data[h] ?? "");
+  /**
+   * Mencari satu data berdasarkan field
+   */
+  find(sheetName, field, value) {
 
-    sh.appendRow(row);
+    const data = this.getData(sheetName);
+
+    return data.find(function (row) {
+
+      return String(row[field]) === String(value);
+
+    }) || null;
+
+  },
+
+  /**
+   * Mengecek apakah data sudah ada
+   */
+  exists(sheetName, field, value) {
+
+    return this.find(sheetName, field, value) !== null;
+
+  },
+
+  /**
+   * Menambahkan data baru
+   */
+  insert(sheetName, data) {
+
+    const sheet = this.getSheet(sheetName);
+
+    const headers = sheet
+      .getRange(1, 1, 1, sheet.getLastColumn())
+      .getValues()[0];
+
+    const row = headers.map(function (header) {
+
+      return data[header] !== undefined ? data[header] : "";
+
+    });
+
+    sheet.appendRow(row);
 
     return true;
-  }
 
-  function update(sheetName,idField,id,data){
+  },
 
-    const sh = sheet(sheetName);
+  /**
+   * Update data berdasarkan field
+   */
+  update(sheetName, field, value, newData) {
 
-    const values = sh.getDataRange().getValues();
+    const sheet = this.getSheet(sheetName);
+
+    const values = sheet.getDataRange().getValues();
 
     const headers = values[0];
 
-    const idIndex=headers.indexOf(idField);
+    const fieldIndex = headers.indexOf(field);
 
-    if(idIndex==-1)
-      throw new Error("Field ID tidak ditemukan");
+    if (fieldIndex === -1) {
+      throw new Error("Field '" + field + "' tidak ditemukan.");
+    }
 
-    for(let i=1;i<values.length;i++){
+    for (let i = 1; i < values.length; i++) {
 
-      if(values[i][idIndex]==id){
+      if (String(values[i][fieldIndex]) === String(value)) {
 
-        headers.forEach((h,index)=>{
+        headers.forEach(function (header, col) {
 
-          if(data[h]!=undefined){
+          if (newData.hasOwnProperty(header)) {
 
-            sh.getRange(i+1,index+1).setValue(data[h]);
+            sheet.getRange(i + 1, col + 1).setValue(newData[header]);
 
           }
 
@@ -81,21 +141,30 @@ const DB = (() => {
 
     return false;
 
-  }
+  },
 
-  function remove(sheetName,idField,id){
+  /**
+   * Menghapus data berdasarkan field
+   */
+  remove(sheetName, field, value) {
 
-    const sh=sheet(sheetName);
+    const sheet = this.getSheet(sheetName);
 
-    const values=sh.getDataRange().getValues();
+    const values = sheet.getDataRange().getValues();
 
-    const idIndex=values[0].indexOf(idField);
+    const headers = values[0];
 
-    for(let i=1;i<values.length;i++){
+    const fieldIndex = headers.indexOf(field);
 
-      if(values[i][idIndex]==id){
+    if (fieldIndex === -1) {
+      throw new Error("Field '" + field + "' tidak ditemukan.");
+    }
 
-        sh.deleteRow(i+1);
+    for (let i = values.length - 1; i >= 1; i--) {
+
+      if (String(values[i][fieldIndex]) === String(value)) {
+
+        sheet.deleteRow(i + 1);
 
         return true;
 
@@ -105,26 +174,40 @@ const DB = (() => {
 
     return false;
 
+  },
+
+  /**
+   * Menghitung jumlah data
+   */
+  count(sheetName) {
+
+    return this.getData(sheetName).length;
+
+  },
+
+  /**
+   * Menghapus seluruh isi data
+   * (header tetap dipertahankan)
+   */
+  clear(sheetName) {
+
+    const sheet = this.getSheet(sheetName);
+
+    const lastRow = sheet.getLastRow();
+
+    if (lastRow > 1) {
+
+      sheet.getRange(
+        2,
+        1,
+        lastRow - 1,
+        sheet.getLastColumn()
+      ).clearContent();
+
+    }
+
+    return true;
+
   }
 
-  function find(sheetName,idField,id){
-
-    return getData(sheetName).find(r=>r[idField]==id);
-
-  }
-
-  return{
-
-    getData,
-
-    insert,
-
-    update,
-
-    remove,
-
-    find
-
-  }
-
-})();
+};
