@@ -38,6 +38,73 @@ Tambah Anggota
 
 </table>
 
+<div class="modal fade" id="anggotaModal">
+
+<div class="modal-dialog">
+
+<div class="modal-content bg-dark text-white">
+
+<div class="modal-header">
+
+<h5>Tambah Anggota</h5>
+
+</div>
+
+<div class="modal-body">
+
+<input id="nama"
+class="form-control mb-3"
+placeholder="Nama">
+
+<select id="jabatan"
+class="form-select mb-3">
+
+<option value="">Pilih Jabatan</option>
+
+<option>Security</option>
+
+<option>Danru</option>
+
+<option>Supervisor</option>
+
+</select>
+
+<input id="group"
+class="form-control mb-3"
+placeholder="Group">
+
+<select id="status"
+class="form-select">
+
+<option>Aktif</option>
+
+<option>Nonaktif</option>
+
+</select>
+
+</div>
+
+<div class="modal-footer">
+
+<button class="btn btn-secondary"
+data-bs-dismiss="modal">
+
+Batal
+
+</button>
+
+<button
+class="btn btn-info"
+onclick="saveAnggota()">
+
+Simpan
+
+</button>
+
+</div>
+
+</div>
+
 </div>
 
 </div>
