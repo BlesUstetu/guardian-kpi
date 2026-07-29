@@ -1,0 +1,23 @@
+<script>
+
+document.addEventListener("DOMContentLoaded",()=>{
+
+const today=new Date();
+
+document.getElementById("today").innerHTML=
+
+today.toLocaleDateString("id-ID",{
+
+weekday:"long",
+
+day:"numeric",
+
+month:"long",
+
+year:"numeric"
+
+});
+
+});
+
+</script>
