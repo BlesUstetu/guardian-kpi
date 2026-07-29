@@ -1,41 +1,38 @@
-/**
- * ==========================================
- * Dashboard.gs
- * ==========================================
- */
+function getDashboard(){
 
-function getDashboard() {
+  const anggota=DB.getData(CONFIG.SHEET.ANGGOTA);
 
-  const anggota = DB.getData(CONFIG.SHEET.ANGGOTA);
-  const groups = DB.getData(CONFIG.SHEET.GROUP);
-  const kpi = DB.getData(CONFIG.SHEET.KPI);
-  const penilaian = DB.getData(CONFIG.SHEET.PENILAIAN);
+  const group=DB.getData(CONFIG.SHEET.GROUP);
 
-  let average = 0;
+  const master=DB.getData(CONFIG.SHEET.KPI);
 
-  if (penilaian.length > 0) {
+  const penilaian=DB.getData(CONFIG.SHEET.PENILAIAN);
 
-    let total = 0;
+  let average=0;
 
-    penilaian.forEach(item => {
+  if(penilaian.length){
 
-      total += Number(item.actual || 0);
+    let total=0;
+
+    penilaian.forEach(item=>{
+
+      total+=Number(item.nilai||0);
 
     });
 
-    average = (total / penilaian.length).toFixed(2);
+    average=(total/penilaian.length).toFixed(2);
 
   }
 
-  return {
+  return{
 
-    totalAnggota: anggota.length,
+    totalAnggota:anggota.length,
 
-    totalGroup: groups.length,
+    totalGroup:group.length,
 
-    totalKPI: kpi.length,
+    totalKPI:master.length,
 
-    averageKPI: average
+    averageKPI:average
 
   };
 
