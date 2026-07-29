@@ -1,121 +1,33 @@
-/**
- * ==========================================
- * Guardian KPI Web3
- * Utils.gs
- * ==========================================
- */
+function generateId(sheetName,prefix){
 
-const Utils = (() => {
+  const data=DB.getData(sheetName);
 
-  /**
-   * Generate ID
-   * contoh :
-   * S001
-   * G001
-   * K001
-   * P001
-   */
-  function generateId(sheetName, prefix, idField = "id") {
+  if(data.length===0){
 
-    const data = DB.getData(sheetName);
+    return prefix+"001";
 
-    if (data.length === 0) {
-      return prefix + "001";
+  }
+
+  let max=0;
+
+  data.forEach(item=>{
+
+    const number=parseInt(
+
+      item.id.replace(prefix,"")
+
+    );
+
+    if(number>max){
+
+      max=number;
+
     }
 
-    let max = 0;
+  });
 
-    data.forEach(item => {
+  return prefix+
 
-      const value = String(item[idField]);
+  String(max+1).padStart(3,"0");
 
-      const number = parseInt(value.replace(prefix, ""), 10);
-
-      if (!isNaN(number) && number > max) {
-        max = number;
-      }
-
-    });
-
-    return prefix + String(max + 1).padStart(3, "0");
-
-  }
-
-  function today() {
-
-    return Utilities.formatDate(
-      new Date(),
-      Session.getScriptTimeZone(),
-      "yyyy-MM-dd"
-    );
-
-  }
-
-  function currentMonth() {
-
-    return Utilities.formatDate(
-      new Date(),
-      Session.getScriptTimeZone(),
-      "MMMM"
-    );
-
-  }
-
-  function currentYear() {
-
-    return Number(
-      Utilities.formatDate(
-        new Date(),
-        Session.getScriptTimeZone(),
-        "yyyy"
-      )
-    );
-
-  }
-
-  function isEmpty(value) {
-
-    return value === null ||
-           value === undefined ||
-           value === "";
-
-  }
-
-  function success(message, data = null) {
-
-    return {
-      success: true,
-      message,
-      data
-    };
-
-  }
-
-  function error(message) {
-
-    return {
-      success: false,
-      message
-    };
-
-  }
-
-  return {
-
-    generateId,
-
-    today,
-
-    currentMonth,
-
-    currentYear,
-
-    isEmpty,
-
-    success,
-
-    error
-
-  };
-
-})();
+}
