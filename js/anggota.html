@@ -1,55 +1,112 @@
 <script>
 
+/* ==========================================
+   Guardian KPI Web3
+   File : js/anggota.html
+   ========================================== */
+
 let anggotaData = [];
+let groupData = [];
 
-/* ===============================
-   LOAD DATA
-================================ */
+/* ==========================================
+   LOAD GROUP
+========================================== */
 
-function loadAnggota(){
+function loadGroup() {
 
     google.script.run
-        .withSuccessHandler(function(data){
 
-            anggotaData = data;
-            renderTable(data);
+        .withSuccessHandler(function(data) {
+
+            groupData = data;
+
+            const select = document.getElementById("group");
+
+            if (!select) return;
+
+            select.innerHTML = '<option value="">Pilih Group</option>';
+
+            data.forEach(function(item) {
+
+                select.innerHTML += `
+                    <option value="${item.id}">
+                        ${item.nama}
+                    </option>
+                `;
+
+            });
 
         })
-        .withFailureHandler(function(err){
+
+        .withFailureHandler(function(err) {
 
             alert(err.message);
 
         })
+
+        .getGroup();
+
+}
+
+/* ==========================================
+   LOAD ANGGOTA
+========================================== */
+
+function loadAnggota() {
+
+    google.script.run
+
+        .withSuccessHandler(function(data) {
+
+            anggotaData = data;
+
+            renderTable(data);
+
+        })
+
+        .withFailureHandler(function(err) {
+
+            alert(err.message);
+
+        })
+
         .getAnggota();
 
 }
 
-/* ===============================
+/* ==========================================
    RENDER TABLE
-================================ */
+========================================== */
 
-function renderTable(data){
+function renderTable(data) {
 
     const tbody = document.getElementById("tblAnggota");
 
-    if(data.length===0){
+    if (!tbody) return;
 
-        tbody.innerHTML=`
-        <tr>
-            <td colspan="6" class="text-center">
-                Tidak ada data.
-            </td>
-        </tr>`;
+    if (data.length === 0) {
+
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center">
+                    Tidak ada data.
+                </td>
+            </tr>
+        `;
 
         return;
 
     }
 
-    let html="";
+    let html = "";
 
-    data.forEach(item=>{
+    data.forEach(function(item) {
 
-        html+=`
+        let badge = item.status === "Aktif"
+            ? "bg-success"
+            : "bg-danger";
+
+        html += `
 
         <tr>
 
@@ -59,11 +116,11 @@ function renderTable(data){
 
             <td>${item.jabatan}</td>
 
-            <td>${item.group}</td>
+            <td>${getGroupName(item.group)}</td>
 
             <td>
 
-                <span class="badge ${item.status==="Aktif"?"bg-success":"bg-danger"}">
+                <span class="badge ${badge}">
 
                     ${item.status}
 
@@ -77,7 +134,7 @@ function renderTable(data){
                     class="btn btn-warning btn-sm"
                     onclick="editAnggota('${item.id}')">
 
-                    Edit
+                    <i class="bi bi-pencil"></i>
 
                 </button>
 
@@ -85,7 +142,7 @@ function renderTable(data){
                     class="btn btn-danger btn-sm"
                     onclick="hapusAnggota('${item.id}')">
 
-                    Hapus
+                    <i class="bi bi-trash"></i>
 
                 </button>
 
@@ -101,30 +158,40 @@ function renderTable(data){
 
 }
 
-/* ===============================
-   FILTER
-================================ */
+/* ==========================================
+   GET GROUP NAME
+========================================== */
 
-function filterAnggota(){
+function getGroupName(id) {
 
-    const keyword =
-        document
+    const item = groupData.find(g => g.id === id);
+
+    return item ? item.nama : "-";
+
+}
+
+/* ==========================================
+   SEARCH & FILTER
+========================================== */
+
+function filterAnggota() {
+
+    const keyword = document
         .getElementById("searchAnggota")
         .value
         .toLowerCase();
 
-    const status =
-        document
+    const status = document
         .getElementById("filterStatus")
         .value;
 
-    const result = anggotaData.filter(item=>{
+    const result = anggotaData.filter(function(item) {
 
         const cocokNama =
             item.nama.toLowerCase().includes(keyword);
 
         const cocokStatus =
-            status==="" || item.status===status;
+            status === "" || item.status === status;
 
         return cocokNama && cocokStatus;
 
@@ -134,39 +201,37 @@ function filterAnggota(){
 
 }
 
-/* ===============================
+/* ==========================================
    SAVE
-================================ */
+========================================== */
 
-function saveAnggota(){
+function saveAnggota() {
 
     const data = {
 
-        nama :
-            document.getElementById("nama").value.trim(),
+        nama: document.getElementById("nama").value.trim(),
 
-        jabatan :
-            document.getElementById("jabatan").value,
+        jabatan: document.getElementById("jabatan").value,
 
-        group :
-            document.getElementById("group").value.trim(),
+        group: document.getElementById("group").value,
 
-        status :
-            document.getElementById("status").value
+        status: document.getElementById("status").value
 
     };
 
     google.script.run
 
-        .withSuccessHandler(function(res){
+        .withSuccessHandler(function(res) {
 
             alert(res.message);
 
-            bootstrap.Modal
-                .getInstance(
-                    document.getElementById("anggotaModal")
-                )
-                .hide();
+            const modal = bootstrap.Modal.getInstance(
+                document.getElementById("anggotaModal")
+            );
+
+            if (modal) {
+                modal.hide();
+            }
 
             clearForm();
 
@@ -174,7 +239,7 @@ function saveAnggota(){
 
         })
 
-        .withFailureHandler(function(err){
+        .withFailureHandler(function(err) {
 
             alert(err.message);
 
@@ -184,31 +249,29 @@ function saveAnggota(){
 
 }
 
-/* ===============================
+/* ==========================================
    EDIT
-================================ */
+========================================== */
 
-function editAnggota(id){
+function editAnggota(id) {
 
-    alert("Sprint berikutnya.");
+    alert("Fitur Edit akan dibuat pada Sprint berikutnya.");
 
 }
 
-/* ===============================
+/* ==========================================
    DELETE
-================================ */
+========================================== */
 
-function hapusAnggota(id){
+function hapusAnggota(id) {
 
-    if(!confirm("Yakin ingin menghapus data?")){
-
+    if (!confirm("Yakin ingin menghapus anggota ini?")) {
         return;
-
     }
 
     google.script.run
 
-        .withSuccessHandler(function(res){
+        .withSuccessHandler(function(res) {
 
             alert(res.message);
 
@@ -216,7 +279,7 @@ function hapusAnggota(id){
 
         })
 
-        .withFailureHandler(function(err){
+        .withFailureHandler(function(err) {
 
             alert(err.message);
 
@@ -226,27 +289,29 @@ function hapusAnggota(id){
 
 }
 
-/* ===============================
+/* ==========================================
    CLEAR FORM
-================================ */
+========================================== */
 
-function clearForm(){
+function clearForm() {
 
-    document.getElementById("nama").value="";
+    document.getElementById("nama").value = "";
 
-    document.getElementById("jabatan").selectedIndex=0;
+    document.getElementById("jabatan").selectedIndex = 0;
 
-    document.getElementById("group").value="";
+    document.getElementById("group").selectedIndex = 0;
 
-    document.getElementById("status").selectedIndex=0;
+    document.getElementById("status").selectedIndex = 0;
 
 }
 
-/* ===============================
-   START
-================================ */
+/* ==========================================
+   INIT
+========================================== */
 
-document.addEventListener("DOMContentLoaded",function(){
+document.addEventListener("DOMContentLoaded", function() {
+
+    loadGroup();
 
     loadAnggota();
 
