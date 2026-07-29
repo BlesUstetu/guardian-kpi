@@ -273,3 +273,71 @@ grid-template-columns:1fr;
 }
 
 }
+
+/* ===========================
+   TOP BAR
+=========================== */
+
+.topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:30px;
+}
+
+.topbar-right{
+    display:flex;
+    align-items:center;
+    gap:20px;
+}
+
+.clock{
+    font-size:14px;
+    color:var(--muted);
+}
+
+.refresh-btn{
+    border:none;
+    background:linear-gradient(135deg,#2563eb,#06b6d4);
+    color:#fff;
+    padding:10px 18px;
+    border-radius:12px;
+    cursor:pointer;
+    transition:.3s;
+    font-weight:600;
+}
+
+.refresh-btn:hover{
+    transform:translateY(-2px);
+    box-shadow:0 0 18px rgba(56,189,248,.45);
+}
+
+.card-icon{
+    font-size:28px;
+    margin-bottom:10px;
+}
+
+.card{
+    position:relative;
+    overflow:hidden;
+}
+
+.card::before{
+
+    content:"";
+
+    position:absolute;
+
+    top:-50%;
+
+    right:-40px;
+
+    width:120px;
+
+    height:120px;
+
+    border-radius:50%;
+
+    background:rgba(59,130,246,.08);
+
+}
