@@ -149,3 +149,16 @@ function loadChart(data){
     });
 
 }
+
+function startClock(){
+
+    setInterval(()=>{
+
+        const now = new Date();
+
+        document.getElementById("clock").textContent =
+            now.toLocaleTimeString("id-ID");
+
+    },1000);
+
+}
