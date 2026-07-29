@@ -1,38 +1,187 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 
 <head>
 
-  <base target="_top">
+<meta charset="UTF-8">
 
-  <?!= include('partials/head'); ?>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Guardian KPI</title>
+
+<link rel="stylesheet" href="css/style.css">
 
 </head>
 
 <body>
 
-<div id="app">
+<div class="container">
 
-    <?!= include('partials/sidebar'); ?>
+    <!-- SIDEBAR -->
 
-    <main class="main-content">
+    <aside class="sidebar">
 
-        <?!= include('partials/navbar'); ?>
+        <div class="logo">
 
-        <div id="content">
-
-            <?!= render(page); ?>
+            Guardian <span>KPI</span>
 
         </div>
+
+        <nav class="menu">
+
+            <a href="#">🏠 Dashboard</a>
+
+            <a href="pages/anggota.html">👤 Anggota</a>
+
+            <a href="pages/group.html">👥 Group</a>
+
+            <a href="pages/masterkpi.html">📊 Master KPI</a>
+
+            <a href="pages/penilaian.html">⭐ Penilaian</a>
+
+            <a href="pages/laporan.html">📄 Laporan</a>
+
+            <a href="pages/setting.html">⚙️ Setting</a>
+
+        </nav>
+
+    </aside>
+
+    <!-- CONTENT -->
+
+    <main class="content">
+
+        <div class="header">
+
+            <div>
+
+                <div class="title">
+
+                    Dashboard
+
+                </div>
+
+                <div class="subtitle">
+
+                    Guardian KPI Web3 Dashboard
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- KPI CARD -->
+
+        <section class="cards">
+
+            <div class="card">
+
+                <div class="card-title">
+
+                    Total Anggota
+
+                </div>
+
+                <div class="card-value" id="totalAnggota">
+
+                    ...
+
+                </div>
+
+            </div>
+
+            <div class="card">
+
+                <div class="card-title">
+
+                    Total Group
+
+                </div>
+
+                <div class="card-value" id="totalGroup">
+
+                    ...
+
+                </div>
+
+            </div>
+
+            <div class="card">
+
+                <div class="card-title">
+
+                    Total KPI
+
+                </div>
+
+                <div class="card-value" id="totalKPI">
+
+                    ...
+
+                </div>
+
+            </div>
+
+            <div class="card">
+
+                <div class="card-title">
+
+                    Average KPI
+
+                </div>
+
+                <div class="card-value" id="averageKPI">
+
+                    ...
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- GRID -->
+
+        <section class="grid">
+
+            <div class="panel">
+
+                <h3>Grafik KPI</h3>
+
+                <canvas id="chartKPI" height="120"></canvas>
+
+            </div>
+
+            <div class="panel">
+
+                <h3>Status API</h3>
+
+                <p id="apiStatus">
+
+                    Menghubungkan...
+
+                </p>
+
+            </div>
+
+        </section>
 
     </main>
 
 </div>
 
-  <?!= include('partials/script'); ?>
-  <script src="js/config.js"></script>
-  <script src="js/api.js"></script>
-  <script src="js/app.js"></script>
+<!-- Chart.js -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- APP -->
+
+<script src="js/config.js"></script>
+
+<script src="js/api.js"></script>
+
+<script src="js/app.js"></script>
 
 </body>
 
