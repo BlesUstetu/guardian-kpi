@@ -5,15 +5,23 @@
  * ==========================================
  */
 
+const ROUTES = {
+  dashboard: "pages/dashboard",
+  anggota: "pages/anggota",
+  group: "pages/group",
+  masterkpi: "pages/masterkpi",
+  penilaian: "pages/penilaian",
+  laporan: "pages/laporan",
+  setting: "pages/setting"
+};
+
 function doGet(e) {
 
-  const page = (e && e.parameter.page)
-    ? e.parameter.page
-    : "dashboard";
+  const page = (e && e.parameter.page) ? e.parameter.page : "dashboard";
 
   const template = HtmlService.createTemplateFromFile("index");
 
-  template.page = page;
+  template.page = ROUTES[page] || ROUTES.dashboard;
   template.appName = CONFIG.APP_NAME;
   template.version = CONFIG.VERSION;
 
@@ -22,23 +30,12 @@ function doGet(e) {
     .setTitle(CONFIG.APP_NAME)
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
     .addMetaTag("viewport", "width=device-width, initial-scale=1");
-
 }
 
-/**
- * include html
- */
 function include(filename) {
-  return HtmlService
-    .createHtmlOutputFromFile(filename)
-    .getContent();
+  return HtmlService.createHtmlOutputFromFile(filename).getContent();
 }
 
-/**
- * render page
- */
 function render(page) {
-  return HtmlService
-    .createHtmlOutputFromFile("pages/" + page)
-    .getContent();
+  return HtmlService.createHtmlOutputFromFile(page).getContent();
 }
