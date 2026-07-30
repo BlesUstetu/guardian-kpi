@@ -17,9 +17,10 @@ let anggotaEditId = null;
 
 document.addEventListener("DOMContentLoaded", () => {
 
-    loadGroup();
-
-    loadAnggota();
+    if (document.getElementById("tblAnggota")) {
+        loadGroup();
+        loadAnggota();
+    }
 
 });
 
@@ -86,117 +87,6 @@ async function loadAnggota() {
  * RENDER TABLE
  * ==========================================================
  */
-
-function renderAnggota(data){
-
-    const tbody = document.getElementById("tblAnggota");
-
-    if(data.length===0){
-
-        tbody.innerHTML = `
-        <tr>
-            <td colspan="6" class="text-center">
-                Belum ada data.
-            </td>
-        </tr>
-        `;
-
-        return;
-
-    }
-
-    let html="";
-
-    data.forEach(item=>{
-
-        html += `
-
-<tr>
-
-<td>${item.id}</td>
-
-<td>${item.nama}</td>
-
-<td>${item.jabatan}</td>
-
-<td>${item.group}</td>
-
-<td>
-
-<span class="badge ${item.status==="AKTIF" ? "bg-success":"bg-danger"}">
-
-${item.status}
-
-</span>
-
-</td>
-
-<td>
-
-<button
-class="btn btn-warning btn-sm"
-onclick="editAnggota('${item.id}')">
-
-<i class="bi bi-pencil"></i>
-
-</button>
-
-<button
-class="btn btn-danger btn-sm"
-onclick="hapusAnggota('${item.id}')">
-
-<i class="bi bi-trash"></i>
-
-</button>
-
-</td>
-
-</tr>
-
-`;
-
-    });
-
-    tbody.innerHTML = html;
-
-}
-
-/**
- * ==========================================================
- * SEARCH + FILTER
- * ==========================================================
- */
-
-function filterAnggota(){
-
-    const keyword = document
-        .getElementById("searchAnggota")
-        .value
-        .toLowerCase();
-
-    const status = document
-        .getElementById("filterStatus")
-        .value;
-
-    const hasil = anggotaData.filter(item=>{
-
-        const cocokNama =
-            item.nama
-            .toLowerCase()
-            .includes(keyword);
-
-        const cocokStatus =
-            status===""
-            ||
-            item.status===status;
-
-        return cocokNama && cocokStatus;
-
-    });
-
-    renderAnggota(hasil);
-
-}
 
 /**
  * ==========================================================
@@ -362,7 +252,7 @@ async function saveAnggota(){
         alert(res.message);
 
         bootstrap.Modal
-            .getInstance(
+            .getOrCreateInstance(
                 document.getElementById("anggotaModal")
             )
             .hide();
@@ -592,10 +482,10 @@ onclick="hapusAnggota('${item.id}')">
  * ==========================================================
  */
 
-document
-.getElementById("anggotaModal")
-.addEventListener("hidden.bs.modal",function(){
+const anggotaModal = document.getElementById("anggotaModal");
 
-    resetFormAnggota();
-
-});
+if (anggotaModal) {
+    anggotaModal.addEventListener("hidden.bs.modal", function () {
+        resetFormAnggota();
+    });
+}
