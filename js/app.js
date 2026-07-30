@@ -80,15 +80,9 @@ function initPage(page) {
 
         case "anggota":
 
-            if (typeof loadGroup === "function") {
+            if (typeof initAnggota === "function") {
 
-                loadGroup();
-
-            }
-
-            if (typeof loadAnggota === "function") {
-
-                loadAnggota();
+                initAnggota();
 
             }
 
