@@ -228,6 +228,10 @@ function groupName(id){
  * ==========================================================
  */
 async function saveAnggota(){
+    
+    if (!validateAnggotaForm()) {
+        
+        return;
 
     const data = {
 
@@ -359,3 +363,247 @@ function closeModal(){
     }
 
 }
+
+/**
+ * ==========================================================
+ * EDIT ANGGOTA
+ * ==========================================================
+ */
+function editAnggota(id){
+
+    const item = anggotaData.find(function(row){
+
+        return String(row.id) === String(id);
+
+    });
+
+    if(!item){
+
+        alert("Data tidak ditemukan.");
+
+        return;
+
+    }
+
+    editId = id;
+
+    document.getElementById("nama").value = item.nama;
+    document.getElementById("jabatan").value = item.jabatan;
+    document.getElementById("group").value = item.group;
+    document.getElementById("status").value = item.status;
+
+    const modal = new bootstrap.Modal(
+        document.getElementById("anggotaModal")
+    );
+
+    modal.show();
+
+}
+
+/**
+ * ==========================================================
+ * HAPUS ANGGOTA
+ * ==========================================================
+ */
+async function deleteAnggota(id){
+
+    if(!confirm("Yakin ingin menghapus data ini?")){
+
+        return;
+
+    }
+
+    try{
+
+        const result = await API.deleteAnggota(id);
+
+        if(!result.success){
+
+            alert(result.message);
+
+            return;
+
+        }
+
+        loadAnggota();
+
+    }
+
+    catch(err){
+
+        alert(err.message);
+
+    }
+
+}
+
+/**
+ * ==========================================================
+ * FILTER DATA
+ * ==========================================================
+ */
+function filterAnggota(){
+
+    const keyword = document
+        .getElementById("searchAnggota")
+        .value
+        .toLowerCase()
+        .trim();
+
+    const status = document
+        .getElementById("filterStatus")
+        .value
+        .toLowerCase();
+
+    const hasil = anggotaData.filter(function(item){
+
+        const cocokNama =
+            item.nama.toLowerCase().includes(keyword);
+
+        const cocokStatus =
+            status === "" ||
+            item.status.toLowerCase() === status;
+
+        return cocokNama && cocokStatus;
+
+    });
+
+    renderAnggota(hasil);
+
+}
+
+/**
+ * ==========================================================
+ * REFRESH DATA
+ * ==========================================================
+ */
+function refreshAnggota(){
+
+    clearForm();
+
+    loadGroup();
+
+    loadAnggota();
+
+}
+
+/**
+ * ==========================================================
+ * VALIDASI FORM
+ * ==========================================================
+ */
+function validateAnggotaForm() {
+
+    const nama = document.getElementById("nama").value.trim();
+    const jabatan = document.getElementById("jabatan").value;
+    const group = document.getElementById("group").value;
+    const status = document.getElementById("status").value;
+
+    if (nama === "") {
+
+        alert("Nama anggota wajib diisi.");
+
+        document.getElementById("nama").focus();
+
+        return false;
+
+    }
+
+    if (jabatan === "") {
+
+        alert("Jabatan wajib dipilih.");
+
+        document.getElementById("jabatan").focus();
+
+        return false;
+
+    }
+
+    if (group === "") {
+
+        alert("Group wajib dipilih.");
+
+        document.getElementById("group").focus();
+
+        return false;
+
+    }
+
+    if (status === "") {
+
+        alert("Status wajib dipilih.");
+
+        document.getElementById("status").focus();
+
+        return false;
+
+    }
+
+    return true;
+
+}
+
+/**
+ * ==========================================================
+ * RESET FILTER
+ * ==========================================================
+ */
+function resetFilterAnggota() {
+
+    const search = document.getElementById("searchAnggota");
+    const status = document.getElementById("filterStatus");
+
+    if (search) search.value = "";
+
+    if (status) status.value = "";
+
+    renderAnggota(anggotaData);
+
+}
+
+/**
+ * ==========================================================
+ * RELOAD MODULE
+ * ==========================================================
+ */
+function reloadAnggota() {
+
+    clearForm();
+
+    resetFilterAnggota();
+
+    loadGroup();
+
+    loadAnggota();
+
+}
+
+/**
+ * ==========================================================
+ * INITIALIZE PAGE
+ * ==========================================================
+ */
+function initAnggota() {
+
+    loadGroup();
+
+    loadAnggota();
+
+}
+
+/**
+ * ==========================================================
+ * AUTO INIT
+ * ==========================================================
+ */
+
+window.loadAnggota = loadAnggota;
+window.saveAnggota = saveAnggota;
+window.editAnggota = editAnggota;
+window.deleteAnggota = deleteAnggota;
+window.filterAnggota = filterAnggota;
+window.refreshAnggota = refreshAnggota;
+window.resetFilterAnggota = resetFilterAnggota;
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.initAnggota = initAnggota;
