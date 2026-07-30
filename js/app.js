@@ -90,9 +90,9 @@ function initPage(page) {
 
         case "group":
 
-            if (typeof loadGroup === "function") {
+            if (typeof initGroup === "function") {
 
-                loadGroup();
+                initGroup();
 
             }
 
