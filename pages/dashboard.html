@@ -1,55 +1,137 @@
 <div class="container-fluid">
 
-<div class="row g-4">
+    <!-- Header -->
 
-<div class="col-md-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
 
-<div class="card-glass">
+        <div>
 
-<h6>Total Anggota</h6>
+            <h2 class="fw-bold text-info">
 
-<h2 id="totalAnggota">0</h2>
+                Dashboard
 
-</div>
+            </h2>
 
-</div>
+            <small class="text-secondary">
 
-<div class="col-md-3">
+                Guardian KPI Web3 Dashboard
 
-<div class="card-glass">
+            </small>
 
-<h6>Total Group</h6>
+        </div>
 
-<h2 id="totalGroup">0</h2>
+        <button
+            class="btn btn-info"
+            onclick="init()">
 
-</div>
+            <i class="bi bi-arrow-clockwise"></i>
 
-</div>
+            Refresh
 
-<div class="col-md-3">
+        </button>
 
-<div class="card-glass">
+    </div>
 
-<h6>Total KPI</h6>
+    <!-- KPI CARD -->
 
-<h2 id="totalKPI">0</h2>
+    <div class="row g-3">
 
-</div>
+        <div class="col-lg-3 col-md-6">
 
-</div>
+            <div class="card-glass">
 
-<div class="col-md-3">
+                <small>Total Anggota</small>
 
-<div class="card-glass">
+                <h2 id="totalAnggota">
 
-<h6>Average KPI</h6>
+                    ...
 
-<h2 id="averageKPI">0%</h2>
+                </h2>
 
-</div>
+            </div>
 
-</div>
+        </div>
 
-</div>
+        <div class="col-lg-3 col-md-6">
+
+            <div class="card-glass">
+
+                <small>Total Group</small>
+
+                <h2 id="totalGroup">
+
+                    ...
+
+                </h2>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="card-glass">
+
+                <small>Total KPI</small>
+
+                <h2 id="totalKPI">
+
+                    ...
+
+                </h2>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="card-glass">
+
+                <small>Average KPI</small>
+
+                <h2 id="averageKPI">
+
+                    ...
+
+                </h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- CHART -->
+
+    <div class="card-glass mt-4">
+
+        <h5 class="mb-3">
+
+            Grafik KPI
+
+        </h5>
+
+        <canvas id="chartKPI" height="100"></canvas>
+
+    </div>
+
+    <!-- API STATUS -->
+
+    <div class="card-glass mt-4">
+
+        <h5>
+
+            Status API
+
+        </h5>
+
+        <p id="apiStatus">
+
+            Menghubungkan...
+
+        </p>
+
+    </div>
 
 </div>
