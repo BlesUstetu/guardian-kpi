@@ -1,38 +1,26 @@
 /**
  * ==========================================================
- * Guardian KPI
+ * Guardian KPI Web3
  * File : js/anggota.js
+ * ==========================================================
+ * Modul Data Anggota
  * ==========================================================
  */
 
 let anggotaData = [];
 let groupData = [];
-let anggotaEditId = null;
+let editId = null;
 
 /**
  * ==========================================================
- * INIT
+ * LOAD DATA ANGGOTA
  * ==========================================================
  */
-
-document.addEventListener("DOMContentLoaded", () => {
-
-    if (document.getElementById("tblAnggota")) {
-        loadGroup();
-        loadAnggota();
-    }
-
-});
-
-/**
- * ==========================================================
- * LOAD DATA
- * ==========================================================
- */
-
 async function loadAnggota() {
 
     const tbody = document.getElementById("tblAnggota");
+
+    if (!tbody) return;
 
     tbody.innerHTML = `
         <tr>
@@ -44,38 +32,28 @@ async function loadAnggota() {
 
     try {
 
-        const res = await API.anggota();
+        const result = await API.getAnggota();
 
-        if (!res.success) {
+        if (!result.success) {
 
-            tbody.innerHTML = `
-            <tr>
-                <td colspan="6" class="text-center text-danger">
-                    ${res.message}
-                </td>
-            </tr>
-            `;
-
-            return;
+            throw new Error(result.message);
 
         }
 
-        anggotaData = res.data || [];
+        anggotaData = result.data || [];
 
         renderAnggota(anggotaData);
 
     }
 
-    catch(err){
-
-        console.error(err);
+    catch (err) {
 
         tbody.innerHTML = `
-        <tr>
-            <td colspan="6" class="text-center text-danger">
-                Gagal mengambil data.
-            </td>
-        </tr>
+            <tr>
+                <td colspan="6" class="text-danger text-center">
+                    ${err.message}
+                </td>
+            </tr>
         `;
 
     }
@@ -87,84 +65,129 @@ async function loadAnggota() {
  * RENDER TABLE
  * ==========================================================
  */
+function renderAnggota(data) {
 
-/**
- * ==========================================================
- * RESET FORM
- * ==========================================================
- */
+    const tbody = document.getElementById("tblAnggota");
 
-function resetFormAnggota(){
+    if (!tbody) return;
 
-    anggotaEditId = null;
+    if (!data.length) {
 
-    document.getElementById("nama").value="";
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center">
+                    Tidak ada data.
+                </td>
+            </tr>
+        `;
 
-    document.getElementById("jabatan").value="";
+        return;
 
-    document.getElementById("group").value="";
+    }
 
-    document.getElementById("status").value="AKTIF";
+    tbody.innerHTML = "";
 
-    document.querySelector("#anggotaModal .modal-title").innerHTML =
-        "Tambah Anggota";
+    data.forEach(function(item){
+
+        tbody.innerHTML += `
+
+        <tr>
+
+            <td>${item.id}</td>
+
+            <td>${item.nama}</td>
+
+            <td>${item.jabatan}</td>
+
+            <td>${groupName(item.group)}</td>
+
+            <td>${badgeStatus(item.status)}</td>
+
+            <td>
+
+                <button
+                    class="btn btn-warning btn-sm"
+                    onclick="editAnggota('${item.id}')">
+
+                    <i class="bi bi-pencil"></i>
+
+                </button>
+
+                <button
+                    class="btn btn-danger btn-sm"
+                    onclick="deleteAnggota('${item.id}')">
+
+                    <i class="bi bi-trash"></i>
+
+                </button>
+
+            </td>
+
+        </tr>
+
+        `;
+
+    });
 
 }
 
 /**
  * ==========================================================
- * REFRESH
+ * BADGE STATUS
  * ==========================================================
  */
+function badgeStatus(status){
 
-function refreshAnggota(){
+    if(String(status).toLowerCase()=="aktif"){
 
-    resetFormAnggota();
+        return `
+            <span class="badge bg-success">
+                Aktif
+            </span>
+        `;
 
-    loadAnggota();
+    }
 
-}
-
-/**
- * ==========================================================
- * LOAD DATA GROUP
- * ==========================================================
- */
-
-async function loadGroup(){
-
-    const select = document.getElementById("group");
-
-    if(!select) return;
-
-    select.innerHTML = `
-        <option value="">Memuat Group...</option>
+    return `
+        <span class="badge bg-danger">
+            Nonaktif
+        </span>
     `;
 
-    try{
+}
 
-        const res = await API.group();
+/**
+ * ==========================================================
+ * LOAD GROUP
+ * ==========================================================
+ */
+async function loadGroup() {
 
-        if(!res.success){
+    try {
 
-            select.innerHTML = `
-                <option value="">Gagal memuat Group</option>
-            `;
+        const result = await API.getGroup();
 
-            return;
+        if (!result.success) {
+
+            throw new Error(result.message);
 
         }
 
-        groupData = res.data || [];
-        const groups = groupData;
+        groupData = result.data || [];
 
-        let html = `
-            <option value="">Pilih Group</option>
+        const select = document.getElementById("group");
+
+        if (!select) return;
+
+        select.innerHTML = `
+            <option value="">
+                Pilih Group
+            </option>
         `;
 
-        groups.forEach(item=>{
+        groupData.forEach(function(item){
 
-            html += `
+            select.innerHTML += `
                 <option value="${item.id}">
                     ${item.nama}
                 </option>
@@ -172,17 +195,11 @@ async function loadGroup(){
 
         });
 
-        select.innerHTML = html;
-
     }
 
     catch(err){
 
         console.error(err);
-
-        select.innerHTML = `
-            <option value="">Gagal memuat Group</option>
-        `;
 
     }
 
@@ -190,10 +207,26 @@ async function loadGroup(){
 
 /**
  * ==========================================================
- * SIMPAN / UPDATE
+ * CARI NAMA GROUP
  * ==========================================================
  */
+function groupName(id){
 
+    const item = groupData.find(function(g){
+
+        return String(g.id) === String(id);
+
+    });
+
+    return item ? item.nama : "-";
+
+}
+
+/**
+ * ==========================================================
+ * SIMPAN DATA
+ * ==========================================================
+ */
 async function saveAnggota(){
 
     const data = {
@@ -208,56 +241,55 @@ async function saveAnggota(){
 
     };
 
-    if(
-        data.nama==="" ||
-        data.jabatan==="" ||
-        data.group==="" ||
-        data.status===""){
-        alert("Semua data wajib diisi.");
+    if(!data.nama){
+
+        alert("Nama wajib diisi");
+
         return;
+
+    }
+
+    if(!data.jabatan){
+
+        alert("Jabatan wajib dipilih");
+
+        return;
+
+    }
+
+    if(!data.group){
+
+        alert("Group wajib dipilih");
+
+        return;
+
     }
 
     try{
 
-        let res;
+        let result;
 
-        if(anggotaEditId){
+        if(editId){
 
-            res = await API.post("updateAnggota",{
-
-                id:anggotaEditId,
-
-                data:data
-
-            });
+            result = await API.updateAnggota(editId,data);
 
         }else{
 
-            res = await API.post("saveAnggota",{
-
-                data:data
-
-            });
+            result = await API.saveAnggota(data);
 
         }
 
-        if(!res.success){
+        if(!result.success){
 
-            alert(res.message);
+            alert(result.message);
 
             return;
 
         }
 
-        alert(res.message);
+        closeModal();
 
-        bootstrap.Modal
-            .getOrCreateInstance(
-                document.getElementById("anggotaModal")
-            )
-            .hide();
-
-        resetFormAnggota();
+        clearForm();
 
         loadAnggota();
 
@@ -265,9 +297,7 @@ async function saveAnggota(){
 
     catch(err){
 
-        console.error(err);
-
-        alert("Gagal menyimpan data.");
+        alert(err.message);
 
     }
 
@@ -275,217 +305,57 @@ async function saveAnggota(){
 
 /**
  * ==========================================================
- * EDIT
+ * RESET FORM
  * ==========================================================
  */
+function clearForm(){
 
-function editAnggota(id){
+    editId = null;
 
-    const item = anggotaData.find(x=>x.id===id);
+    document.getElementById("nama").value = "";
 
-    if(!item) return;
+    document.getElementById("jabatan").value = "";
 
-    anggotaEditId = id;
+    document.getElementById("group").value = "";
 
-    document.querySelector(
-        "#anggotaModal .modal-title"
-    ).innerHTML = "Edit Anggota";
+    document.getElementById("status").value = "Aktif";
 
-    document.getElementById("nama").value = item.nama;
+}
 
-    document.getElementById("jabatan").value = item.jabatan;
+/**
+ * ==========================================================
+ * OPEN MODAL
+ * ==========================================================
+ */
+function openModal(){
 
-    document.getElementById("group").value = item.group;
+    clearForm();
 
-    document.getElementById("status").value = item.status;
+    const modal = new bootstrap.Modal(
 
-    new bootstrap.Modal(
         document.getElementById("anggotaModal")
-    ).show();
+
+    );
+
+    modal.show();
 
 }
 
 /**
  * ==========================================================
- * HAPUS ANGGOTA
+ * CLOSE MODAL
  * ==========================================================
  */
+function closeModal(){
 
-async function hapusAnggota(id){
+    const element = document.getElementById("anggotaModal");
 
-    const item = anggotaData.find(x => x.id === id);
+    const modal = bootstrap.Modal.getInstance(element);
 
-    if(!item) return;
+    if(modal){
 
-    if(!confirm(`Hapus anggota "${item.nama}" ?`)){
-        return;
-    }
-
-    try{
-
-        const res = await API.post("deleteAnggota",{
-            id:id
-        });
-
-        if(!res.success){
-
-            alert(res.message);
-
-            return;
-
-        }
-
-        alert(res.message);
-
-        loadAnggota();
-
-    }catch(err){
-
-        console.error(err);
-
-        alert("Gagal menghapus data.");
+        modal.hide();
 
     }
 
-}
-
-/**
- * ==========================================================
- * REFRESH
- * ==========================================================
- */
-
-function reloadAnggota(){
-
-    loadAnggota();
-
-}
-
-/**
- * ==========================================================
- * GET NAMA GROUP
- * ==========================================================
- */
-
-function getNamaGroup(id){
-
-    if(typeof groupData==="undefined")
-        return id;
-
-    const g = groupData.find(x=>String(x.id)===String(id));
-
-    return g ? g.nama : id;
-
-}
-
-/**
- * ==========================================================
- * FORMAT STATUS
- * ==========================================================
- */
-
-function badgeStatus(status){
-
-    if(String(status).toUpperCase()==="AKTIF"){
-
-        return `
-        <span class="badge bg-success">
-            AKTIF
-        </span>
-        `;
-
-    }
-
-    return `
-    <span class="badge bg-danger">
-        NONAKTIF
-    </span>
-    `;
-
-}
-
-/**
- * ==========================================================
- * OVERRIDE RENDER TABLE
- * ==========================================================
- */
-
-function renderAnggota(data){
-
-    const tbody = document.getElementById("tblAnggota");
-
-    if(!data || data.length===0){
-
-        tbody.innerHTML=`
-        <tr>
-            <td colspan="6" class="text-center">
-                Belum ada data anggota.
-            </td>
-        </tr>
-        `;
-
-        return;
-
-    }
-
-    let html="";
-
-    data.forEach(item=>{
-
-        html+=`
-
-<tr>
-
-<td>${item.id}</td>
-
-<td>${item.nama}</td>
-
-<td>${item.jabatan}</td>
-
-<td>${getNamaGroup(item.group)}</td>
-
-<td>${badgeStatus(item.status)}</td>
-
-<td>
-
-<button
-class="btn btn-sm btn-warning"
-onclick="editAnggota('${item.id}')">
-
-<i class="bi bi-pencil"></i>
-
-</button>
-
-<button
-class="btn btn-sm btn-danger"
-onclick="hapusAnggota('${item.id}')">
-
-<i class="bi bi-trash"></i>
-
-</button>
-
-</td>
-
-</tr>
-
-`;
-
-    });
-
-    tbody.innerHTML=html;
-
-}
-
-/**
- * ==========================================================
- * RESET FORM SAAT MODAL DITUTUP
- * ==========================================================
- */
-
-const anggotaModal = document.getElementById("anggotaModal");
-
-if (anggotaModal) {
-    anggotaModal.addEventListener("hidden.bs.modal", function () {
-        resetFormAnggota();
-    });
 }
