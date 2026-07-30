@@ -45,6 +45,8 @@ async function loadPage(page) {
 
         initPage(page);
 
+        activeMenu(page);
+
     }
 
     catch (err) {
