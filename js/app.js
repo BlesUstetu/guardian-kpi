@@ -1,292 +1,193 @@
 /**
  * ==========================================================
- * Guardian KPI
- * app.js
+ * Guardian KPI Web3
+ * File : js/app.js
+ * ==========================================================
+ * Single Page Application Router
  * ==========================================================
  */
 
-let dashboardChart = null;
+let currentPage = "dashboard";
 
 /**
- * ==========================================================
- * INIT
- * ==========================================================
+ * Load Halaman
  */
+async function loadPage(page) {
 
-document.addEventListener("DOMContentLoaded", () => {
+    currentPage = page;
 
-    startClock();
+    const app = document.getElementById("appContent");
 
-    init();
+    if (!app) return;
 
-});
-
-/**
- * ==========================================================
- * LOAD DASHBOARD
- * ==========================================================
- */
-
-async function init() {
+    app.innerHTML = `
+        <div class="text-center p-5">
+            <div class="spinner-border text-info"></div>
+            <p class="mt-3">Loading...</p>
+        </div>
+    `;
 
     try {
 
-        document.getElementById("apiStatus").innerHTML =
-            "🟡 Menghubungkan API...";
+        const response = await fetch(`pages/${page}.html`);
 
-        const res = await API.dashboard();
+        if (!response.ok) {
 
-        if (!res.success) {
-
-            document.getElementById("apiStatus").innerHTML =
-                "🔴 API Error";
-
-            return;
+            throw new Error("Halaman tidak ditemukan.");
 
         }
 
-        const data = res.data;
+        const html = await response.text();
 
-        animateValue(
-            "totalAnggota",
-            data.totalAnggota
-        );
+        app.innerHTML = html;
 
-        animateValue(
-            "totalGroup",
-            data.totalGroup
-        );
+        document.getElementById("pageTitle").innerText = pageTitle(page);
 
-        animateValue(
-            "totalKPI",
-            data.totalKPI
-        );
-
-        animateValue(
-            "averageKPI",
-            data.averageKPI,
-            "%"
-        );
-
-        document.getElementById("apiStatus").innerHTML =
-            "🟢 API Connected";
-
-        loadChart(data);
+        initPage(page);
 
     }
 
     catch (err) {
 
-        console.error(err);
-
-        document.getElementById("apiStatus").innerHTML =
-            "🔴 Gagal Terhubung";
+        app.innerHTML = `
+            <div class="alert alert-danger">
+                ${err.message}
+            </div>
+        `;
 
     }
 
 }
 
 /**
- * ==========================================================
- * COUNT UP ANIMATION
- * ==========================================================
+ * Inisialisasi setiap halaman
  */
+function initPage(page) {
 
-function animateValue(id, endValue, suffix = "") {
+    switch (page) {
 
-    const element = document.getElementById(id);
+        case "dashboard":
 
-    let start = 0;
+            if (typeof init === "function") {
 
-    const duration = 800;
-
-    const increment = Math.max(1, endValue / 40);
-
-    const timer = setInterval(() => {
-
-        start += increment;
-
-        if (start >= endValue) {
-
-            start = endValue;
-
-            clearInterval(timer);
-
-        }
-
-        element.textContent =
-            Math.floor(start) + suffix;
-
-    }, duration / 40);
-
-}
-
-/**
- * ==========================================================
- * CHART
- * ==========================================================
- */
-
-function loadChart(data) {
-
-    const ctx =
-        document.getElementById("chartKPI");
-
-    if (dashboardChart) {
-
-        dashboardChart.destroy();
-
-    }
-
-    dashboardChart = new Chart(ctx, {
-
-        type: "bar",
-
-        data: {
-
-            labels: [
-
-                "Anggota",
-
-                "Group",
-
-                "Master KPI"
-
-            ],
-
-            datasets: [
-
-                {
-
-                    label: "Guardian KPI",
-
-                    data: [
-
-                        data.totalAnggota,
-
-                        data.totalGroup,
-
-                        data.totalKPI
-
-                    ],
-
-                    backgroundColor: [
-
-                        "#2563eb",
-
-                        "#06b6d4",
-
-                        "#22c55e"
-
-                    ],
-
-                    borderColor: [
-
-                        "#3b82f6",
-
-                        "#22d3ee",
-
-                        "#4ade80"
-
-                    ],
-
-                    borderWidth: 2,
-
-                    borderRadius: 12
-
-                }
-
-            ]
-
-        },
-
-        options: {
-
-            responsive: true,
-
-            maintainAspectRatio: false,
-
-            plugins: {
-
-                legend: {
-
-                    labels: {
-
-                        color: "#ffffff"
-
-                    }
-
-                }
-
-            },
-
-            scales: {
-
-                x: {
-
-                    ticks: {
-
-                        color: "#ffffff"
-
-                    },
-
-                    grid: {
-
-                        color: "rgba(255,255,255,.05)"
-
-                    }
-
-                },
-
-                y: {
-
-                    beginAtZero: true,
-
-                    ticks: {
-
-                        color: "#ffffff"
-
-                    },
-
-                    grid: {
-
-                        color: "rgba(255,255,255,.05)"
-
-                    }
-
-                }
+                init();
 
             }
 
-        }
+            break;
 
-    });
+        case "anggota":
+
+            if (typeof loadGroup === "function") {
+
+                loadGroup();
+
+            }
+
+            if (typeof loadAnggota === "function") {
+
+                loadAnggota();
+
+            }
+
+            break;
+
+        case "group":
+
+            if (typeof loadGroup === "function") {
+
+                loadGroup();
+
+            }
+
+            break;
+
+        case "masterkpi":
+
+            if (typeof loadMasterKPI === "function") {
+
+                loadMasterKPI();
+
+            }
+
+            break;
+
+        case "penilaian":
+
+            if (typeof loadPenilaian === "function") {
+
+                loadPenilaian();
+
+            }
+
+            break;
+
+    }
 
 }
 
 /**
- * ==========================================================
- * CLOCK
- * ==========================================================
+ * Refresh halaman aktif
  */
+function refreshPage() {
 
-function startClock() {
-
-    updateClock();
-
-    setInterval(updateClock, 1000);
+    loadPage(currentPage);
 
 }
 
-function updateClock() {
+/**
+ * Judul halaman
+ */
+function pageTitle(page) {
 
-    const el = document.getElementById("clock");
+    const title = {
 
-    if (!el) return;
+        dashboard: "Dashboard",
 
-    const now = new Date();
+        anggota: "Data Anggota",
 
-    el.textContent =
-        now.toLocaleTimeString("id-ID");
+        group: "Data Group",
+
+        masterkpi: "Master KPI",
+
+        penilaian: "Penilaian",
+
+        laporan: "Laporan",
+
+        setting: "Setting"
+
+    };
+
+    return title[page] || "Guardian KPI";
 
 }
+
+/**
+ * Menu aktif
+ */
+function activeMenu(page) {
+
+    document.querySelectorAll(".menu a").forEach(function(item){
+
+        item.classList.remove("active");
+
+    });
+
+    const menu = document.querySelector(`.menu a[data-page="${page}"]`);
+
+    if(menu){
+
+        menu.classList.add("active");
+
+    }
+
+}
+
+/**
+ * Start App
+ */
+document.addEventListener("DOMContentLoaded", function(){
+
+    loadPage("dashboard");
+
+});
