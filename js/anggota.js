@@ -233,6 +233,8 @@ async function saveAnggota(){
         
         return;
 
+    }    
+
     const data = {
 
         nama : document.getElementById("nama").value.trim(),
