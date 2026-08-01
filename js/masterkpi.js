@@ -137,7 +137,7 @@ function renderMasterKPI(data) {
 
                 <td>${item.id}</td>
 
-                <td>${item.nama}</td>
+                <td>${item.indicator}</td>
 
                 <td>${item.kategori}</td>
 
@@ -240,8 +240,8 @@ function badgeKPIStatus(status){
 
 function validateMasterKPIForm() {
 
-    const nama = document
-        .getElementById("namaKPI")
+    const indicator = document
+        .getElementById("indicatorKPI")
         .value
         .trim();
 
@@ -330,9 +330,9 @@ function validateMasterKPIForm() {
  * ==========================================================
  */
 
-function isDuplicateMasterKPI(nama){
+function isDuplicateMasterKPI(indicator){
 
-    nama = String(nama)
+    indicator = String(indicator)
         .trim()
         .toLowerCase();
 
@@ -351,7 +351,7 @@ function isDuplicateMasterKPI(nama){
 
         }
 
-        return String(item.nama)
+        return String(item.indicator)
 
             .trim()
 
@@ -376,8 +376,8 @@ async function saveMasterKPI(){
 
     const data = {
 
-        nama: document
-            .getElementById("namaKPI")
+        indicator: document
+            .getElementById("indicatorKPI")
             .value
             .trim(),
 
