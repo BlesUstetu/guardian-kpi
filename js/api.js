@@ -1,67 +1,334 @@
-async request(action, data = null) {
+/**
+ * ==========================================================
+ * Guardian KPI Web3
+ * File : js/api.js
+ * ==========================================================
+ * REST API Client
+ * Author : BlesProduction
+ * Version : 3.0.0
+ * ==========================================================
+ */
 
-    try {
+const API = {
 
-        // ===========================
-        // GET
-        // ===========================
+    BASE_URL: CONFIG.API_URL,
 
-        if (data === null) {
+    /**
+     * ======================================================
+     * REQUEST
+     * ======================================================
+     */
+    async request(url = "", options = {}) {
+
+        try {
 
             const response = await fetch(
-
-                `${this.BASE_URL}?action=${encodeURIComponent(action)}`
-
+                this.BASE_URL + url,
+                options
             );
+
+            if (!response.ok) {
+                throw new Error(
+                    `HTTP ${response.status}`
+                );
+            }
 
             return await response.json();
 
+        } catch (err) {
+
+            console.error(err);
+
+            return {
+
+                success: false,
+
+                message: err.message
+
+            };
+
         }
 
-        // ===========================
-        // POST
-        // ===========================
+    },
 
-        const form = new URLSearchParams();
+    /**
+     * ======================================================
+     * GET
+     * ======================================================
+     */
 
-        form.append(
-            "payload",
-            JSON.stringify({
-                action,
-                ...data
-            })
+    async get(action) {
+
+        return this.request(
+            `?action=${encodeURIComponent(action)}`
         );
 
-        const response = await fetch(
+    },
 
-            this.BASE_URL,
+    /**
+     * ======================================================
+     * POST
+     * ======================================================
+     */
 
-            {
+    async post(body) {
 
-                method: "POST",
+        return this.request("", {
 
-                body: form
+            method: "POST",
 
-            }
+            headers: {
+
+                "Content-Type": "application/json"
+
+            },
+
+            body: JSON.stringify(body)
+
+        });
+
+    },
+
+    /* =====================================================
+       DASHBOARD
+    ====================================================== */
+
+    async getDashboard() {
+
+        return this.get("dashboard");
+
+    },
+
+    /* =====================================================
+       ANGGOTA
+    ====================================================== */
+
+    async getAnggota() {
+
+        return this.get("anggota");
+
+    },
+
+    async getAnggotaById(id) {
+
+        return this.get(
+
+            "anggota&id=" + encodeURIComponent(id)
 
         );
 
-        return await response.json();
+    },
+
+    async saveAnggota(data) {
+
+        return this.post({
+
+            action: "saveAnggota",
+
+            data: data
+
+        });
+
+    },
+
+    async updateAnggota(id, data) {
+
+        return this.post({
+
+            action: "updateAnggota",
+
+            id: id,
+
+            data: data
+
+        });
+
+    },
+
+    async deleteAnggota(id) {
+
+        return this.post({
+
+            action: "deleteAnggota",
+
+            id: id
+
+        });
+
+    },
+
+    /* =====================================================
+       GROUP
+    ====================================================== */
+
+    async getGroup() {
+
+        return this.get("group");
+
+    },
+
+    async getGroupById(id) {
+
+        return this.get(
+
+            "group&id=" + encodeURIComponent(id)
+
+        );
+
+    },
+
+    async saveGroup(data) {
+
+        return this.post({
+
+            action: "saveGroup",
+
+            data: data
+
+        });
+
+    },
+
+    async updateGroup(id, data) {
+
+        return this.post({
+
+            action: "updateGroup",
+
+            id: id,
+
+            data: data
+
+        });
+
+    },
+
+    async deleteGroup(id) {
+
+        return this.post({
+
+            action: "deleteGroup",
+
+            id: id
+
+        });
+
+    },
+
+    /* =====================================================
+       MASTER KPI
+    ====================================================== */
+
+    async getMasterKPI() {
+
+        return this.get("masterKPI");
+
+    },
+
+    async getMasterKPIById(id) {
+
+        return this.get(
+
+            "masterKPI&id=" + encodeURIComponent(id)
+
+        );
+
+    },
+
+    async saveMasterKPI(data) {
+
+        return this.post({
+
+            action: "saveMasterKPI",
+
+            data: data
+
+        });
+
+    },
+
+    async updateMasterKPI(id, data) {
+
+        return this.post({
+
+            action: "updateMasterKPI",
+
+            id: id,
+
+            data: data
+
+        });
+
+    },
+
+    async deleteMasterKPI(id) {
+
+        return this.post({
+
+            action: "deleteMasterKPI",
+
+            id: id
+
+        });
+
+    },
+
+    /* =====================================================
+       PENILAIAN
+    ====================================================== */
+
+    async getPenilaian() {
+
+        return this.get("penilaian");
+
+    },
+
+    async getPenilaianById(id) {
+
+        return this.get(
+
+            "penilaian&id=" + encodeURIComponent(id)
+
+        );
+
+    },
+
+    async savePenilaian(data) {
+
+        return this.post({
+
+            action: "savePenilaian",
+
+            data: data
+
+        });
+
+    },
+
+    async updatePenilaian(id, data) {
+
+        return this.post({
+
+            action: "updatePenilaian",
+
+            id: id,
+
+            data: data
+
+        });
+
+    },
+
+    async deletePenilaian(id) {
+
+        return this.post({
+
+            action: "deletePenilaian",
+
+            id: id
+
+        });
 
     }
 
-    catch(err){
-
-        console.error(err);
-
-        return {
-
-            success:false,
-
-            message:err.message
-
-        };
-
-    }
-
-}
+};
