@@ -212,6 +212,9 @@ async function loadGroup() {
  */
 function groupName(id){
 
+    console.log("group id :", id);
+    console.log("groupData :", groupData);
+    
     const item = groupData.find(function(g){
 
         return String(g.id) === String(id);
