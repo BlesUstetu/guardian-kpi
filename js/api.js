@@ -4,38 +4,46 @@
  * File : js/api.js
  * ==========================================================
  * REST API Client
- * Author : BlesProduction
- * Version : 3.0.0
+ * Author  : BlesProduction
+ * Version : 3.1.0
  * ==========================================================
  */
+
+"use strict";
 
 const API = {
 
     BASE_URL: CONFIG.API_URL,
 
-    /**
-     * ======================================================
-     * REQUEST
-     * ======================================================
-     */
+    /* ======================================================
+     * REQUEST (GET)
+     * ====================================================== */
+
     async request(url = "", options = {}) {
 
         try {
 
             const response = await fetch(
+
                 this.BASE_URL + url,
+
                 options
+
             );
 
             if (!response.ok) {
+
                 throw new Error(
                     `HTTP ${response.status}`
                 );
+
             }
 
             return await response.json();
 
-        } catch (err) {
+        }
+
+        catch (err) {
 
             console.error(err);
 
@@ -51,66 +59,85 @@ const API = {
 
     },
 
-    /**
-     * ======================================================
+    /* ======================================================
      * GET
-     * ======================================================
-     */
+     * ====================================================== */
 
     async get(action) {
 
         return this.request(
+
             `?action=${encodeURIComponent(action)}`
+
         );
 
     },
 
-    /**
-     * ======================================================
+    /* ======================================================
      * POST
-     * ======================================================
-     */
+     * ====================================================== */
 
-    async post(body) {
+    async post(body = {}) {
 
         try {
 
-        const form = new URLSearchParams();
+            const form = new URLSearchParams();
 
-        form.append(
-            "payload",
-            JSON.stringify(body)
-        );
+            form.append(
 
-        const response = await fetch(
-            this.BASE_URL,
-            {
-                method: "POST",
-                body: form
+                "payload",
+
+                JSON.stringify(body)
+
+            );
+
+            const response = await fetch(
+
+                this.BASE_URL,
+
+                {
+
+                    method: "POST",
+
+                    body: form
+
+                }
+
+            );
+
+            if (!response.ok) {
+
+                throw new Error(
+
+                    `HTTP ${response.status}`
+
+                );
+
             }
-        );
 
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
+            return await response.json();
+
         }
 
-        return await response.json();
+        catch (err) {
 
-    } catch (err) {
+            console.error(err);
 
-        console.error(err);
+            return {
 
-        return {
-            success: false,
-            message: err.message
-        };
+                success: false,
 
-    }
+                message: err.message
 
- },
-    /* =====================================================
-       DASHBOARD
-    ====================================================== */
+            };
+
+        }
+
+    },
+
+        /* ======================================================
+     * DASHBOARD
+     * ====================================================== */
 
     async getDashboard() {
 
@@ -118,9 +145,9 @@ const API = {
 
     },
 
-    /* =====================================================
-       ANGGOTA
-    ====================================================== */
+    /* ======================================================
+     * ANGGOTA
+     * ====================================================== */
 
     async getAnggota() {
 
@@ -132,7 +159,8 @@ const API = {
 
         return this.get(
 
-            "anggota&id=" + encodeURIComponent(id)
+            "anggota&id=" +
+            encodeURIComponent(id)
 
         );
 
@@ -176,9 +204,9 @@ const API = {
 
     },
 
-    /* =====================================================
-       GROUP
-    ====================================================== */
+        /* ======================================================
+     * GROUP
+     * ====================================================== */
 
     async getGroup() {
 
@@ -190,7 +218,8 @@ const API = {
 
         return this.get(
 
-            "group&id=" + encodeURIComponent(id)
+            "group&id=" +
+            encodeURIComponent(id)
 
         );
 
@@ -234,9 +263,9 @@ const API = {
 
     },
 
-    /* =====================================================
-       MASTER KPI
-    ====================================================== */
+    /* ======================================================
+     * MASTER KPI
+     * ====================================================== */
 
     async getMasterKPI() {
 
@@ -248,7 +277,8 @@ const API = {
 
         return this.get(
 
-            "masterKPI&id=" + encodeURIComponent(id)
+            "masterKPI&id=" +
+            encodeURIComponent(id)
 
         );
 
@@ -292,9 +322,9 @@ const API = {
 
     },
 
-    /* =====================================================
-       PENILAIAN
-    ====================================================== */
+        /* ======================================================
+     * PENILAIAN
+     * ====================================================== */
 
     async getPenilaian() {
 
@@ -306,7 +336,8 @@ const API = {
 
         return this.get(
 
-            "penilaian&id=" + encodeURIComponent(id)
+            "penilaian&id=" +
+            encodeURIComponent(id)
 
         );
 
@@ -351,3 +382,10 @@ const API = {
     }
 
 };
+
+/* ==========================================================
+ * LOCK OBJECT
+ * ==========================================================
+ */
+
+Object.freeze(API);
