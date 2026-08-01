@@ -4,8 +4,7 @@
  * File : js/api.js
  * ==========================================================
  * REST API Client
- * Author : BlesProduction
- * Version : 2.0.0
+ * Version : 3.0.0
  * ==========================================================
  */
 
@@ -15,26 +14,28 @@ const API = {
 
     /**
      * ======================================================
-     * REQUEST
+     * GET REQUEST
      * ======================================================
      */
-    async request(url = "", options = {}) {
+    async get(action) {
 
         try {
 
             const response = await fetch(
-                this.BASE_URL + url,
-                {
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    ...options
-                }
+
+                `${this.BASE_URL}?action=${encodeURIComponent(action)}`
+
             );
 
-            const json = await response.json();
+            if (!response.ok) {
 
-            return json;
+                throw new Error(
+                    `HTTP ${response.status}`
+                );
+
+            }
+
+            return await response.json();
 
         } catch (err) {
 
@@ -54,263 +55,242 @@ const API = {
 
     /**
      * ======================================================
-     * DASHBOARD
+     * POST REQUEST
      * ======================================================
      */
+    async post(body) {
 
-    async getDashboard() {
+        try {
 
-        return this.request("?action=dashboard");
+            const response = await fetch(
+
+                this.BASE_URL,
+
+                {
+
+                    method: "POST",
+
+                    headers: {
+
+                        "Content-Type": "application/json"
+
+                    },
+
+                    body: JSON.stringify(body)
+
+                }
+
+            );
+
+            if (!response.ok) {
+
+                throw new Error(
+                    `HTTP ${response.status}`
+                );
+
+            }
+
+            return await response.json();
+
+        } catch (err) {
+
+            console.error(err);
+
+            return {
+
+                success: false,
+
+                message: err.message
+
+            };
+
+        }
 
     },
 
-    /**
-     * ======================================================
-     * ANGGOTA
-     * ======================================================
-     */
+    /* =====================================================
+       DASHBOARD
+    ====================================================== */
 
-    async getAnggota() {
+    getDashboard() {
 
-        return this.request("?action=anggota");
+        return this.get("dashboard");
 
     },
 
-    async saveAnggota(data) {
+    /* =====================================================
+       ANGGOTA
+    ====================================================== */
 
-        return this.request("", {
+    getAnggota() {
 
-            method: "POST",
+        return this.get("anggota");
 
-            body: JSON.stringify({
+    },
 
-                action: "saveAnggota",
+    saveAnggota(data) {
 
-                data: data
+        return this.post({
 
-            })
+            action: "saveAnggota",
+
+            data: data
 
         });
 
     },
 
-    async updateAnggota(id, data) {
+    updateAnggota(id, data) {
 
-        return this.request("", {
+        return this.post({
 
-            method: "POST",
+            action: "updateAnggota",
 
-            body: JSON.stringify({
+            id: id,
 
-                action: "updateAnggota",
-
-                id: id,
-
-                data: data
-
-            })
+            data: data
 
         });
 
     },
 
-    async deleteAnggota(id) {
+    deleteAnggota(id) {
 
-        return this.request("", {
+        return this.post({
 
-            method: "POST",
+            action: "deleteAnggota",
 
-            body: JSON.stringify({
-
-                action: "deleteAnggota",
-
-                id: id
-
-            })
+            id: id
 
         });
 
     },
 
-    /**
-     * ======================================================
-     * GROUP
-     * ======================================================
-     */
+    /* =====================================================
+       GROUP
+    ====================================================== */
 
-    async getGroup() {
+    getGroup() {
 
-        return this.request("?action=group");
+        return this.get("group");
 
     },
 
-    async saveGroup(data) {
+    saveGroup(data) {
 
-        return this.request("", {
+        return this.post({
 
-            method: "POST",
+            action: "saveGroup",
 
-            body: JSON.stringify({
-
-                action: "saveGroup",
-
-                data: data
-
-            })
+            data: data
 
         });
 
     },
 
-    async updateGroup(id, data) {
+    updateGroup(id, data) {
 
-        return this.request("", {
+        return this.post({
 
-            method: "POST",
+            action: "updateGroup",
 
-            body: JSON.stringify({
+            id: id,
 
-                action: "updateGroup",
-
-                id: id,
-
-                data: data
-
-            })
+            data: data
 
         });
 
     },
 
-    async deleteGroup(id) {
+    deleteGroup(id) {
 
-        return this.request("", {
+        return this.post({
 
-            method: "POST",
+            action: "deleteGroup",
 
-            body: JSON.stringify({
-
-                action: "deleteGroup",
-
-                id: id
-
-            })
+            id: id
 
         });
 
     },
 
-    /**
-     * ======================================================
-     * MASTER KPI
-     * ======================================================
-     */
+    /* =====================================================
+       MASTER KPI
+    ====================================================== */
 
-    async getMasterKPI() {
+    getMasterKPI() {
 
-        return this.request("?action=masterKPI");
+        return this.get("masterKPI");
 
     },
 
-    async saveMasterKPI(data) {
+    saveMasterKPI(data) {
 
-        return this.request("", {
+        return this.post({
 
-            method: "POST",
+            action: "saveMasterKPI",
 
-            body: JSON.stringify({
-
-                action: "saveMasterKPI",
-
-                data: data
-
-            })
+            data: data
 
         });
 
     },
 
-    async updateMasterKPI(id, data) {
+    updateMasterKPI(id, data) {
 
-        return this.request("", {
+        return this.post({
 
-            method: "POST",
+            action: "updateMasterKPI",
 
-            body: JSON.stringify({
+            id: id,
 
-                action: "updateMasterKPI",
-
-                id: id,
-
-                data: data
-
-            })
+            data: data
 
         });
 
     },
 
-    async deleteMasterKPI(id) {
+    deleteMasterKPI(id) {
 
-        return this.request("", {
+        return this.post({
 
-            method: "POST",
+            action: "deleteMasterKPI",
 
-            body: JSON.stringify({
-
-                action: "deleteMasterKPI",
-
-                id: id
-
-            })
+            id: id
 
         });
 
     },
 
-    /**
-     * ======================================================
-     * PENILAIAN
-     * ======================================================
-     */
+    /* =====================================================
+       PENILAIAN
+    ====================================================== */
 
-    async getPenilaian() {
+    getPenilaian() {
 
-        return this.request("?action=penilaian");
+        return this.get("penilaian");
 
     },
 
-    async savePenilaian(data) {
+    savePenilaian(data) {
 
-        return this.request("", {
+        return this.post({
 
-            method: "POST",
+            action: "savePenilaian",
 
-            body: JSON.stringify({
-
-                action: "savePenilaian",
-
-                data: data
-
-            })
+            data: data
 
         });
 
     },
 
-    async deletePenilaian(id) {
+    deletePenilaian(id) {
 
-        return this.request("", {
+        return this.post({
 
-            method: "POST",
+            action: "deletePenilaian",
 
-            body: JSON.stringify({
-
-                action: "deletePenilaian",
-
-                id: id
-
-            })
+            id: id
 
         });
 
