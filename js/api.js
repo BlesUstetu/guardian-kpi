@@ -73,22 +73,41 @@ const API = {
 
     async post(body) {
 
-        return this.request("", {
+        try {
 
-            method: "POST",
+        const form = new URLSearchParams();
 
-            headers: {
+        form.append(
+            "payload",
+            JSON.stringify(body)
+        );
 
-                "Content-Type": "application/json"
+        const response = await fetch(
+            this.BASE_URL,
+            {
+                method: "POST",
+                body: form
+            }
+        );
 
-            },
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
 
-            body: JSON.stringify(body)
+        return await response.json();
 
-        });
+    } catch (err) {
 
-    },
+        console.error(err);
 
+        return {
+            success: false,
+            message: err.message
+        };
+
+    }
+
+ }
     /* =====================================================
        DASHBOARD
     ====================================================== */
