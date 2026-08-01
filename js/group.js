@@ -4,7 +4,7 @@
  * File : js/group.js
  * ==========================================================
  * Modul Master Group
- * Author  : BlesProduction
+ * Author : BlesProduction
  * Version : 3.0.0
  * ==========================================================
  */
@@ -13,14 +13,17 @@
 
 /* ==========================================================
  * GLOBAL VARIABLE
- * ========================================================== */
+ * ==========================================================
+ */
 
 let groupData = [];
+
 let editGroupId = null;
 
 /* ==========================================================
  * INIT MODULE
- * ========================================================== */
+ * ==========================================================
+ */
 
 async function initGroup() {
 
@@ -32,7 +35,8 @@ async function initGroup() {
 
 /* ==========================================================
  * LOAD DATA GROUP
- * ========================================================== */
+ * ==========================================================
+ */
 
 async function loadGroup() {
 
@@ -41,11 +45,17 @@ async function loadGroup() {
     if (!tbody) return;
 
     tbody.innerHTML = `
+
         <tr>
+
             <td colspan="4" class="text-center">
+
                 Memuat data...
+
             </td>
+
         </tr>
+
     `;
 
     try {
@@ -54,15 +64,11 @@ async function loadGroup() {
 
         if (!result.success) {
 
-            throw new Error(
-                result.message || "Gagal mengambil data."
-            );
+            throw new Error(result.message);
 
         }
 
-        groupData = Array.isArray(result.data)
-            ? result.data
-            : [];
+        groupData = result.data || [];
 
         renderGroup(groupData);
 
@@ -70,15 +76,18 @@ async function loadGroup() {
 
     catch (err) {
 
-        console.error(err);
-
         tbody.innerHTML = `
+
             <tr>
-                <td colspan="4"
-                    class="text-center text-danger">
+
+                <td colspan="4" class="text-center text-danger">
+
                     ${err.message}
+
                 </td>
+
             </tr>
+
         `;
 
     }
@@ -87,9 +96,10 @@ async function loadGroup() {
 
 /* ==========================================================
  * RENDER TABLE
- * ========================================================== */
+ * ==========================================================
+ */
 
-function renderGroup(data = []) {
+function renderGroup(data) {
 
     const tbody = document.getElementById("tblGroup");
 
@@ -98,23 +108,29 @@ function renderGroup(data = []) {
     if (!data.length) {
 
         tbody.innerHTML = `
+
             <tr>
-                <td colspan="4"
-                    class="text-center">
+
+                <td colspan="4" class="text-center">
+
                     Tidak ada data.
+
                 </td>
+
             </tr>
+
         `;
 
         return;
 
     }
 
-    let html = "";
+    tbody.innerHTML = "";
 
     data.forEach(function(item){
 
-        html += `
+        tbody.innerHTML += `
+
             <tr>
 
                 <td>${item.id}</td>
@@ -144,42 +160,47 @@ function renderGroup(data = []) {
                 </td>
 
             </tr>
+
         `;
 
     });
-
-    tbody.innerHTML = html;
 
 }
 
 /* ==========================================================
  * BADGE STATUS
- * ========================================================== */
+ * ==========================================================
+ */
 
-function badgeGroupStatus(status) {
+function badgeGroupStatus(status){
 
-    const value = String(status)
-        .trim()
-        .toUpperCase();
+    status = String(status).trim().toLowerCase();
 
-    if (value === "AKTIF") {
+    if(status === "aktif"){
 
         return `
+
             <span class="badge bg-success">
+
                 Aktif
+
             </span>
+
         `;
 
     }
 
     return `
+
         <span class="badge bg-danger">
+
             Nonaktif
+
         </span>
+
     `;
 
 }
-
 /* ==========================================================
  * VALIDASI FORM
  * ========================================================== */
