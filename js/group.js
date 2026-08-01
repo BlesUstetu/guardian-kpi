@@ -4,19 +4,36 @@
  * File : js/group.js
  * ==========================================================
  * Modul Master Group
- * Author : BlesProduction
- * Version : 2.0.0
+ * Author  : BlesProduction
+ * Version : 3.0.0
  * ==========================================================
  */
+
+"use strict";
+
+/* ==========================================================
+ * GLOBAL VARIABLE
+ * ========================================================== */
 
 let groupData = [];
 let editGroupId = null;
 
-/**
- * ==========================================================
- * LOAD GROUP
- * ==========================================================
- */
+/* ==========================================================
+ * INIT MODULE
+ * ========================================================== */
+
+async function initGroup() {
+
+    clearGroupForm();
+
+    await loadGroup();
+
+}
+
+/* ==========================================================
+ * LOAD DATA GROUP
+ * ========================================================== */
+
 async function loadGroup() {
 
     const tbody = document.getElementById("tblGroup");
@@ -37,11 +54,15 @@ async function loadGroup() {
 
         if (!result.success) {
 
-            throw new Error(result.message);
+            throw new Error(
+                result.message || "Gagal mengambil data."
+            );
 
         }
 
-        groupData = result.data || [];
+        groupData = Array.isArray(result.data)
+            ? result.data
+            : [];
 
         renderGroup(groupData);
 
@@ -49,9 +70,12 @@ async function loadGroup() {
 
     catch (err) {
 
+        console.error(err);
+
         tbody.innerHTML = `
             <tr>
-                <td colspan="4" class="text-center text-danger">
+                <td colspan="4"
+                    class="text-center text-danger">
                     ${err.message}
                 </td>
             </tr>
@@ -61,12 +85,11 @@ async function loadGroup() {
 
 }
 
-/**
- * ==========================================================
- * RENDER TABLE GROUP
- * ==========================================================
- */
-function renderGroup(data) {
+/* ==========================================================
+ * RENDER TABLE
+ * ========================================================== */
+
+function renderGroup(data = []) {
 
     const tbody = document.getElementById("tblGroup");
 
@@ -76,7 +99,8 @@ function renderGroup(data) {
 
         tbody.innerHTML = `
             <tr>
-                <td colspan="4" class="text-center">
+                <td colspan="4"
+                    class="text-center">
                     Tidak ada data.
                 </td>
             </tr>
@@ -86,12 +110,11 @@ function renderGroup(data) {
 
     }
 
-    tbody.innerHTML = "";
+    let html = "";
 
     data.forEach(function(item){
 
-        tbody.innerHTML += `
-
+        html += `
             <tr>
 
                 <td>${item.id}</td>
@@ -121,23 +144,25 @@ function renderGroup(data) {
                 </td>
 
             </tr>
-
         `;
 
     });
 
+    tbody.innerHTML = html;
+
 }
 
-/**
- * ==========================================================
+/* ==========================================================
  * BADGE STATUS
- * ==========================================================
- */
-function badgeGroupStatus(status){
+ * ========================================================== */
 
-    const value = String(status).toLowerCase();
+function badgeGroupStatus(status) {
 
-    if(value === "aktif"){
+    const value = String(status)
+        .trim()
+        .toUpperCase();
+
+    if (value === "AKTIF") {
 
         return `
             <span class="badge bg-success">
@@ -155,11 +180,85 @@ function badgeGroupStatus(status){
 
 }
 
-/**
- * ==========================================================
+/* ==========================================================
+ * VALIDASI FORM
+ * ========================================================== */
+
+function validateGroupForm() {
+
+    const nama = document
+        .getElementById("namaGroup")
+        ?.value
+        .trim();
+
+    const status = document
+        .getElementById("statusGroup")
+        ?.value
+        .trim();
+
+    if (!nama) {
+
+        alert("Nama Group wajib diisi.");
+
+        document
+            .getElementById("namaGroup")
+            ?.focus();
+
+        return false;
+
+    }
+
+    if (!status) {
+
+        alert("Status wajib dipilih.");
+
+        document
+            .getElementById("statusGroup")
+            ?.focus();
+
+        return false;
+
+    }
+
+    return true;
+
+}
+
+/* ==========================================================
+ * CEK DUPLIKAT NAMA GROUP
+ * ========================================================== */
+
+function isDuplicateGroupName(nama) {
+
+    nama = String(nama)
+        .trim()
+        .toLowerCase();
+
+    return groupData.some(function(item){
+
+        if (
+            editGroupId &&
+            String(item.id) === String(editGroupId)
+        ) {
+
+            return false;
+
+        }
+
+        return (
+            String(item.nama)
+                .trim()
+                .toLowerCase() === nama
+        );
+
+    });
+
+}
+
+/* ==========================================================
  * SIMPAN / UPDATE GROUP
- * ==========================================================
- */
+ * ========================================================== */
+
 async function saveGroup() {
 
     if (!validateGroupForm()) {
@@ -170,12 +269,17 @@ async function saveGroup() {
 
     const data = {
 
-        nama: document.getElementById("namaGroup").value.trim(),
+        nama: document
+            .getElementById("namaGroup")
+            .value
+            .trim(),
 
-        status: document.getElementById("statusGroup").value
+        status: document
+            .getElementById("statusGroup")
+            .value
 
     };
-  
+
     if (isDuplicateGroupName(data.nama)) {
 
         alert("Nama Group sudah digunakan.");
@@ -190,31 +294,43 @@ async function saveGroup() {
 
         if (editGroupId) {
 
-            result = await API.updateGroup(editGroupId, data);
+            result = await API.updateGroup(
+                editGroupId,
+                data
+            );
 
         } else {
 
-            result = await API.saveGroup(data);
+            result = await API.saveGroup(
+                data
+            );
 
         }
 
         if (!result.success) {
 
-            alert(result.message);
+            alert(
+                result.message ||
+                "Gagal menyimpan data."
+            );
 
             return;
 
         }
 
+        alert(result.message);
+
         closeGroupModal();
 
         clearGroupForm();
 
-        loadGroup();
+        await loadGroup();
 
     }
 
     catch (err) {
+
+        console.error(err);
 
         alert(err.message);
 
@@ -222,83 +338,56 @@ async function saveGroup() {
 
 }
 
-/**
- * ==========================================================
- * VALIDASI FORM
- * ==========================================================
- */
-function validateGroupForm() {
-
-    const nama = document.getElementById("namaGroup").value.trim();
-
-    const status = document.getElementById("statusGroup").value;
-
-    if (nama === "") {
-
-        alert("Nama Group wajib diisi.");
-
-        document.getElementById("namaGroup").focus();
-
-        return false;
-
-    }
-
-    if (status === "") {
-
-        alert("Status wajib dipilih.");
-
-        document.getElementById("statusGroup").focus();
-
-        return false;
-
-    }
-
-    return true;
-
-}
-
-/**
- * ==========================================================
+/* ==========================================================
  * RESET FORM
- * ==========================================================
- */
+ * ========================================================== */
+
 function clearGroupForm() {
 
     editGroupId = null;
 
-    document.getElementById("namaGroup").value = "";
+    const nama = document.getElementById("namaGroup");
+    const status = document.getElementById("statusGroup");
 
-    document.getElementById("statusGroup").value = "Aktif";
+    if (nama) {
+
+        nama.value = "";
+
+    }
+
+    if (status) {
+
+        status.value = "Aktif";
+
+    }
 
 }
 
-/**
- * ==========================================================
- * OPEN MODAL
- * ==========================================================
- */
+/* ==========================================================
+ * BUKA MODAL
+ * ========================================================== */
+
 function openGroupModal() {
 
     clearGroupForm();
 
     const modal = new bootstrap.Modal(
-
         document.getElementById("groupModal")
-
     );
 
     modal.show();
 
 }
 
-/**
- * ==========================================================
- * CLOSE MODAL
- * ==========================================================
- */
+/* ==========================================================
+ * TUTUP MODAL
+ * ========================================================== */
+
 function closeGroupModal() {
 
     const element = document.getElementById("groupModal");
+
+    if (!element) return;
 
     const modal = bootstrap.Modal.getInstance(element);
 
@@ -310,14 +399,13 @@ function closeGroupModal() {
 
 }
 
-/**
- * ==========================================================
+/* ==========================================================
  * EDIT GROUP
- * ==========================================================
- */
+ * ========================================================== */
+
 function editGroup(id) {
 
-    const item = groupData.find(function (row) {
+    const item = groupData.find(function(row){
 
         return String(row.id) === String(id);
 
@@ -325,16 +413,19 @@ function editGroup(id) {
 
     if (!item) {
 
-        alert("Data group tidak ditemukan.");
+        alert("Data Group tidak ditemukan.");
 
         return;
 
     }
 
-    editGroupId = id;
+    editGroupId = item.id;
 
-    document.getElementById("namaGroup").value = item.nama;
-    document.getElementById("statusGroup").value = item.status;
+    document.getElementById("namaGroup").value =
+        item.nama;
+
+    document.getElementById("statusGroup").value =
+        item.status;
 
     const modal = new bootstrap.Modal(
         document.getElementById("groupModal")
@@ -344,14 +435,13 @@ function editGroup(id) {
 
 }
 
-/**
- * ==========================================================
+/* ==========================================================
  * HAPUS GROUP
- * ==========================================================
- */
+ * ========================================================== */
+
 async function deleteGroup(id) {
 
-    if (!confirm("Yakin ingin menghapus group ini?")) {
+    if (!confirm("Yakin ingin menghapus Group ini?")) {
 
         return;
 
@@ -363,17 +453,24 @@ async function deleteGroup(id) {
 
         if (!result.success) {
 
-            alert(result.message);
+            alert(
+                result.message ||
+                "Gagal menghapus data."
+            );
 
             return;
 
         }
 
-        loadGroup();
+        alert(result.message);
+
+        await loadGroup();
 
     }
 
     catch (err) {
+
+        console.error(err);
 
         alert(err.message);
 
@@ -381,32 +478,34 @@ async function deleteGroup(id) {
 
 }
 
-/**
- * ==========================================================
+/* ==========================================================
  * FILTER GROUP
- * ==========================================================
- */
+ * ========================================================== */
+
 function filterGroup() {
 
-    const keyword = document
-        .getElementById("searchGroup")
-        .value
-        .toLowerCase()
-        .trim();
+    const keyword = (
+        document.getElementById("searchGroup")?.value || ""
+    )
+    .trim()
+    .toLowerCase();
 
-    const status = document
-        .getElementById("filterStatusGroup")
-        .value
-        .toLowerCase();
+    const status = (
+        document.getElementById("filterStatusGroup")?.value || ""
+    )
+    .trim()
+    .toUpperCase();
 
-    const hasil = groupData.filter(function (item) {
+    const hasil = groupData.filter(function(item){
 
         const cocokNama =
-            item.nama.toLowerCase().includes(keyword);
+            String(item.nama)
+                .toLowerCase()
+                .includes(keyword);
 
         const cocokStatus =
             status === "" ||
-            item.status.toLowerCase() === status;
+            String(item.status).toUpperCase() === status;
 
         return cocokNama && cocokStatus;
 
@@ -416,100 +515,70 @@ function filterGroup() {
 
 }
 
-/**
- * ==========================================================
+/* ==========================================================
  * RESET FILTER
- * ==========================================================
- */
+ * ========================================================== */
+
 function resetFilterGroup() {
 
-    const search = document.getElementById("searchGroup");
-    const status = document.getElementById("filterStatusGroup");
+    const search =
+        document.getElementById("searchGroup");
 
-    if (search) search.value = "";
-    if (status) status.value = "";
+    const status =
+        document.getElementById("filterStatusGroup");
+
+    if (search) {
+
+        search.value = "";
+
+    }
+
+    if (status) {
+
+        status.value = "";
+
+    }
 
     renderGroup(groupData);
 
 }
 
-/**
- * ==========================================================
+/* ==========================================================
  * REFRESH GROUP
- * ==========================================================
- */
-function refreshGroup() {
+ * ========================================================== */
+
+async function refreshGroup() {
 
     clearGroupForm();
 
     resetFilterGroup();
 
-    loadGroup();
+    await loadGroup();
 
 }
 
-/**
- * ==========================================================
- * VALIDASI DUPLIKAT NAMA GROUP
- * ==========================================================
- */
-function isDuplicateGroupName(nama) {
-
-    nama = String(nama).trim().toLowerCase();
-
-    return groupData.some(function(item){
-
-        if(editGroupId && item.id === editGroupId){
-
-            return false;
-
-        }
-
-        return item.nama.trim().toLowerCase() === nama;
-
-    });
-
-}
-
-/**
- * ==========================================================
+/* ==========================================================
  * RELOAD GROUP
- * ==========================================================
- */
-function reloadGroup() {
+ * ========================================================== */
 
-    clearGroupForm();
+async function reloadGroup() {
 
-    resetFilterGroup();
-
-    loadGroup();
+    await refreshGroup();
 
 }
 
-/**
- * ==========================================================
- * INIT GROUP MODULE
- * ==========================================================
- */
-function initGroup() {
+/* ==========================================================
+ * EXPORT GLOBAL
+ * ========================================================== */
 
-    loadGroup();
-
-}
-
-/**
- * ==========================================================
- * EXPORT GLOBAL FUNCTION
- * ==========================================================
- */
-
+window.initGroup = initGroup;
 window.loadGroup = loadGroup;
 window.saveGroup = saveGroup;
 window.editGroup = editGroup;
 window.deleteGroup = deleteGroup;
 window.filterGroup = filterGroup;
-window.refreshGroup = refreshGroup;
 window.resetFilterGroup = resetFilterGroup;
+window.refreshGroup = refreshGroup;
+window.reloadGroup = reloadGroup;
 window.openGroupModal = openGroupModal;
 window.closeGroupModal = closeGroupModal;
-window.initGroup = initGroup;
