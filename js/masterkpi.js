@@ -5,18 +5,39 @@
  * ==========================================================
  * Modul Master KPI
  * Author : BlesProduction
- * Version : 2.0.0
+ * Version : 3.0.0
+ * ==========================================================
+ */
+
+"use strict";
+
+/* ==========================================================
+ * GLOBAL VARIABLE
  * ==========================================================
  */
 
 let masterKPIData = [];
-let editKPIId = null;
 
-/**
+let editMasterKPIId = null;
+
+/* ==========================================================
+ * INIT MODULE
  * ==========================================================
+ */
+
+async function initMasterKPI() {
+
+    clearMasterKPIForm();
+
+    await loadMasterKPI();
+
+}
+
+/* ==========================================================
  * LOAD MASTER KPI
  * ==========================================================
  */
+
 async function loadMasterKPI() {
 
     const tbody = document.getElementById("tblMasterKPI");
@@ -24,11 +45,17 @@ async function loadMasterKPI() {
     if (!tbody) return;
 
     tbody.innerHTML = `
+
         <tr>
+
             <td colspan="6" class="text-center">
+
                 Memuat data...
+
             </td>
+
         </tr>
+
     `;
 
     try {
@@ -50,22 +77,29 @@ async function loadMasterKPI() {
     catch (err) {
 
         tbody.innerHTML = `
+
             <tr>
-                <td colspan="6" class="text-danger text-center">
+
+                <td colspan="6"
+                    class="text-center text-danger">
+
                     ${err.message}
+
                 </td>
+
             </tr>
+
         `;
 
     }
 
 }
 
-/**
- * ==========================================================
+/* ==========================================================
  * RENDER TABLE
  * ==========================================================
  */
+
 function renderMasterKPI(data) {
 
     const tbody = document.getElementById("tblMasterKPI");
@@ -75,22 +109,29 @@ function renderMasterKPI(data) {
     if (!data.length) {
 
         tbody.innerHTML = `
+
             <tr>
-                <td colspan="6" class="text-center">
+
+                <td colspan="6"
+                    class="text-center">
+
                     Tidak ada data.
+
                 </td>
+
             </tr>
+
         `;
 
         return;
 
     }
 
-    tbody.innerHTML = "";
+    let html = "";
 
     data.forEach(function(item){
 
-        tbody.innerHTML += `
+        html += `
 
             <tr>
 
@@ -101,11 +142,15 @@ function renderMasterKPI(data) {
                 <td>${item.kategori}</td>
 
                 <td class="text-center">
+
                     ${formatBobot(item.bobot)}
+
                 </td>
 
                 <td>
+
                     ${badgeKPIStatus(item.status)}
+
                 </td>
 
                 <td>
@@ -134,13 +179,15 @@ function renderMasterKPI(data) {
 
     });
 
+    tbody.innerHTML = html;
+
 }
 
-/**
- * ==========================================================
+/* ==========================================================
  * FORMAT BOBOT
  * ==========================================================
  */
+
 function formatBobot(value){
 
     value = Number(value || 0);
@@ -149,41 +196,179 @@ function formatBobot(value){
 
 }
 
-/**
- * ==========================================================
+/* ==========================================================
  * BADGE STATUS
  * ==========================================================
  */
+
 function badgeKPIStatus(status){
 
-    status = String(status).toLowerCase();
+    status = String(status)
+        .trim()
+        .toLowerCase();
 
     if(status === "aktif"){
 
         return `
+
             <span class="badge bg-success">
+
                 Aktif
+
             </span>
+
         `;
 
     }
 
     return `
+
         <span class="badge bg-danger">
+
             Nonaktif
+
         </span>
+
     `;
 
 }
 
-/**
- * ==========================================================
- * SIMPAN / UPDATE MASTER KPI
+/* ==========================================================
+ * VALIDASI FORM
  * ==========================================================
  */
-async function saveMasterKPI() {
 
-    if (!validateMasterKPIForm()) {
+function validateMasterKPIForm() {
+
+    const nama = document
+        .getElementById("namaKPI")
+        .value
+        .trim();
+
+    const kategori = document
+        .getElementById("kategoriKPI")
+        .value;
+
+    const bobot = Number(
+
+        document
+            .getElementById("bobotKPI")
+            .value
+
+    );
+
+    const status = document
+        .getElementById("statusKPI")
+        .value;
+
+    if (nama === "") {
+
+        alert("Nama KPI wajib diisi.");
+
+        document
+            .getElementById("namaKPI")
+            .focus();
+
+        return false;
+
+    }
+
+    if (kategori === "") {
+
+        alert("Kategori wajib dipilih.");
+
+        document
+            .getElementById("kategoriKPI")
+            .focus();
+
+        return false;
+
+    }
+
+    if (isNaN(bobot) || bobot <= 0) {
+
+        alert("Bobot harus lebih besar dari 0.");
+
+        document
+            .getElementById("bobotKPI")
+            .focus();
+
+        return false;
+
+    }
+
+    if (bobot > 100) {
+
+        alert("Bobot maksimal 100.");
+
+        document
+            .getElementById("bobotKPI")
+            .focus();
+
+        return false;
+
+    }
+
+    if (status === "") {
+
+        alert("Status wajib dipilih.");
+
+        document
+            .getElementById("statusKPI")
+            .focus();
+
+        return false;
+
+    }
+
+    return true;
+
+}
+
+/* ==========================================================
+ * CEK DUPLIKAT
+ * ==========================================================
+ */
+
+function isDuplicateMasterKPI(nama){
+
+    nama = String(nama)
+        .trim()
+        .toLowerCase();
+
+    return masterKPIData.some(function(item){
+
+        if(
+
+            editMasterKPIId &&
+
+            String(item.id) ===
+            String(editMasterKPIId)
+
+        ){
+
+            return false;
+
+        }
+
+        return String(item.nama)
+
+            .trim()
+
+            .toLowerCase() === nama;
+
+    });
+
+}
+
+/* ==========================================================
+ * SIMPAN / UPDATE
+ * ==========================================================
+ */
+
+async function saveMasterKPI(){
+
+    if(!validateMasterKPIForm()){
 
         return;
 
@@ -191,31 +376,64 @@ async function saveMasterKPI() {
 
     const data = {
 
-        nama: document.getElementById("namaKPI").value.trim(),
+        nama: document
+            .getElementById("namaKPI")
+            .value
+            .trim(),
 
-        kategori: document.getElementById("kategoriKPI").value,
+        kategori: document
+            .getElementById("kategoriKPI")
+            .value,
 
-        bobot: Number(document.getElementById("bobotKPI").value),
+        bobot: Number(
 
-        status: document.getElementById("statusKPI").value
+            document
+                .getElementById("bobotKPI")
+                .value
+
+        ),
+
+        status: document
+            .getElementById("statusKPI")
+            .value
 
     };
 
-    try {
+    if(isDuplicateMasterKPI(data.nama)){
+
+        alert("Nama KPI sudah digunakan.");
+
+        return;
+
+    }
+
+    try{
 
         let result;
 
-        if (editKPIId) {
+        if(editMasterKPIId){
 
-            result = await API.updateMasterKPI(editKPIId, data);
+            result = await API.updateMasterKPI(
 
-        } else {
+                editMasterKPIId,
 
-            result = await API.saveMasterKPI(data);
+                data
+
+            );
 
         }
 
-        if (!result.success) {
+        else{
+
+            result = await API.saveMasterKPI(
+
+                data
+
+            );
+
+        }
+
+        if(!result.success){
 
             alert(result.message);
 
@@ -227,11 +445,11 @@ async function saveMasterKPI() {
 
         clearMasterKPIForm();
 
-        loadMasterKPI();
+        await loadMasterKPI();
 
     }
 
-    catch (err) {
+    catch(err){
 
         alert(err.message);
 
@@ -239,83 +457,14 @@ async function saveMasterKPI() {
 
 }
 
-/**
- * ==========================================================
- * VALIDASI FORM
- * ==========================================================
- */
-function validateMasterKPIForm() {
-
-    const nama = document.getElementById("namaKPI").value.trim();
-
-    const kategori = document.getElementById("kategoriKPI").value;
-
-    const bobot = Number(document.getElementById("bobotKPI").value);
-
-    const status = document.getElementById("statusKPI").value;
-
-    if (nama === "") {
-
-        alert("Nama KPI wajib diisi.");
-
-        document.getElementById("namaKPI").focus();
-
-        return false;
-
-    }
-
-    if (kategori === "") {
-
-        alert("Kategori wajib dipilih.");
-
-        document.getElementById("kategoriKPI").focus();
-
-        return false;
-
-    }
-
-    if (isNaN(bobot) || bobot <= 0) {
-
-        alert("Bobot harus lebih besar dari 0.");
-
-        document.getElementById("bobotKPI").focus();
-
-        return false;
-
-    }
-
-    if (bobot > 100) {
-
-        alert("Bobot maksimal 100%.");
-
-        document.getElementById("bobotKPI").focus();
-
-        return false;
-
-    }
-
-    if (status === "") {
-
-        alert("Status wajib dipilih.");
-
-        document.getElementById("statusKPI").focus();
-
-        return false;
-
-    }
-
-    return true;
-
-}
-
-/**
- * ==========================================================
- * RESET FORM
+/* ==========================================================
+ * CLEAR FORM
  * ==========================================================
  */
-function clearMasterKPIForm() {
 
-    editKPIId = null;
+function clearMasterKPIForm(){
+
+    editMasterKPIId = null;
 
     document.getElementById("namaKPI").value = "";
 
@@ -327,35 +476,53 @@ function clearMasterKPIForm() {
 
 }
 
-/**
- * ==========================================================
+/* ==========================================================
  * OPEN MODAL
  * ==========================================================
  */
-function openMasterKPIModal() {
+
+function openMasterKPIModal(){
 
     clearMasterKPIForm();
 
+    document.querySelector(
+
+        "#masterKPIModal .modal-title"
+
+    ).textContent = "Tambah KPI";
+
     const modal = new bootstrap.Modal(
-        document.getElementById("masterKPIModal")
+
+        document.getElementById(
+
+            "masterKPIModal"
+
+        )
+
     );
 
     modal.show();
 
 }
 
-/**
- * ==========================================================
+/* ==========================================================
  * CLOSE MODAL
  * ==========================================================
  */
-function closeMasterKPIModal() {
 
-    const element = document.getElementById("masterKPIModal");
+function closeMasterKPIModal(){
 
-    const modal = bootstrap.Modal.getInstance(element);
+    const modal = bootstrap.Modal.getInstance(
 
-    if (modal) {
+        document.getElementById(
+
+            "masterKPIModal"
+
+        )
+
+    );
+
+    if(modal){
 
         modal.hide();
 
@@ -363,12 +530,12 @@ function closeMasterKPIModal() {
 
 }
 
-/**
- * ==========================================================
+/* ==========================================================
  * EDIT MASTER KPI
  * ==========================================================
  */
-function editMasterKPI(id) {
+
+function editMasterKPI(id){
 
     const item = masterKPIData.find(function(row){
 
@@ -376,7 +543,7 @@ function editMasterKPI(id) {
 
     });
 
-    if (!item) {
+    if(!item){
 
         alert("Data KPI tidak ditemukan.");
 
@@ -384,39 +551,58 @@ function editMasterKPI(id) {
 
     }
 
-    editKPIId = id;
+    editMasterKPIId = item.id;
 
-    document.getElementById("namaKPI").value = item.nama;
-    document.getElementById("kategoriKPI").value = item.kategori;
-    document.getElementById("bobotKPI").value = item.bobot;
-    document.getElementById("statusKPI").value = item.status;
+    document.getElementById("namaKPI").value =
+        item.nama;
+
+    document.getElementById("kategoriKPI").value =
+        item.kategori;
+
+    document.getElementById("bobotKPI").value =
+        item.bobot;
+
+    document.getElementById("statusKPI").value =
+        item.status;
+
+    document.querySelector(
+
+        "#masterKPIModal .modal-title"
+
+    ).textContent = "Edit KPI";
 
     const modal = new bootstrap.Modal(
-        document.getElementById("masterKPIModal")
+
+        document.getElementById(
+
+            "masterKPIModal"
+
+        )
+
     );
 
     modal.show();
 
 }
 
-/**
- * ==========================================================
- * HAPUS MASTER KPI
+/* ==========================================================
+ * DELETE MASTER KPI
  * ==========================================================
  */
-async function deleteMasterKPI(id) {
 
-    if (!confirm("Yakin ingin menghapus KPI ini?")) {
+async function deleteMasterKPI(id){
+
+    if(!confirm("Yakin ingin menghapus KPI ini?")){
 
         return;
 
     }
 
-    try {
+    try{
 
         const result = await API.deleteMasterKPI(id);
 
-        if (!result.success) {
+        if(!result.success){
 
             alert(result.message);
 
@@ -424,11 +610,11 @@ async function deleteMasterKPI(id) {
 
         }
 
-        loadMasterKPI();
+        await loadMasterKPI();
 
     }
 
-    catch (err) {
+    catch(err){
 
         alert(err.message);
 
@@ -436,32 +622,50 @@ async function deleteMasterKPI(id) {
 
 }
 
-/**
- * ==========================================================
+/* ==========================================================
  * FILTER MASTER KPI
  * ==========================================================
  */
-function filterMasterKPI() {
+
+function filterMasterKPI(){
 
     const keyword = document
-        .getElementById("searchKPI")
+
+        .getElementById("searchMasterKPI")
+
         .value
+
         .trim()
+
         .toLowerCase();
 
     const kategori = document
+
         .getElementById("filterKategori")
+
         .value
+
+        .trim()
+
         .toLowerCase();
 
     const hasil = masterKPIData.filter(function(item){
 
         const cocokNama =
-            item.nama.toLowerCase().includes(keyword);
+
+            String(item.nama)
+
+            .toLowerCase()
+
+            .includes(keyword);
 
         const cocokKategori =
+
             kategori === "" ||
-            item.kategori.toLowerCase() === kategori;
+
+            String(item.kategori)
+
+            .toLowerCase() === kategori;
 
         return cocokNama && cocokKategori;
 
@@ -471,101 +675,78 @@ function filterMasterKPI() {
 
 }
 
-/**
- * ==========================================================
+/* ==========================================================
  * RESET FILTER
  * ==========================================================
  */
-function resetFilterMasterKPI() {
 
-    const search = document.getElementById("searchKPI");
-    const kategori = document.getElementById("filterKategori");
+function resetFilterMasterKPI(){
 
-    if (search) search.value = "";
+    document.getElementById(
 
-    if (kategori) kategori.value = "";
+        "searchMasterKPI"
+
+    ).value = "";
+
+    document.getElementById(
+
+        "filterKategori"
+
+    ).value = "";
 
     renderMasterKPI(masterKPIData);
 
 }
 
-/**
- * ==========================================================
- * REFRESH DATA
+/* ==========================================================
+ * REFRESH
  * ==========================================================
  */
-function refreshMasterKPI() {
+
+async function refreshMasterKPI(){
 
     clearMasterKPIForm();
 
     resetFilterMasterKPI();
 
-    loadMasterKPI();
+    await loadMasterKPI();
 
 }
 
-/**
- * ==========================================================
- * CEK DUPLIKAT NAMA KPI
+/* ==========================================================
+ * RELOAD
  * ==========================================================
  */
-function isDuplicateMasterKPI(nama) {
 
-    nama = String(nama).trim().toLowerCase();
+async function reloadMasterKPI(){
 
-    return masterKPIData.some(function(item){
-
-        if(editKPIId && item.id === editKPIId){
-
-            return false;
-
-        }
-
-        return item.nama.trim().toLowerCase() === nama;
-
-    });
+    await refreshMasterKPI();
 
 }
 
-/**
- * ==========================================================
- * RELOAD DATA
- * ==========================================================
- */
-function reloadMasterKPI() {
-
-    clearMasterKPIForm();
-
-    resetFilterMasterKPI();
-
-    loadMasterKPI();
-
-}
-
-/**
- * ==========================================================
- * INIT MODULE
- * ==========================================================
- */
-function initMasterKPI() {
-
-    loadMasterKPI();
-
-}
-
-/**
- * ==========================================================
+/* ==========================================================
  * EXPORT GLOBAL
  * ==========================================================
  */
 
-window.loadMasterKPI = loadMasterKPI;
-window.saveMasterKPI = saveMasterKPI;
-window.editMasterKPI = editMasterKPI;
-window.deleteMasterKPI = deleteMasterKPI;
-window.filterMasterKPI = filterMasterKPI;
-window.refreshMasterKPI = refreshMasterKPI;
-window.resetFilterMasterKPI = resetFilterMasterKPI;
-window.openMasterKPIModal = openMasterKPIModal;
-window.closeMasterKPIModal = closeMasterKPIModal;
 window.initMasterKPI = initMasterKPI;
+
+window.loadMasterKPI = loadMasterKPI;
+
+window.saveMasterKPI = saveMasterKPI;
+
+window.editMasterKPI = editMasterKPI;
+
+window.deleteMasterKPI = deleteMasterKPI;
+
+window.filterMasterKPI = filterMasterKPI;
+
+window.resetFilterMasterKPI = resetFilterMasterKPI;
+
+window.refreshMasterKPI = refreshMasterKPI;
+
+window.reloadMasterKPI = reloadMasterKPI;
+
+window.openMasterKPIModal = openMasterKPIModal;
+
+window.closeMasterKPIModal = closeMasterKPIModal;
