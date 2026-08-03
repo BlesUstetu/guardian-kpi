@@ -100,9 +100,9 @@ function initPage(page) {
 
         case "masterkpi":
 
-            if (typeof loadMasterKPI === "function") {
+            if (typeof initMasterKPI === "function") {
 
-                loadMasterKPI();
+                initMasterKPI();
 
             }
 
