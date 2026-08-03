@@ -213,7 +213,7 @@ async function loadGroup() {
 function groupName(id){
 
     console.log("group id :", id);
-    console.log("groupData :", groupData);
+    console.log("anggotaData :", anggotaData);
     
     const item = groupData.find(function(g){
 
