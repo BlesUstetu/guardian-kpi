@@ -46,7 +46,11 @@ const API = {
 
             }
 
-            return await response.json();
+            const json = await response.json();
+
+            console.log("POST RESPONSE :", json);
+
+            return json;
 
         }
 
