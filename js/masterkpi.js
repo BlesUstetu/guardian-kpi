@@ -464,6 +464,8 @@ async function saveMasterKPI(){
 
             result = await API.saveMasterKPI(data);
 
+            console.log("RESULT =", result);
+
         }
 
         if(!result.success){
