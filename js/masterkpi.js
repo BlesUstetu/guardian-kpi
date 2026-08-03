@@ -605,6 +605,50 @@ function clearMasterKPIForm(){
 }
 
 /* ==========================================================
+ * OPEN MODAL
+ * ==========================================================
+ */
+
+function openMasterKPIModal(){
+
+    editMasterKPIId = null;
+
+    clearMasterKPIForm();
+
+    document.querySelector(
+        "#masterKPIModal .modal-title"
+    ).textContent = "Tambah Indicator";
+
+    const modal = new bootstrap.Modal(
+        document.getElementById("masterKPIModal")
+    );
+
+    modal.show();
+
+}
+
+/* ==========================================================
+ * CLOSE MODAL
+ * ==========================================================
+ */
+
+function closeMasterKPIModal(){
+
+    const element = document.getElementById(
+        "masterKPIModal"
+    );
+
+    const modal = bootstrap.Modal.getInstance(element);
+
+    if(modal){
+
+        modal.hide();
+
+    }
+
+}
+
+/* ==========================================================
  * FILTER MASTER KPI
  * ==========================================================
  */
