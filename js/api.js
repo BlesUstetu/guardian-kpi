@@ -88,6 +88,10 @@ const API = {
 
         try {
 
+            console.log("========== POST ==========");
+            console.log("URL :", this.BASE_URL);
+            console.log("BODY :", body);
+
             const form = new URLSearchParams();
 
             form.append(
@@ -111,6 +115,9 @@ const API = {
                 }
 
             );
+
+            console.log("POST STATUS :", response.status);
+            console.log("POST URL :", response.url);
 
             if (!response.ok) {
 
