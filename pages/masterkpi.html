@@ -16,7 +16,7 @@
 
             <small class="text-secondary">
 
-                Kelola indikator KPI Security.
+                Kelola Indicator KPI Security.
 
             </small>
 
@@ -28,7 +28,7 @@
 
             <i class="bi bi-plus-circle"></i>
 
-            Tambah KPI
+            Tambah Indicator
 
         </button>
 
@@ -42,13 +42,13 @@
 
         <div class="row mb-3">
 
-            <div class="col-md-6">
+            <div class="col-md-5">
 
                 <input
                     id="searchMasterKPI"
                     type="text"
                     class="form-control"
-                    placeholder="Cari KPI..."
+                    placeholder="Cari Indicator..."
                     onkeyup="filterMasterKPI()">
 
             </div>
@@ -88,7 +88,7 @@
 
             </div>
 
-            <div class="col-md-3 text-end">
+            <div class="col-md-4 text-end">
 
                 <button
                     class="btn btn-outline-info"
@@ -120,7 +120,7 @@
 
                         <th>
 
-                            Nama KPI
+                            Indicator
 
                         </th>
 
@@ -130,13 +130,19 @@
 
                         </th>
 
-                        <th width="100">
+                        <th width="90">
 
                             Bobot
 
                         </th>
 
-                        <th width="140">
+                        <th width="90">
+
+                            Target
+
+                        </th>
+
+                        <th width="120">
 
                             Status
 
@@ -156,7 +162,7 @@
 
                     <tr>
 
-                        <td colspan="6" class="text-center">
+                        <td colspan="7" class="text-center">
 
                             Memuat data...
 
@@ -205,19 +211,26 @@ data-bs-dismiss="modal">
 
 <div class="modal-body">
 
+<!-- Indicator -->
+
 <div class="mb-3">
 
 <label class="form-label">
 
-Nama KPI
+Indicator
 
 </label>
 
 <input
-id="namaKPI"
-class="form-control">
+id="indicatorKPI"
+type="text"
+class="form-control"
+maxlength="50"
+placeholder="Masukkan Indicator KPI">
 
 </div>
+
+<!-- Kategori -->
 
 <div class="mb-3">
 
@@ -230,6 +243,12 @@ Kategori
 <select
 id="kategoriKPI"
 class="form-select">
+
+<option value="">
+
+Pilih Kategori
+
+</option>
 
 <option value="Disiplin">
 
@@ -253,20 +272,47 @@ Administrasi
 
 </div>
 
+<!-- Bobot -->
+
 <div class="mb-3">
 
 <label class="form-label">
 
-Bobot
+Bobot (%)
 
 </label>
 
 <input
 id="bobotKPI"
 type="number"
-class="form-control">
+class="form-control"
+min="1"
+max="100"
+placeholder="0">
 
 </div>
+
+<!-- Target -->
+
+<div class="mb-3">
+
+<label class="form-label">
+
+Target (%)
+
+</label>
+
+<input
+id="targetKPI"
+type="number"
+class="form-control"
+min="0"
+max="100"
+value="100">
+
+</div>
+
+<!-- Status -->
 
 <div class="mb-3">
 
@@ -311,6 +357,8 @@ Batal
 <button
 class="btn btn-info"
 onclick="saveMasterKPI()">
+
+<i class="bi bi-save"></i>
 
 Simpan
 
