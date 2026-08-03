@@ -23,6 +23,10 @@ const API = {
 
         try {
 
+            console.log("================================");
+            console.log("API REQUEST :", this.BASE_URL + url);
+            console.log("OPTIONS :", options);
+
             const response = await fetch(
 
                 this.BASE_URL + url,
@@ -30,6 +34,9 @@ const API = {
                 options
 
             );
+
+            console.log("STATUS :", response.status);
+            console.log("URL FINAL :", response.url);
 
             if (!response.ok) {
 
