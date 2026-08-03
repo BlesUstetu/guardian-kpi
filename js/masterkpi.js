@@ -109,18 +109,11 @@ function renderMasterKPI(data) {
     if (!data.length) {
 
         tbody.innerHTML = `
-
             <tr>
-
-                <td colspan="6"
-                    class="text-center">
-
+                <td colspan="7" class="text-center">
                     Tidak ada data.
-
                 </td>
-
             </tr>
-
         `;
 
         return;
@@ -133,47 +126,53 @@ function renderMasterKPI(data) {
 
         html += `
 
-            <tr>
+        <tr>
 
-                <td>${item.id}</td>
+            <td>${item.id}</td>
 
-                <td>${item.indicator}</td>
+            <td>${item.indicator}</td>
 
-                <td>${item.kategori}</td>
+            <td>${item.kategori}</td>
 
-                <td class="text-center">
+            <td class="text-center">
 
-                    ${formatBobot(item.bobot)}
+                ${item.bobot}%
 
-                </td>
+            </td>
 
-                <td>
+            <td class="text-center">
 
-                    ${badgeKPIStatus(item.status)}
+                ${item.target}
 
-                </td>
+            </td>
 
-                <td>
+            <td>
 
-                    <button
-                        class="btn btn-warning btn-sm"
-                        onclick="editMasterKPI('${item.id}')">
+                ${badgeKPIStatus(item.status)}
 
-                        <i class="bi bi-pencil"></i>
+            </td>
 
-                    </button>
+            <td>
 
-                    <button
-                        class="btn btn-danger btn-sm"
-                        onclick="deleteMasterKPI('${item.id}')">
+                <button
+                    class="btn btn-warning btn-sm"
+                    onclick="editMasterKPI('${item.id}')">
 
-                        <i class="bi bi-trash"></i>
+                    <i class="bi bi-pencil"></i>
 
-                    </button>
+                </button>
 
-                </td>
+                <button
+                    class="btn btn-danger btn-sm"
+                    onclick="deleteMasterKPI('${item.id}')">
 
-            </tr>
+                    <i class="bi bi-trash"></i>
+
+                </button>
+
+            </td>
+
+        </tr>
 
         `;
 
@@ -182,7 +181,6 @@ function renderMasterKPI(data) {
     tbody.innerHTML = html;
 
 }
-
 /* ==========================================================
  * FORMAT BOBOT
  * ==========================================================
@@ -238,7 +236,7 @@ function badgeKPIStatus(status){
  * ==========================================================
  */
 
-function validateMasterKPIForm() {
+function validateMasterKPIForm(){
 
     const indicator = document
         .getElementById("indicatorKPI")
@@ -257,65 +255,53 @@ function validateMasterKPIForm() {
 
     );
 
+    const target = Number(
+
+        document
+            .getElementById("targetKPI")
+            .value
+
+    );
+
     const status = document
         .getElementById("statusKPI")
         .value;
 
-    if (nama === "") {
+    if(indicator===""){
 
-        alert("Nama KPI wajib diisi.");
-
-        document
-            .getElementById("namaKPI")
-            .focus();
+        alert("Indicator wajib diisi.");
 
         return false;
 
     }
 
-    if (kategori === "") {
+    if(kategori===""){
 
         alert("Kategori wajib dipilih.");
 
-        document
-            .getElementById("kategoriKPI")
-            .focus();
+        return false;
+
+    }
+
+    if(isNaN(bobot)||bobot<1||bobot>100){
+
+        alert("Bobot harus 1 - 100.");
 
         return false;
 
     }
 
-    if (isNaN(bobot) || bobot <= 0) {
+    if(isNaN(target)||target<0||target>100){
 
-        alert("Bobot harus lebih besar dari 0.");
-
-        document
-            .getElementById("bobotKPI")
-            .focus();
+        alert("Target harus 0 - 100.");
 
         return false;
 
     }
 
-    if (bobot > 100) {
-
-        alert("Bobot maksimal 100.");
-
-        document
-            .getElementById("bobotKPI")
-            .focus();
-
-        return false;
-
-    }
-
-    if (status === "") {
+    if(status===""){
 
         alert("Status wajib dipilih.");
-
-        document
-            .getElementById("statusKPI")
-            .focus();
 
         return false;
 
@@ -342,7 +328,8 @@ function isDuplicateMasterKPI(indicator){
 
             editMasterKPIId &&
 
-            String(item.id) ===
+            String(item.id)===
+
             String(editMasterKPIId)
 
         ){
@@ -355,7 +342,9 @@ function isDuplicateMasterKPI(indicator){
 
             .trim()
 
-            .toLowerCase() === nama;
+            .toLowerCase()
+
+            === indicator;
 
     });
 
