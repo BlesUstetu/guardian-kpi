@@ -30,9 +30,11 @@ const API = {
             const response = await fetch(
 
                 this.BASE_URL + url,
-
-                options
-
+                {
+                    ...options,
+                    cache: "no-store",
+                    redirect: "follow"
+                }
             );
 
             console.log("STATUS :", response.status);
@@ -113,8 +115,9 @@ const API = {
                 {
 
                     method: "POST",
-
-                    body: form
+                    body: form,
+                    cache: "no-store",
+                    redirect: "follow"
 
                 }
 
