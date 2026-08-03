@@ -8,7 +8,7 @@
  */
 
 let anggotaData = [];
-let groupData = [];
+let groupList = [];
 let editId = null;
 
 /**
@@ -173,7 +173,7 @@ async function loadGroup() {
 
         }
 
-        groupData = result.data || [];
+        groupList = result.data || [];
 
         const select = document.getElementById("group");
 
@@ -185,7 +185,7 @@ async function loadGroup() {
             </option>
         `;
 
-        groupData.forEach(function(item){
+        groupList.forEach(function(item){
 
             select.innerHTML += `
                 <option value="${item.id}">
@@ -215,7 +215,7 @@ function groupName(id){
     console.log("group id :", id);
     console.log("anggotaData :", anggotaData);
     
-    const item = groupData.find(function(g){
+    const item = groupList.find(function(g){
 
         return String(g.id) === String(id);
 
