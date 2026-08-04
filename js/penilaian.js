@@ -199,6 +199,8 @@ async function loadPenilaianMasterKPI() {
 
         penilaianMasterKPIList =
             result.data || [];
+        
+        renderPenilaianIndikator();
 
     }
 
@@ -209,6 +211,59 @@ async function loadPenilaianMasterKPI() {
     }
 
 }
+
+/* ==========================================================
+ * RENDER TABLE
+ * ==========================================================
+ */
+
+function renderPenilaianTable(data){
+
+    const tbody =
+        document.getElementById(
+            "tblPenilaian"
+        );
+
+    if(!tbody) return;
+
+    if(!data.length){
+
+        tbody.innerHTML = `
+
+            <tr>
+
+                <td colspan="8"
+                    class="text-center">
+
+                    Belum ada data Penilaian.
+
+                </td>
+
+            </tr>
+
+        `;
+
+        return;
+
+    }
+
+    tbody.innerHTML = `
+
+        <tr>
+
+            <td colspan="8"
+                class="text-center">
+
+                Render data akan dibuat pada tahap berikutnya.
+
+            </td>
+
+        </tr>
+
+    `;
+
+}
+
 
 /* ==========================================================
  * RENDER INDIKATOR KPI
@@ -419,49 +474,6 @@ function closePenilaianModal() {
 
 }
 
-/* ==========================================================
- * RENDER INDIKATOR
- * ==========================================================
- */
-
-function renderPenilaianIndikator() {
-
-    const container =
-        document.getElementById(
-            "listIndikator"
-        );
-
-    if (!container) return;
-
-    if (
-        !penilaianMasterKPIList.length
-    ) {
-
-        container.innerHTML = `
-
-            <div class="text-center">
-
-                Tidak ada indikator KPI.
-
-            </div>
-
-        `;
-
-        return;
-
-    }
-
-    container.innerHTML = `
-
-        <div class="text-center">
-
-            Tahap berikutnya...
-
-        </div>
-
-    `;
-
-}
 
 /* ==========================================================
  * EXPORT
