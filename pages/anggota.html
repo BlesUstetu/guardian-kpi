@@ -21,7 +21,7 @@
 
         <button
             class="btn btn-info"
-            onclick="openModal()">
+            onclick="openAnggotaModal()"
 
             <i class="bi bi-plus-circle"></i>
 
@@ -69,7 +69,7 @@
 
                 <button
                     class="btn btn-outline-info"
-                    onclick="loadAnggota()">
+                   onclick="refreshAnggota()"
 
                     <i class="bi bi-arrow-clockwise"></i>
 
@@ -136,7 +136,8 @@ MODAL
 <div
 class="modal fade"
 id="anggotaModal"
-tabindex="-1">
+tabindex="-1"
+data-bs-backdrop="static">
 
 <div class="modal-dialog">
 
@@ -163,6 +164,8 @@ data-bs-dismiss="modal">
 <input
 id="nama"
 class="form-control mb-3"
+maxlength="100"
+autocomplete="off"
 placeholder="Nama Lengkap">
 
 <select
@@ -217,13 +220,14 @@ data-bs-dismiss="modal">
 
 Batal
 
-</button>
-
 <button
+id="btnSaveAnggota"
 class="btn btn-info"
 onclick="saveAnggota()">
 
-Simpan
+<i class="bi bi-save"></i>
+
+<span>Simpan</span>
 
 </button>
 
