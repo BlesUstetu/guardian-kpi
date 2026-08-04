@@ -160,6 +160,8 @@ async function loadMasterKPI(){
         }
 
         masterPenilaianData = result.data || [];
+        
+        renderIndikatorKPI();
 
     }
 
@@ -170,6 +172,87 @@ async function loadMasterKPI(){
     }
 
 }
+
+
+/* ==========================================================
+ * RENDER INDIKATOR KPI
+ * ==========================================================
+ */
+
+function renderIndikatorKPI(){
+
+    const container = document.getElementById(
+        "listIndikator"
+    );
+
+    if(!container) return;
+
+    if(masterPenilaianData.length === 0){
+
+        container.innerHTML = `
+
+            <div class="text-center text-secondary">
+
+                Tidak ada indikator KPI.
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+    let html = "";
+
+    masterPenilaianData.forEach(function(item,index){
+
+        html += `
+
+        <div class="row mb-3 align-items-center">
+
+            <div class="col-md-6">
+
+                <label class="form-label mb-0">
+
+                    ${item.indicator}
+
+                </label>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <input
+                    type="number"
+                    class="form-control nilaiKPI"
+                    data-id="${item.id}"
+                    min="0"
+                    max="100"
+                    value="100">
+
+            </div>
+
+            <div class="col-md-3">
+
+                <span class="badge bg-info">
+
+                    Bobot ${item.bobot}%
+
+                </span>
+
+            </div>
+
+        </div>
+
+        `;
+
+    });
+
+    container.innerHTML = html;
+
+}
+
 
 /* ==========================================================
  * CLEAR FORM
@@ -188,11 +271,8 @@ function clearPenilaianForm(){
  */
 
 window.initPenilaian = initPenilaian;
-
 window.loadPenilaian = loadPenilaian;
-
 window.loadAnggotaPenilaian = loadAnggotaPenilaian;
-
 window.loadMasterKPI = loadMasterKPI;
-
 window.clearPenilaianForm = clearPenilaianForm;
+window.renderIndikatorKPI = renderIndikatorKPI;
