@@ -407,6 +407,14 @@ async function saveMasterKPI(){
         return;
     }
 
+    const btn = document.getElementById("btnSaveMasterKPI");
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `
+        <span class="spinner-border spinner-border-sm me-2"></span>
+        Menyimpan...
+    `;
+
     const data = {
 
         indicator: document
@@ -464,8 +472,6 @@ async function saveMasterKPI(){
 
             result = await API.saveMasterKPI(data);
 
-            console.log("RESULT =", result);
-
         }
 
         if(!result.success){
@@ -490,6 +496,11 @@ async function saveMasterKPI(){
 
         alert(err.message);
 
+    }
+
+    finally{
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
     }
 
 }
@@ -626,6 +637,9 @@ function openMasterKPIModal(){
     );
 
     modal.show();
+    setTimeout(() => {
+        document.getElementById("indicatorKPI").focus();
+    }, 200);
 
 }
 
