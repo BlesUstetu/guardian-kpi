@@ -612,3 +612,4 @@ window.resetFilterAnggota = resetFilterAnggota;
 window.openAnggotaModal = openAnggotaModal;
 window.closeAnggotaModal = closeAnggotaModal;
 window.initAnggota = initAnggota;
+window.loadGroupOptions = loadGroupOptions;
