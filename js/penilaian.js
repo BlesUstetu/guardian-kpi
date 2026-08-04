@@ -185,6 +185,8 @@ function renderIndikatorKPI(){
         "listIndikator"
     );
 
+    console.log(masterPenilaianData);
+
     if(!container) return;
 
     if(masterPenilaianData.length === 0){
@@ -275,6 +277,8 @@ function openPenilaianModal(){
     editPenilaianId = null;
 
     clearPenilaianForm();
+
+    renderIndikatorKPI();
 
     document.querySelector(
         "#penilaianModal .modal-title"
