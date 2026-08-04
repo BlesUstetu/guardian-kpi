@@ -164,6 +164,8 @@ function renderGroup(data) {
         `;
 
     });
+    
+    tbody.innerHTML = html;
 
 }
 
