@@ -288,7 +288,6 @@ async function saveGroup() {
 
     }
 
-    async function saveGroup() {
     const btn = document.getElementById("btnSaveGroup");
     const originalHTML = btn.innerHTML;
     btn.disabled = true;
