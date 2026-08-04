@@ -299,6 +299,8 @@ async function saveAnggota(){
 
         loadAnggota();
 
+        alert(result.message);
+
     }
 
     catch(err){
