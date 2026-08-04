@@ -153,7 +153,8 @@
 <div
     class="modal fade"
     id="groupModal"
-    tabindex="-1">
+    tabindex="-1"
+    data-bs-backdrop="static">
 
     <div class="modal-dialog">
 
@@ -189,6 +190,8 @@
                         id="namaGroup"
                         type="text"
                         class="form-control"
+                        maxlength="50"
+                        autocomplete="off"
                         placeholder="Contoh : Group 1">
 
                 </div>
@@ -234,13 +237,15 @@
                 </button>
 
                 <button
+                    id="btnSaveGroup"
                     class="btn btn-info"
                     onclick="saveGroup()">
 
-                    Simpan
+                    <i class="bi bi-save"></i>
+
+                    <span>Simpan</span>
 
                 </button>
-
             </div>
 
         </div>
