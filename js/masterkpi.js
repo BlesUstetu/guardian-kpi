@@ -407,14 +407,6 @@ async function saveMasterKPI(){
         return;
     }
 
-    const btn = document.getElementById("btnSaveMasterKPI");
-    const originalHTML = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = `
-        <span class="spinner-border spinner-border-sm me-2"></span>
-        Menyimpan...
-    `;
-
     const data = {
 
         indicator: document
@@ -451,6 +443,14 @@ async function saveMasterKPI(){
         return;
 
     }
+
+    const btn = document.getElementById("btnSaveMasterKPI");
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `
+        <span class="spinner-border spinner-border-sm me-2"></span>
+        Menyimpan...
+    `;
 
     try{
 
