@@ -295,6 +295,15 @@ async function saveGroup() {
 
     }
 
+    async function saveGroup() {
+    const btn = document.getElementById("btnSaveGroup");
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `
+        <span class="spinner-border spinner-border-sm me-2"></span>
+        Menyimpan...
+    `;
+
     const data = {
 
         nama: document
@@ -462,6 +471,10 @@ function editGroup(id) {
         return;
 
     }
+
+    document.querySelector(
+        "#groupModal .modal-title"
+    ).textContent = "Edit Group";
 
     editGroupId = item.id;
 
