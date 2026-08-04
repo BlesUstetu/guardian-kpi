@@ -2,7 +2,7 @@
  * ==========================================================
  * Guardian KPI Web3
  * File : penilaian.js
- * Version : 1.0.0
+ * Version : 4.0.0
  * ==========================================================
  */
 
@@ -13,48 +13,54 @@
  * ==========================================================
  */
 
-let penilaianData = [];
+let penilaianList = [];
 
-let anggotaPenilaianData = [];
+let penilaianAnggotaList = [];
 
-let masterPenilaianData = [];
+let penilaianMasterKPIList = [];
 
-let editPenilaianId = null;
+let penilaianEditId = null;
 
 /* ==========================================================
  * INIT
  * ==========================================================
  */
 
-async function initPenilaian(){
+async function initPenilaian() {
 
     clearPenilaianForm();
 
     await Promise.all([
-        loadAnggotaPenilaian(),
-        loadMasterKPIPenilaian(),
-        loadPenilaian()
+
+        loadPenilaianAnggota(),
+
+        loadPenilaianMasterKPI(),
+
+        loadPenilaianData()
+
     ]);
+
 }
 
 /* ==========================================================
- * LOAD PENILAIAN
+ * LOAD DATA PENILAIAN
  * ==========================================================
  */
 
-async function loadPenilaian(){
+async function loadPenilaianData() {
 
     const tbody = document.getElementById(
         "tblPenilaian"
     );
 
-    if(!tbody) return;
+    if (!tbody) return;
 
     tbody.innerHTML = `
 
         <tr>
 
-            <td colspan="8" class="text-center">
+            <td colspan="8"
+                class="text-center">
 
                 Memuat data...
 
@@ -64,21 +70,46 @@ async function loadPenilaian(){
 
     `;
 
-    // Backend dibuat pada tahap berikutnya
+    try {
 
-    tbody.innerHTML = `
+        const result =
+            await API.getPenilaian();
 
-        <tr>
+        if (!result.success) {
 
-            <td colspan="8" class="text-center">
+            throw new Error(
+                result.message
+            );
 
-                Belum ada data Penilaian.
+        }
 
-            </td>
+        penilaianList =
+            result.data || [];
 
-        </tr>
+        renderPenilaianTable(
+            penilaianList
+        );
 
-    `;
+    }
+
+    catch (err) {
+
+        tbody.innerHTML = `
+
+            <tr>
+
+                <td colspan="8"
+                    class="text-danger text-center">
+
+                    ${err.message}
+
+                </td>
+
+            </tr>
+
+        `;
+
+    }
 
 }
 
@@ -87,25 +118,30 @@ async function loadPenilaian(){
  * ==========================================================
  */
 
-async function loadAnggotaPenilaian(){
+async function loadPenilaianAnggota() {
 
-    try{
+    try {
 
-        const result = await API.getAnggota();
+        const result =
+            await API.getAnggota();
 
-        if(!result.success){
+        if (!result.success) {
 
-            throw new Error(result.message);
+            throw new Error(
+                result.message
+            );
 
         }
 
-        anggotaPenilaianData = result.data || [];
+        penilaianAnggotaList =
+            result.data || [];
 
-        const select = document.getElementById(
-            "anggotaPenilaian"
-        );
+        const select =
+            document.getElementById(
+                "anggotaPenilaian"
+            );
 
-        if(!select) return;
+        if (!select) return;
 
         select.innerHTML = `
 
@@ -117,7 +153,7 @@ async function loadAnggotaPenilaian(){
 
         `;
 
-        anggotaPenilaianData.forEach(function(item){
+        penilaianAnggotaList.forEach(function (item) {
 
             select.innerHTML += `
 
@@ -133,7 +169,7 @@ async function loadAnggotaPenilaian(){
 
     }
 
-    catch(err){
+    catch (err) {
 
         alert(err.message);
 
@@ -146,29 +182,27 @@ async function loadAnggotaPenilaian(){
  * ==========================================================
  */
 
-async function loadMasterKPIPenilaian(){
+async function loadPenilaianMasterKPI() {
 
-    try{
+    try {
 
-        const result = await API.getMasterKPI();
+        const result =
+            await API.getMasterKPI();
 
-        console.log(result);
+        if (!result.success) {
 
-        if(!result.success){
-
-            throw new Error(result.message);
+            throw new Error(
+                result.message
+            );
 
         }
 
-        masterPenilaianData = result.data || [];
-
-        console.log(masterPenilaianData);
-        
-        renderIndikatorKPI();
+        penilaianMasterKPIList =
+            result.data || [];
 
     }
 
-    catch(err){
+    catch (err) {
 
         alert(err.message);
 
@@ -176,27 +210,144 @@ async function loadMasterKPIPenilaian(){
 
 }
 
-
 /* ==========================================================
- * RENDER INDIKATOR KPI
+ * RENDER TABLE
  * ==========================================================
  */
 
-function renderIndikatorKPI(){
+function renderPenilaianTable(data) {
 
-    const container = document.getElementById(
-        "listIndikator"
-    );
+    const tbody =
+        document.getElementById(
+            "tblPenilaian"
+        );
 
-    console.log(masterPenilaianData);
+    if (!tbody) return;
 
-    if(!container) return;
+    if (!data.length) {
 
-    if(masterPenilaianData.length === 0){
+        tbody.innerHTML = `
+
+            <tr>
+
+                <td colspan="8"
+                    class="text-center">
+
+                    Belum ada data Penilaian.
+
+                </td>
+
+            </tr>
+
+        `;
+
+        return;
+
+    }
+
+    tbody.innerHTML = `
+
+        <tr>
+
+            <td colspan="8"
+                class="text-center">
+
+                Render akan dibuat pada tahap berikutnya.
+
+            </td>
+
+        </tr>
+
+    `;
+
+}
+
+/* ==========================================================
+ * CLEAR FORM
+ * ==========================================================
+ */
+
+function clearPenilaianForm() {
+
+    penilaianEditId = null;
+
+}
+
+/* ==========================================================
+ * OPEN MODAL
+ * ==========================================================
+ */
+
+function openPenilaianModal() {
+
+    clearPenilaianForm();
+
+    renderPenilaianIndikator();
+
+    document.querySelector(
+        "#penilaianModal .modal-title"
+    ).textContent =
+        "Penilaian Baru";
+
+    const modal =
+        new bootstrap.Modal(
+
+            document.getElementById(
+                "penilaianModal"
+            )
+
+        );
+
+    modal.show();
+
+}
+
+/* ==========================================================
+ * CLOSE MODAL
+ * ==========================================================
+ */
+
+function closePenilaianModal() {
+
+    const element =
+        document.getElementById(
+            "penilaianModal"
+        );
+
+    const modal =
+        bootstrap.Modal.getInstance(
+            element
+        );
+
+    if (modal) {
+
+        modal.hide();
+
+    }
+
+}
+
+/* ==========================================================
+ * RENDER INDIKATOR
+ * ==========================================================
+ */
+
+function renderPenilaianIndikator() {
+
+    const container =
+        document.getElementById(
+            "listIndikator"
+        );
+
+    if (!container) return;
+
+    if (
+        !penilaianMasterKPIList.length
+    ) {
 
         container.innerHTML = `
 
-            <div class="text-center text-secondary">
+            <div class="text-center">
 
                 Tidak ada indikator KPI.
 
@@ -208,118 +359,17 @@ function renderIndikatorKPI(){
 
     }
 
-    let html = "";
+    container.innerHTML = `
 
-    masterPenilaianData.forEach(function(item,index){
+        <div class="text-center">
 
-        html += `
-
-        <div class="row mb-3 align-items-center">
-
-            <div class="col-md-6">
-
-                <label class="form-label mb-0">
-
-                    ${item.indicator}
-
-                </label>
-
-            </div>
-
-            <div class="col-md-3">
-
-                <input
-                    type="number"
-                    class="form-control nilaiKPI"
-                    data-id="${item.id}"
-                    min="0"
-                    max="100"
-                    value="100">
-
-            </div>
-
-            <div class="col-md-3">
-
-                <span class="badge bg-info">
-
-                    Bobot ${item.bobot}%
-
-                </span>
-
-            </div>
+            Tahap berikutnya...
 
         </div>
 
-        `;
-
-    });
-
-    container.innerHTML = html;
+    `;
 
 }
-
-
-/* ==========================================================
- * CLEAR FORM
- * ==========================================================
- */
-
-function clearPenilaianForm(){
-
-    editPenilaianId = null;
-
-}
-
-/* ==========================================================
- * OPEN MODAL
- * ==========================================================
- */
-
-function openPenilaianModal(){
-
-    editPenilaianId = null;
-
-    clearPenilaianForm();
-
-    renderIndikatorKPI();
-
-    document.querySelector(
-        "#penilaianModal .modal-title"
-    ).textContent = "Penilaian Baru";
-
-    const modal = new bootstrap.Modal(
-
-        document.getElementById(
-            "penilaianModal"
-        )
-
-    );
-
-    modal.show();
-
-}
-
-/* ==========================================================
- * CLOSE MODAL
- * ==========================================================
- */
-
-function closePenilaianModal(){
-
-    const element = document.getElementById(
-        "penilaianModal"
-    );
-
-    const modal = bootstrap.Modal.getInstance(element);
-
-    if(modal){
-
-        modal.hide();
-
-    }
-
-}
-
 
 /* ==========================================================
  * EXPORT
@@ -327,10 +377,19 @@ function closePenilaianModal(){
  */
 
 window.initPenilaian = initPenilaian;
-window.loadPenilaian = loadPenilaian;
-window.loadAnggotaPenilaian = loadAnggotaPenilaian;
-window.loadMasterKPIPenilaian = loadMasterKPIPenilaian;
-window.clearPenilaianForm = clearPenilaianForm;
-window.renderIndikatorKPI = renderIndikatorKPI;
+
+window.loadPenilaianData = loadPenilaianData;
+
+window.loadPenilaianAnggota = loadPenilaianAnggota;
+
+window.loadPenilaianMasterKPI = loadPenilaianMasterKPI;
+
+window.renderPenilaianTable = renderPenilaianTable;
+
+window.renderPenilaianIndikator = renderPenilaianIndikator;
+
 window.openPenilaianModal = openPenilaianModal;
+
 window.closePenilaianModal = closePenilaianModal;
+
+window.clearPenilaianForm = clearPenilaianForm;
