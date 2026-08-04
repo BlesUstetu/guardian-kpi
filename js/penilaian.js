@@ -15,10 +15,6 @@
 
 let penilaianData = [];
 
-let anggotaData = [];
-
-let masterKPIData = [];
-
 let editPenilaianId = null;
 
 /* ==========================================================
