@@ -266,6 +266,55 @@ function clearPenilaianForm(){
 }
 
 /* ==========================================================
+ * OPEN MODAL
+ * ==========================================================
+ */
+
+function openPenilaianModal(){
+
+    editPenilaianId = null;
+
+    clearPenilaianForm();
+
+    document.querySelector(
+        "#penilaianModal .modal-title"
+    ).textContent = "Penilaian Baru";
+
+    const modal = new bootstrap.Modal(
+
+        document.getElementById(
+            "penilaianModal"
+        )
+
+    );
+
+    modal.show();
+
+}
+
+/* ==========================================================
+ * CLOSE MODAL
+ * ==========================================================
+ */
+
+function closePenilaianModal(){
+
+    const element = document.getElementById(
+        "penilaianModal"
+    );
+
+    const modal = bootstrap.Modal.getInstance(element);
+
+    if(modal){
+
+        modal.hide();
+
+    }
+
+}
+
+
+/* ==========================================================
  * EXPORT
  * ==========================================================
  */
@@ -276,3 +325,5 @@ window.loadAnggotaPenilaian = loadAnggotaPenilaian;
 window.loadMasterKPI = loadMasterKPI;
 window.clearPenilaianForm = clearPenilaianForm;
 window.renderIndikatorKPI = renderIndikatorKPI;
+window.openPenilaianModal = openPenilaianModal;
+window.closePenilaianModal = closePenilaianModal;
