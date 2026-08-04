@@ -32,10 +32,9 @@ async function initPenilaian(){
 
     await Promise.all([
         loadAnggotaPenilaian(),
-        loadMasterKPI(),
+        loadMasterKPIPenilaian(),
         loadPenilaian()
     ]);
-
 }
 
 /* ==========================================================
@@ -147,7 +146,7 @@ async function loadAnggotaPenilaian(){
  * ==========================================================
  */
 
-async function loadMasterKPI(){
+async function loadMasterKPIPenilaian(){
 
     try{
 
@@ -330,7 +329,7 @@ function closePenilaianModal(){
 window.initPenilaian = initPenilaian;
 window.loadPenilaian = loadPenilaian;
 window.loadAnggotaPenilaian = loadAnggotaPenilaian;
-window.loadMasterKPI = loadMasterKPI;
+window.loadMasterKPIPenilaian = loadMasterKPIPenilaian;
 window.clearPenilaianForm = clearPenilaianForm;
 window.renderIndikatorKPI = renderIndikatorKPI;
 window.openPenilaianModal = openPenilaianModal;
