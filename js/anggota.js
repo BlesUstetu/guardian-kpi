@@ -161,7 +161,7 @@ function badgeStatus(status){
  * LOAD GROUP
  * ==========================================================
  */
-async function loadGroup() {
+async function loadGroupOptions() {
 
     try {
 
@@ -486,7 +486,7 @@ async function refreshAnggota(){
 
     clearForm();
 
-    await loadGroup();
+    await loadGroupOptions();
 
     await loadAnggota();
 
@@ -577,7 +577,7 @@ async function reloadAnggota(){
 
     resetFilterAnggota();
 
-    await loadGroup();
+    await loadGroupOptions();
 
     await loadAnggota();
 
@@ -590,7 +590,7 @@ async function reloadAnggota(){
  */
 async function initAnggota(){
 
-    await loadGroup();
+    await loadGroupOptions();
 
     await loadAnggota();
 
