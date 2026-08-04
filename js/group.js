@@ -281,6 +281,13 @@ function isDuplicateGroupName(nama) {
  * ========================================================== */
 
 async function saveGroup() {
+    const btn = document.getElementById("btnSaveGroup");
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `
+        <span class="spinner-border spinner-border-sm me-2"></span>
+        Menyimpan...
+    `;
 
     if (!validateGroupForm()) {
 
@@ -357,6 +364,14 @@ async function saveGroup() {
 
     }
 
+    finally{
+
+        btn.disabled = false;
+
+        btn.innerHTML = originalHTML;
+
+    }
+
 }
 
 /* ==========================================================
@@ -389,6 +404,9 @@ function clearGroupForm() {
  * ========================================================== */
 
 function openGroupModal() {
+    document.querySelector(
+        "#groupModal .modal-title"
+    ).textContent = "Tambah Group";
 
     clearGroupForm();
 
@@ -397,6 +415,11 @@ function openGroupModal() {
     );
 
     modal.show();
+    setTimeout(() => {
+
+        document.getElementById("namaGroup").focus();
+
+    }, 200);
 
 }
 
