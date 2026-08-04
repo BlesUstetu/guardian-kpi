@@ -212,9 +212,6 @@ async function loadGroup() {
  */
 function groupName(id){
 
-    console.log("group id :", id);
-    console.log("anggotaData :", anggotaData);
-    
     const item = groupList.find(function(g){
 
         return String(g.id) === String(id);
@@ -296,7 +293,7 @@ async function saveAnggota(){
 
         }
 
-        closeModal();
+        ();
 
         clearForm();
 
@@ -336,7 +333,7 @@ function clearForm(){
  * OPEN MODAL
  * ==========================================================
  */
-function openModal(){
+function openAnggotaModal(){
 
     clearForm();
 
@@ -355,7 +352,7 @@ function openModal(){
  * CLOSE MODAL
  * ==========================================================
  */
-function closeModal(){
+function closeAnggotaModal(){
 
     const element = document.getElementById("anggotaModal");
 
@@ -609,6 +606,7 @@ window.deleteAnggota = deleteAnggota;
 window.filterAnggota = filterAnggota;
 window.refreshAnggota = refreshAnggota;
 window.resetFilterAnggota = resetFilterAnggota;
-window.openModal = openModal;
-window.closeModal = closeModal;
+window.openAnggotaModal = openAnggotaModal;
+window.closeAnggotaModal = closeAnggotaModal;
+window. = ;
 window.initAnggota = initAnggota;
