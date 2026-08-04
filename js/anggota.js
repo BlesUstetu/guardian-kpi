@@ -236,6 +236,13 @@ async function saveAnggota(){
     }    
 
     const data = {
+        const btn = document.getElementById("btnSaveAnggota");
+        const originalHTML = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = `
+            <span class="spinner-border spinner-border-sm me-2"></span>
+            Menyimpan...
+        `;
 
         nama : document.getElementById("nama").value.trim(),
 
@@ -288,6 +295,8 @@ async function saveAnggota(){
         if(!result.success){
 
             alert(result.message);
+            btn.disabled = false;
+            btn.innerHTML = originalHTML;
 
             return;
 
@@ -304,6 +313,10 @@ async function saveAnggota(){
     }
 
     catch(err){
+
+        btn.disabled = false;
+
+        btn.innerHTML = originalHTML;
 
         alert(err.message);
 
