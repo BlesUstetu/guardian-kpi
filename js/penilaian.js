@@ -15,6 +15,10 @@
 
 let penilaianData = [];
 
+let anggotaPenilaianData = [];
+
+let masterPenilaianData = [];
+
 let editPenilaianId = null;
 
 /* ==========================================================
@@ -26,11 +30,11 @@ async function initPenilaian(){
 
     clearPenilaianForm();
 
-    await loadAnggotaPenilaian();
-
-    await loadMasterKPI();
-
-    await loadPenilaian();
+    await Promise.all([
+        loadAnggotaPenilaian(),
+        loadMasterKPI(),
+        loadPenilaian()
+    ]);
 
 }
 
@@ -45,13 +49,31 @@ async function loadPenilaian(){
         "tblPenilaian"
     );
 
+    if(!tbody) return;
+
     tbody.innerHTML = `
 
         <tr>
 
             <td colspan="8" class="text-center">
 
-                Modul Penilaian sedang dibuat...
+                Memuat data...
+
+            </td>
+
+        </tr>
+
+    `;
+
+    // Backend dibuat pada tahap berikutnya
+
+    tbody.innerHTML = `
+
+        <tr>
+
+            <td colspan="8" class="text-center">
+
+                Belum ada data Penilaian.
 
             </td>
 
@@ -78,11 +100,13 @@ async function loadAnggotaPenilaian(){
 
         }
 
-        anggotaData = result.data || [];
+        anggotaPenilaianData = result.data || [];
 
         const select = document.getElementById(
             "anggotaPenilaian"
         );
+
+        if(!select) return;
 
         select.innerHTML = `
 
@@ -94,7 +118,7 @@ async function loadAnggotaPenilaian(){
 
         `;
 
-        anggotaData.forEach(function(item){
+        anggotaPenilaianData.forEach(function(item){
 
             select.innerHTML += `
 
@@ -135,7 +159,7 @@ async function loadMasterKPI(){
 
         }
 
-        masterKPIData = result.data || [];
+        masterPenilaianData = result.data || [];
 
     }
 
@@ -172,4 +196,3 @@ window.loadAnggotaPenilaian = loadAnggotaPenilaian;
 window.loadMasterKPI = loadMasterKPI;
 
 window.clearPenilaianForm = clearPenilaianForm;
-
