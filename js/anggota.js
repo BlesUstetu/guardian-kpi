@@ -297,7 +297,7 @@ async function saveAnggota(){
 
         clearForm();
 
-        loadAnggota();
+        await loadAnggota();
 
         alert(result.message);
 
@@ -429,7 +429,7 @@ async function deleteAnggota(id){
 
         }
 
-        loadAnggota();
+        await loadAnggota();
 
     }
 
@@ -481,13 +481,15 @@ function filterAnggota(){
  * REFRESH DATA
  * ==========================================================
  */
-function refreshAnggota(){
+async function refreshAnggota(){
 
     clearForm();
 
-    loadGroup();
+    await loadGroup();
 
-    loadAnggota();
+    await loadAnggota();
+
+}
 
 }
 
@@ -569,16 +571,15 @@ function resetFilterAnggota() {
  * ==========================================================
  * RELOAD MODULE
  * ==========================================================
- */
-function reloadAnggota() {
+ */async function reloadAnggota(){
 
     clearForm();
 
     resetFilterAnggota();
 
-    loadGroup();
+    await loadGroup();
 
-    loadAnggota();
+    await loadAnggota();
 
 }
 
@@ -587,11 +588,11 @@ function reloadAnggota() {
  * INITIALIZE PAGE
  * ==========================================================
  */
-function initAnggota() {
+async function initAnggota(){
 
-    loadGroup();
+    await loadGroup();
 
-    loadAnggota();
+    await loadAnggota();
 
 }
 
