@@ -491,8 +491,6 @@ async function refreshAnggota(){
 
 }
 
-}
-
 /**
  * ==========================================================
  * VALIDASI FORM
@@ -571,7 +569,8 @@ function resetFilterAnggota() {
  * ==========================================================
  * RELOAD MODULE
  * ==========================================================
- */async function reloadAnggota(){
+ */
+async function reloadAnggota(){
 
     clearForm();
 
