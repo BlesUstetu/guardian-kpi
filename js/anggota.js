@@ -254,30 +254,6 @@ async function saveAnggota(){
 
     };
 
-    if(!data.nama){
-
-        alert("Nama wajib diisi");
-
-        return;
-
-    }
-
-    if(!data.jabatan){
-
-        alert("Jabatan wajib dipilih");
-
-        return;
-
-    }
-
-    if(!data.group){
-
-        alert("Group wajib dipilih");
-
-        return;
-
-    }
-
     try{
 
         let result;
@@ -294,9 +270,10 @@ async function saveAnggota(){
 
         if(!result.success){
 
-            alert(result.message);
             btn.disabled = false;
             btn.innerHTML = originalHTML;
+
+            alert(result.message);
 
             return;
 
@@ -359,6 +336,10 @@ function openAnggotaModal(){
     );
 
     modal.show();
+
+    setTimeout(() => {
+        document.getElementById("nama").focus();
+    }, 200);
 
 }
 
