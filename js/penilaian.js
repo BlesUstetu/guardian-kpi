@@ -44,6 +44,7 @@ async function initPenilaian() {
 
 }
 
+
 /* ==========================================================
  * LOAD DATA PENILAIAN
  * ==========================================================
@@ -74,19 +75,26 @@ async function loadPenilaianData() {
 
     try {
 
-        const result =
-            await API.getPenilaian();
+        // Jika backend belum dibuat
+        if (typeof API.getPenilaian !== "function") {
 
-        if (!result.success) {
+            penilaianList = [];
 
-            throw new Error(
-                result.message
-            );
+            renderPenilaianTable([]);
+
+            return;
 
         }
 
-        penilaianList =
-            result.data || [];
+        const result = await API.getPenilaian();
+
+        if (!result.success) {
+
+            throw new Error(result.message);
+
+        }
+
+        penilaianList = result.data || [];
 
         renderPenilaianTable(
             penilaianList
@@ -456,8 +464,6 @@ function hitungNilaiPenilaian(){
 }
 
 
-
-
 /* ==========================================================
  * CLEAR FORM
  * ==========================================================
@@ -467,7 +473,65 @@ function clearPenilaianForm() {
 
     penilaianEditId = null;
 
+    const anggota =
+        document.getElementById(
+            "anggotaPenilaian"
+        );
+
+    if (anggota) {
+
+        anggota.value = "";
+
+    }
+
+    const bulan =
+        document.getElementById(
+            "bulanPenilaian"
+        );
+
+    if (bulan) {
+
+        bulan.selectedIndex = 0;
+
+    }
+
+    loadPenilaianTahun();
+
+    const status =
+        document.getElementById(
+            "statusPenilaian"
+        );
+
+    if (status) {
+
+        status.value = "Draft";
+
+    }
+
+    const total =
+        document.getElementById(
+            "totalNilai"
+        );
+
+    if (total) {
+
+        total.value = "";
+
+    }
+
+    const akhir =
+        document.getElementById(
+            "nilaiAkhir"
+        );
+
+    if (akhir) {
+
+        akhir.value = "";
+
+    }
+
 }
+
 
 /* ==========================================================
  * OPEN MODAL
@@ -479,6 +543,8 @@ function openPenilaianModal() {
     clearPenilaianForm();
 
     renderPenilaianIndikator();
+
+    hitungNilaiPenilaian();
 
     document.querySelector(
         "#penilaianModal .modal-title"
@@ -497,6 +563,7 @@ function openPenilaianModal() {
     modal.show();
 
 }
+
 
 /* ==========================================================
  * CLOSE MODAL
