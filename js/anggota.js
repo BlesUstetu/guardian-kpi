@@ -235,14 +235,15 @@ async function saveAnggota(){
 
     }    
 
+    const btn = document.getElementById("btnSaveAnggota");
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `
+        <span class="spinner-border spinner-border-sm me-2"></span>
+        Menyimpan...
+    `;
+    
     const data = {
-        const btn = document.getElementById("btnSaveAnggota");
-        const originalHTML = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = `
-            <span class="spinner-border spinner-border-sm me-2"></span>
-            Menyimpan...
-        `;
 
         nama : document.getElementById("nama").value.trim(),
 
