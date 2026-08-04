@@ -125,11 +125,11 @@ function renderGroup(data) {
 
     }
 
-    tbody.innerHTML = "";
+    let html = "";
 
     data.forEach(function(item){
 
-        tbody.innerHTML += `
+        html += `
 
             <tr>
 
