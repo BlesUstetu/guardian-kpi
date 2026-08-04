@@ -153,6 +153,8 @@ async function loadMasterKPI(){
 
         const result = await API.getMasterKPI();
 
+        console.log(result);
+
         if(!result.success){
 
             throw new Error(result.message);
@@ -160,6 +162,8 @@ async function loadMasterKPI(){
         }
 
         masterPenilaianData = result.data || [];
+
+        console.log(masterPenilaianData);
         
         renderIndikatorKPI();
 
