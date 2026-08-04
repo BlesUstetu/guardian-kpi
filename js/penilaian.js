@@ -45,7 +45,23 @@ async function initPenilaian(){
 
 async function loadPenilaian(){
 
-    console.log("Load Penilaian");
+    const tbody = document.getElementById(
+        "tblPenilaian"
+    );
+
+    tbody.innerHTML = `
+
+        <tr>
+
+            <td colspan="8" class="text-center">
+
+                Modul Penilaian sedang dibuat...
+
+            </td>
+
+        </tr>
+
+    `;
 
 }
 
@@ -56,7 +72,53 @@ async function loadPenilaian(){
 
 async function loadAnggotaPenilaian(){
 
-    console.log("Load Anggota");
+    try{
+
+        const result = await API.getAnggota();
+
+        if(!result.success){
+
+            throw new Error(result.message);
+
+        }
+
+        anggotaData = result.data || [];
+
+        const select = document.getElementById(
+            "anggotaPenilaian"
+        );
+
+        select.innerHTML = `
+
+            <option value="">
+
+                Pilih Anggota
+
+            </option>
+
+        `;
+
+        anggotaData.forEach(function(item){
+
+            select.innerHTML += `
+
+                <option value="${item.id}">
+
+                    ${item.nama}
+
+                </option>
+
+            `;
+
+        });
+
+    }
+
+    catch(err){
+
+        alert(err.message);
+
+    }
 
 }
 
@@ -67,7 +129,25 @@ async function loadAnggotaPenilaian(){
 
 async function loadMasterKPI(){
 
-    console.log("Load Master KPI");
+    try{
+
+        const result = await API.getMasterKPI();
+
+        if(!result.success){
+
+            throw new Error(result.message);
+
+        }
+
+        masterKPIData = result.data || [];
+
+    }
+
+    catch(err){
+
+        alert(err.message);
+
+    }
 
 }
 
