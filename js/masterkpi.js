@@ -557,6 +557,10 @@ function editMasterKPI(id){
 
     modal.show();
 
+    setTimeout(() => {
+        document.getElementById("indicatorKPI").focus();
+    }, 200);
+
 }
 
 /* ==========================================================
