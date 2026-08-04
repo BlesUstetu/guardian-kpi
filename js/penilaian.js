@@ -21,6 +21,7 @@ let penilaianMasterKPIList = [];
 
 let penilaianEditId = null;
 
+
 /* ==========================================================
  * INIT
  * ==========================================================
@@ -29,6 +30,7 @@ let penilaianEditId = null;
 async function initPenilaian() {
 
     clearPenilaianForm();
+    loadPenilaianTahun();
 
     await Promise.all([
 
@@ -178,6 +180,47 @@ async function loadPenilaianAnggota() {
 }
 
 /* ==========================================================
+ * LOAD TAHUN
+ * ==========================================================
+ */
+
+function loadPenilaianTahun(){
+
+    const select =
+        document.getElementById(
+            "tahunPenilaian"
+        );
+
+    if(!select) return;
+
+    const tahun =
+        new Date().getFullYear();
+
+    select.innerHTML = "";
+
+    for(
+        let i=tahun-2;
+        i<=tahun+2;
+        i++
+    ){
+
+        select.innerHTML += `
+
+            <option
+                value="${i}"
+                ${i===tahun?"selected":""}>
+
+                ${i}
+
+            </option>
+
+        `;
+
+    }
+
+}
+
+/* ==========================================================
  * LOAD MASTER KPI
  * ==========================================================
  */
@@ -198,8 +241,14 @@ async function loadPenilaianMasterKPI() {
         }
 
         penilaianMasterKPIList =
-            result.data || [];
-        
+            (result.data || []).filter(function(item){
+
+                return String(item.status)
+                    .trim()
+                    .toLowerCase() === "aktif";
+
+            });
+
         renderPenilaianIndikator();
 
     }
@@ -487,6 +536,8 @@ window.loadPenilaianData = loadPenilaianData;
 window.loadPenilaianAnggota = loadPenilaianAnggota;
 
 window.loadPenilaianMasterKPI = loadPenilaianMasterKPI;
+
+window.loadPenilaianTahun = loadPenilaianTahun;
 
 window.renderPenilaianTable = renderPenilaianTable;
 
