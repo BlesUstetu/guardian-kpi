@@ -211,33 +211,28 @@ async function loadPenilaianMasterKPI() {
 }
 
 /* ==========================================================
- * RENDER TABLE
+ * RENDER INDIKATOR KPI
  * ==========================================================
  */
 
-function renderPenilaianTable(data) {
+function renderPenilaianIndikator() {
 
-    const tbody =
+    const container =
         document.getElementById(
-            "tblPenilaian"
+            "listIndikator"
         );
 
-    if (!tbody) return;
+    if (!container) return;
 
-    if (!data.length) {
+    if (!penilaianMasterKPIList.length) {
 
-        tbody.innerHTML = `
+        container.innerHTML = `
 
-            <tr>
+            <div class="text-center text-secondary">
 
-                <td colspan="8"
-                    class="text-center">
+                Tidak ada Master KPI.
 
-                    Belum ada data Penilaian.
-
-                </td>
-
-            </tr>
+            </div>
 
         `;
 
@@ -245,22 +240,119 @@ function renderPenilaianTable(data) {
 
     }
 
-    tbody.innerHTML = `
+    let html = "";
 
-        <tr>
+    penilaianMasterKPIList.forEach(function(item){
 
-            <td colspan="8"
-                class="text-center">
+        html += `
 
-                Render akan dibuat pada tahap berikutnya.
+        <div class="row mb-3 align-items-center border-bottom pb-2">
 
-            </td>
+            <div class="col-md-5">
 
-        </tr>
+                <strong>
 
-    `;
+                    ${item.indicator}
+
+                </strong>
+
+                <br>
+
+                <small class="text-info">
+
+                    ${item.kategori}
+
+                </small>
+
+            </div>
+
+            <div class="col-md-2 text-center">
+
+                <span class="badge bg-info">
+
+                    ${item.bobot}%
+
+                </span>
+
+            </div>
+
+            <div class="col-md-5">
+
+                <input
+
+                    type="number"
+
+                    class="form-control nilaiKPI"
+
+                    data-id="${item.id}"
+
+                    data-bobot="${item.bobot}"
+
+                    min="0"
+
+                    max="100"
+
+                    value="100"
+
+                    onchange="hitungNilaiPenilaian()"
+
+                >
+
+            </div>
+
+        </div>
+
+        `;
+
+    });
+
+    container.innerHTML = html;
 
 }
+
+/* ==========================================================
+ * HITUNG NILAI
+ * ==========================================================
+ */
+
+function hitungNilaiPenilaian(){
+
+    const inputs =
+        document.querySelectorAll(
+            ".nilaiKPI"
+        );
+
+    let total = 0;
+
+    inputs.forEach(function(input){
+
+        const nilai =
+            Number(input.value || 0);
+
+        const bobot =
+            Number(
+                input.dataset.bobot
+            );
+
+        total +=
+            nilai * bobot / 100;
+
+    });
+
+    document.getElementById(
+        "totalNilai"
+    ).value =
+        total.toFixed(2);
+
+    document.getElementById(
+        "nilaiAkhir"
+    ).value =
+        total.toFixed(2);
+
+}
+
+
+
 
 /* ==========================================================
  * CLEAR FORM
@@ -387,6 +479,8 @@ window.loadPenilaianMasterKPI = loadPenilaianMasterKPI;
 window.renderPenilaianTable = renderPenilaianTable;
 
 window.renderPenilaianIndikator = renderPenilaianIndikator;
+
+window.hitungNilaiPenilaian = hitungNilaiPenilaian;
 
 window.openPenilaianModal = openPenilaianModal;
 
