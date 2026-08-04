@@ -286,17 +286,23 @@ async function saveAnggota(){
 
         await loadAnggota();
 
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+
         alert(result.message);
 
     }
 
     catch(err){
 
+        alert(err.message);
+
+    }
+    finally{
+
         btn.disabled = false;
 
         btn.innerHTML = originalHTML;
-
-        alert(err.message);
 
     }
 
