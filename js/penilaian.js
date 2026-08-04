@@ -239,6 +239,8 @@ async function loadPenilaianMasterKPI() {
 
         const result =
             await API.getMasterKPI();
+        console.log("MASTER KPI RESULT");
+        console.log(result);
 
         if (!result.success) {
 
@@ -256,6 +258,9 @@ async function loadPenilaianMasterKPI() {
                     .toLowerCase() === "aktif";
 
             });
+        
+        console.log("MASTER KPI LIST");
+        console.log(penilaianMasterKPIList);
 
         renderPenilaianIndikator();
 
