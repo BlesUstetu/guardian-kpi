@@ -2,34 +2,34 @@
  * ==========================================================
  * Guardian KPI Web3
  * File : penilaian.js
- * Version : 4.0.0
+ * Version : 5.0.0 Production
  * ==========================================================
  */
 
 "use strict";
 
 /* ==========================================================
- * GLOBAL VARIABLE
+ * GLOBAL STATE
  * ==========================================================
  */
 
 let penilaianList = [];
 
-let penilaianAnggotaList = [];
+let anggotaList = [];
 
-let penilaianMasterKPIList = [];
+let masterKPIList = [];
 
 let penilaianEditId = null;
-
 
 /* ==========================================================
  * INIT
  * ==========================================================
  */
 
-async function initPenilaian() {
+async function initPenilaian(){
 
     clearPenilaianForm();
+
     loadPenilaianTahun();
 
     await Promise.all([
@@ -44,80 +44,83 @@ async function initPenilaian() {
 
 }
 
-
 /* ==========================================================
- * LOAD DATA PENILAIAN
+ * LOAD TAHUN
  * ==========================================================
  */
 
-async function loadPenilaianData() {
+function loadPenilaianTahun(){
 
-    const tbody = document.getElementById(
-        "tblPenilaian"
-    );
-
-    if (!tbody) return;
-
-    tbody.innerHTML = `
-
-        <tr>
-
-            <td colspan="8"
-                class="text-center">
-
-                Memuat data...
-
-            </td>
-
-        </tr>
-
-    `;
-
-    try {
-
-        // Jika backend belum dibuat
-        if (typeof API.getPenilaian !== "function") {
-
-            penilaianList = [];
-
-            renderPenilaianTable([]);
-
-            return;
-
-        }
-
-        const result = await API.getPenilaian();
-
-        if (!result.success) {
-
-            throw new Error(result.message);
-
-        }
-
-        penilaianList = result.data || [];
-
-        renderPenilaianTable(
-            penilaianList
+    const select =
+        document.getElementById(
+            "filterTahun"
         );
+
+    const formSelect =
+        document.getElementById(
+            "tahunPenilaian"
+        );
+
+    const tahun =
+        new Date().getFullYear();
+
+    if(select){
+
+        select.innerHTML =
+
+            `<option value="">Semua Tahun</option>`;
+
+        for(
+
+            let i=tahun-2;
+
+            i<=tahun+2;
+
+            i++
+
+        ){
+
+            select.innerHTML +=
+
+            `<option value="${i}">
+
+                ${i}
+
+            </option>`;
+
+        }
 
     }
 
-    catch (err) {
+    if(formSelect){
 
-        tbody.innerHTML = `
+        formSelect.innerHTML="";
 
-            <tr>
+        for(
 
-                <td colspan="8"
-                    class="text-danger text-center">
+            let i=tahun-2;
 
-                    ${err.message}
+            i<=tahun+2;
 
-                </td>
+            i++
 
-            </tr>
+        ){
 
-        `;
+            formSelect.innerHTML +=
+
+            `<option
+
+                value="${i}"
+
+                ${i===tahun?"selected":""}
+
+            >
+
+                ${i}
+
+            </option>`;
+
+        }
 
     }
 
@@ -128,101 +131,64 @@ async function loadPenilaianData() {
  * ==========================================================
  */
 
-async function loadPenilaianAnggota() {
+async function loadPenilaianAnggota(){
 
-    try {
+    try{
 
         const result =
             await API.getAnggota();
 
-        if (!result.success) {
+        if(!result.success){
 
             throw new Error(
+
                 result.message
+
             );
 
         }
 
-        penilaianAnggotaList =
+        anggotaList =
             result.data || [];
 
         const select =
             document.getElementById(
+
                 "anggotaPenilaian"
+
             );
 
-        if (!select) return;
+        if(!select) return;
 
-        select.innerHTML = `
+        select.innerHTML =
 
-            <option value="">
+            `<option value="">
 
                 Pilih Anggota
 
-            </option>
+            </option>`;
 
-        `;
+        anggotaList.forEach(function(item){
 
-        penilaianAnggotaList.forEach(function (item) {
+            select.innerHTML +=
 
-            select.innerHTML += `
+            `<option
 
-                <option value="${item.id}">
+                value="${item.id}"
 
-                    ${item.nama}
+            >
 
-                </option>
+                ${item.nama}
 
-            `;
+            </option>`;
 
         });
 
     }
 
-    catch (err) {
+    catch(err){
 
         alert(err.message);
-
-    }
-
-}
-
-/* ==========================================================
- * LOAD TAHUN
- * ==========================================================
- */
-
-function loadPenilaianTahun(){
-
-    const select =
-        document.getElementById(
-            "tahunPenilaian"
-        );
-
-    if(!select) return;
-
-    const tahun =
-        new Date().getFullYear();
-
-    select.innerHTML = "";
-
-    for(
-        let i=tahun-2;
-        i<=tahun+2;
-        i++
-    ){
-
-        select.innerHTML += `
-
-            <option
-                value="${i}"
-                ${i===tahun?"selected":""}>
-
-                ${i}
-
-            </option>
-
-        `;
 
     }
 
@@ -233,42 +199,130 @@ function loadPenilaianTahun(){
  * ==========================================================
  */
 
-async function loadPenilaianMasterKPI() {
+async function loadPenilaianMasterKPI(){
 
-    try {
+    try{
 
         const result =
-            await API.getMasterKPI();
-        console.log("MASTER KPI RESULT");
-        console.log(result);
 
-        if (!result.success) {
+            await API.getMasterKPI();
+
+        if(!result.success){
 
             throw new Error(
+
                 result.message
+
             );
 
         }
 
-        penilaianMasterKPIList =
-            (result.data || []).filter(function(item){
+        masterKPIList =
+
+            (result.data || [])
+
+            .filter(function(item){
 
                 return String(item.status)
-                    .trim()
-                    .toLowerCase() === "aktif";
+
+                    .toLowerCase()
+
+                    ==="aktif";
 
             });
-        
-        console.log("MASTER KPI LIST");
-        console.log(penilaianMasterKPIList);
-
-        renderPenilaianIndikator();
 
     }
 
-    catch (err) {
+    catch(err){
 
         alert(err.message);
+
+    }
+
+}
+
+/* ==========================================================
+ * LOAD DATA
+ * ==========================================================
+ */
+
+async function loadPenilaianData(){
+
+    const tbody =
+
+        document.getElementById(
+
+            "tblPenilaian"
+
+        );
+
+    if(!tbody) return;
+
+    tbody.innerHTML=
+
+    `<tr>
+
+        <td
+
+            colspan="8"
+
+            class="text-center"
+
+        >
+
+            Memuat data...
+
+        </td>
+
+    </tr>`;
+
+    try{
+
+        const result =
+
+            await API.getPenilaian();
+
+        if(!result.success){
+
+            throw new Error(
+
+                result.message
+
+            );
+
+        }
+
+        penilaianList =
+
+            result.data || [];
+
+        renderPenilaianTable(
+
+            penilaianList
+
+        );
+
+    }
+
+    catch(err){
+
+        tbody.innerHTML=
+
+        `<tr>
+
+            <td
+
+                colspan="8"
+
+                class="text-danger text-center"
+
+            >
+
+                ${err.message}
+
+            </td>
+
+        </tr>`;
 
     }
 
@@ -282,88 +336,274 @@ async function loadPenilaianMasterKPI() {
 function renderPenilaianTable(data){
 
     const tbody =
+
         document.getElementById(
+
             "tblPenilaian"
+
         );
 
     if(!tbody) return;
 
     if(!data.length){
 
-        tbody.innerHTML = `
+        tbody.innerHTML=
 
-            <tr>
+        `<tr>
 
-                <td colspan="8"
-                    class="text-center">
+            <td
 
-                    Belum ada data Penilaian.
+                colspan="8"
 
-                </td>
+                class="text-center"
 
-            </tr>
+            >
 
-        `;
+                Belum ada data Penilaian.
+
+            </td>
+
+        </tr>`;
 
         return;
 
     }
 
-    tbody.innerHTML = `
+    let html="";
 
-        <tr>
+    data.forEach(function(item){
 
-            <td colspan="8"
-                class="text-center">
+        html +=
 
-                Render data akan dibuat pada tahap berikutnya.
+        `<tr>
+
+            <td>
+
+                ${item.id}
 
             </td>
 
-        </tr>
+            <td>
 
-    `;
+                ${item.namaAnggota}
+
+            </td>
+
+            <td>
+
+                ${item.group}
+
+            </td>
+
+            <td>
+
+                ${namaBulan(item.bulan)}
+
+            </td>
+
+            <td>
+
+                ${item.tahun}
+
+            </td>
+
+            <td>
+
+                <span class="badge bg-success">
+
+                    ${Number(item.nilaiAkhir).toFixed(2)}
+
+                </span>
+
+            </td>
+
+            <td>
+
+                ${statusBadge(item.status)}
+
+            </td>
+
+            <td>
+
+                <button
+
+                    class="btn btn-warning btn-sm"
+
+                    onclick="editPenilaian('${item.id}')"
+
+                >
+
+                    <i class="bi bi-pencil"></i>
+
+                </button>
+
+                <button
+
+                    class="btn btn-danger btn-sm"
+
+                    onclick="deletePenilaianConfirm('${item.id}')"
+
+                >
+
+                    <i class="bi bi-trash"></i>
+
+                </button>
+
+            </td>
+
+        </tr>`;
+
+    });
+
+    tbody.innerHTML = html;
 
 }
 
-
 /* ==========================================================
- * RENDER INDIKATOR KPI
+ * HELPER
  * ==========================================================
  */
 
-function renderPenilaianIndikator() {
+function namaBulan(bulan){
+
+    const list=[
+
+        "",
+
+        "Januari",
+
+        "Februari",
+
+        "Maret",
+
+        "April",
+
+        "Mei",
+
+        "Juni",
+
+        "Juli",
+
+        "Agustus",
+
+        "September",
+
+        "Oktober",
+
+        "November",
+
+        "Desember"
+
+    ];
+
+    return list[Number(bulan)] || "-";
+
+}
+
+function statusBadge(status){
+
+    if(status==="Final"){
+
+        return `<span class="badge bg-success">Final</span>`;
+
+    }
+
+    return `<span class="badge bg-secondary">Draft</span>`;
+
+}
+
+/* ==========================================================
+ * OPEN MODAL
+ * ==========================================================
+ */
+
+function openPenilaianModal(){
+
+    penilaianEditId = null;
+
+    clearPenilaianForm();
+
+    renderPenilaianIndikator();
+
+    document.querySelector(
+        "#penilaianModal .modal-title"
+    ).textContent =
+        "Penilaian Baru";
+
+    const modal =
+        new bootstrap.Modal(
+
+            document.getElementById(
+                "penilaianModal"
+            )
+
+        );
+
+    modal.show();
+
+}
+
+/* ==========================================================
+ * CLOSE MODAL
+ * ==========================================================
+ */
+
+function closePenilaianModal(){
+
+    const modal =
+
+        bootstrap.Modal.getInstance(
+
+            document.getElementById(
+                "penilaianModal"
+            )
+
+        );
+
+    if(modal){
+
+        modal.hide();
+
+    }
+
+}
+
+/* ==========================================================
+ * RENDER KPI
+ * ==========================================================
+ */
+
+function renderPenilaianIndikator(){
 
     const container =
+
         document.getElementById(
             "listIndikator"
         );
 
-    if (!container) return;
+    if(!container) return;
 
-    if (!penilaianMasterKPIList.length) {
+    if(!masterKPIList.length){
 
-        container.innerHTML = `
+        container.innerHTML=
 
-            <div class="text-center text-secondary">
+        `<div class="text-center text-secondary">
 
-                Tidak ada Master KPI.
+            Tidak ada Master KPI Aktif.
 
-            </div>
-
-        `;
+        </div>`;
 
         return;
 
     }
 
-    let html = "";
+    let html="";
 
-    penilaianMasterKPIList.forEach(function(item){
+    masterKPIList.forEach(function(item){
 
-        html += `
+        html +=
 
-        <div class="row mb-3 align-items-center border-bottom pb-2">
+        `<div class="row mb-3 border-bottom pb-2">
 
             <div class="col-md-5">
 
@@ -405,11 +645,11 @@ function renderPenilaianIndikator() {
 
                     data-bobot="${item.bobot}"
 
+                    value="100"
+
                     min="0"
 
                     max="100"
-
-                    value="100"
 
                     onchange="hitungNilaiPenilaian()"
 
@@ -417,13 +657,13 @@ function renderPenilaianIndikator() {
 
             </div>
 
-        </div>
-
-        `;
+        </div>`;
 
     });
 
     container.innerHTML = html;
+
+    hitungNilaiPenilaian();
 
 }
 
@@ -434,99 +674,233 @@ function renderPenilaianIndikator() {
 
 function hitungNilaiPenilaian(){
 
-    const inputs =
-        document.querySelectorAll(
-            ".nilaiKPI"
-        );
-
     let total = 0;
 
-    inputs.forEach(function(input){
+    document
+
+    .querySelectorAll(
+
+        ".nilaiKPI"
+
+    )
+
+    .forEach(function(input){
 
         const nilai =
-            Number(input.value || 0);
+
+            Number(
+
+                input.value || 0
+
+            );
 
         const bobot =
+
             Number(
+
                 input.dataset.bobot
+
             );
 
         total +=
-            nilai * bobot / 100;
+
+            nilai *
+
+            bobot /
+
+            100;
 
     });
 
-    document.getElementById(
-        "totalNilai"
-    ).value =
-        total.toFixed(2);
+    total =
+
+        Number(
+
+            total.toFixed(2)
+
+        );
 
     document.getElementById(
+
+        "totalNilai"
+
+    ).value = total;
+
+    document.getElementById(
+
         "nilaiAkhir"
-    ).value =
-        total.toFixed(2);
+
+    ).value = total;
 
 }
 
 /* ==========================================================
- * GET DETAIL KPI
+ * GET DETAIL
  * ==========================================================
  */
 
 function getPenilaianDetail(){
 
-    const detail = [];
+    const detail=[];
 
     document
-        .querySelectorAll(".nilaiKPI")
-        .forEach(function(input){
 
-            detail.push({
+    .querySelectorAll(
 
-                kpiId: input.dataset.id,
+        ".nilaiKPI"
 
-                nilai: Number(input.value),
+    )
 
-                bobot: Number(input.dataset.bobot)
+    .forEach(function(input){
 
-            });
+        detail.push({
+
+            kpiId:
+
+                input.dataset.id,
+
+            bobot:
+
+                Number(
+
+                    input.dataset.bobot
+
+                ),
+
+            nilai:
+
+                Number(
+
+                    input.value
+
+                )
 
         });
+
+    });
 
     return detail;
 
 }
 
 /* ==========================================================
- * VALIDASI FORM
+ * VALIDASI
  * ==========================================================
  */
 
 function validatePenilaian(){
 
     if(
+
         !document.getElementById(
+
             "anggotaPenilaian"
+
         ).value
+
     ){
 
-        alert("Pilih anggota.");
+        alert(
+
+            "Pilih anggota."
+
+        );
 
         return false;
 
     }
 
     if(
-        getPenilaianDetail().length===0
+
+        getPenilaianDetail()
+
+        .length===0
+
     ){
 
-        alert("Belum ada indikator KPI.");
+        alert(
+
+            "Belum ada indikator KPI."
+
+        );
 
         return false;
 
     }
 
     return true;
+
+}
+
+/* ==========================================================
+ * CLEAR FORM
+ * ==========================================================
+ */
+
+function clearPenilaianForm(){
+
+    penilaianEditId = null;
+
+    const anggota =
+
+        document.getElementById(
+            "anggotaPenilaian"
+        );
+
+    if(anggota){
+
+        anggota.value="";
+
+    }
+
+    const bulan =
+
+        document.getElementById(
+            "bulanPenilaian"
+        );
+
+    if(bulan){
+
+        bulan.value=
+            new Date().getMonth()+1;
+
+    }
+
+    const status =
+
+        document.getElementById(
+            "statusPenilaian"
+        );
+
+    if(status){
+
+        status.value="Draft";
+
+    }
+
+    const total =
+
+        document.getElementById(
+            "totalNilai"
+        );
+
+    if(total){
+
+        total.value=0;
+
+    }
+
+    const akhir =
+
+        document.getElementById(
+            "nilaiAkhir"
+        );
+
+    if(akhir){
+
+        akhir.value=0;
+
+    }
 
 }
 
@@ -543,17 +917,22 @@ async function savePenilaian(){
 
     }
 
-    const data = {
+    const data={
 
         anggotaId:
+
             document.getElementById(
+
                 "anggotaPenilaian"
+
             ).value,
 
         bulan:Number(
 
             document.getElementById(
+
                 "bulanPenilaian"
+
             ).value
 
         ),
@@ -561,7 +940,9 @@ async function savePenilaian(){
         tahun:Number(
 
             document.getElementById(
+
                 "tahunPenilaian"
+
             ).value
 
         ),
@@ -569,13 +950,17 @@ async function savePenilaian(){
         status:
 
             document.getElementById(
+
                 "statusPenilaian"
+
             ).value,
 
         total:Number(
 
             document.getElementById(
+
                 "totalNilai"
+
             ).value
 
         ),
@@ -583,7 +968,9 @@ async function savePenilaian(){
         nilaiAkhir:Number(
 
             document.getElementById(
+
                 "nilaiAkhir"
+
             ).value
 
         ),
@@ -594,153 +981,187 @@ async function savePenilaian(){
 
     };
 
-   const btn =
-    document.getElementById(
-        "btnSavePenilaian"
-    );
+    const btn=
 
-const html =
-    btn.innerHTML;
+        document.getElementById(
 
-btn.disabled = true;
+            "btnSavePenilaian"
 
-btn.innerHTML = `
-
-    <span
-        class="spinner-border spinner-border-sm me-2">
-    </span>
-
-    Menyimpan...
-
-`;
-
-try{
-
-    const result =
-        await API.savePenilaian(data);
-
-    if(!result.success){
-
-        throw new Error(
-            result.message
         );
+
+    const html=
+
+        btn.innerHTML;
+
+    btn.disabled=true;
+
+    btn.innerHTML=`
+
+        <span class="spinner-border spinner-border-sm me-2"></span>
+
+        Menyimpan...
+
+    `;
+
+    try{
+
+        let result;
+
+        if(penilaianEditId){
+
+            result=
+
+                await API.updatePenilaian(
+
+                    penilaianEditId,
+
+                    data
+
+                );
+
+        }
+
+        else{
+
+            result=
+
+                await API.savePenilaian(
+
+                    data
+
+                );
+
+        }
+
+        if(!result.success){
+
+            throw new Error(
+
+                result.message
+
+            );
+
+        }
+
+        alert(result.message);
+
+        closePenilaianModal();
+
+        await loadPenilaianData();
 
     }
 
-    alert(result.message);
+    catch(err){
 
-    closePenilaianModal();
+        alert(err.message);
 
-    await loadPenilaianData();
+    }
 
-}
-catch(err){
+    finally{
 
-    alert(err.message);
+        btn.disabled=false;
 
-}
-finally{
+        btn.innerHTML=html;
 
-    btn.disabled = false;
-
-    btn.innerHTML = html;
+    }
 
 }
-}
-
 
 /* ==========================================================
- * CLEAR FORM
+ * EDIT PENILAIAN
  * ==========================================================
  */
 
-function clearPenilaianForm() {
+async function editPenilaian(id){
 
-    penilaianEditId = null;
+    const item=
 
-    const anggota =
-        document.getElementById(
-            "anggotaPenilaian"
-        );
+        penilaianList.find(function(row){
 
-    if (anggota) {
+            return row.id===id;
 
-        anggota.value = "";
+        });
 
-    }
+    if(!item){
 
-    const bulan =
-        document.getElementById(
-            "bulanPenilaian"
-        );
+        alert("Data tidak ditemukan.");
 
-    if (bulan) {
-
-        bulan.selectedIndex = 0;
+        return;
 
     }
 
-    loadPenilaianTahun();
-
-    const status =
-        document.getElementById(
-            "statusPenilaian"
-        );
-
-    if (status) {
-
-        status.value = "Draft";
-
-    }
-
-    const total =
-        document.getElementById(
-            "totalNilai"
-        );
-
-    if (total) {
-
-        total.value = "";
-
-    }
-
-    const akhir =
-        document.getElementById(
-            "nilaiAkhir"
-        );
-
-    if (akhir) {
-
-        akhir.value = "";
-
-    }
-
-}
-
-
-/* ==========================================================
- * OPEN MODAL
- * ==========================================================
- */
-
-function openPenilaianModal() {
+    penilaianEditId=id;
 
     clearPenilaianForm();
 
+    document.getElementById(
+
+        "anggotaPenilaian"
+
+    ).value=item.anggotaId;
+
+    document.getElementById(
+
+        "bulanPenilaian"
+
+    ).value=item.bulan;
+
+    document.getElementById(
+
+        "tahunPenilaian"
+
+    ).value=item.tahun;
+
+    document.getElementById(
+
+        "statusPenilaian"
+
+    ).value=item.status;
+
     renderPenilaianIndikator();
 
-    hitungNilaiPenilaian();
+    setTimeout(function(){
+
+        item.detail.forEach(function(detail){
+
+            const input=
+
+                document.querySelector(
+
+                    `.nilaiKPI[data-id="${detail.kpiId}"]`
+
+                );
+
+            if(input){
+
+                input.value=
+
+                    detail.nilai;
+
+            }
+
+        });
+
+        hitungNilaiPenilaian();
+
+    },100);
 
     document.querySelector(
-        "#penilaianModal .modal-title"
-    ).textContent =
-        "Penilaian Baru";
 
-    const modal =
+        "#penilaianModal .modal-title"
+
+    ).textContent=
+
+        "Edit Penilaian";
+
+    const modal=
+
         new bootstrap.Modal(
 
             document.getElementById(
+
                 "penilaianModal"
+
             )
 
         );
@@ -749,47 +1170,220 @@ function openPenilaianModal() {
 
 }
 
-
 /* ==========================================================
- * CLOSE MODAL
+ * DELETE
  * ==========================================================
  */
 
-function closePenilaianModal() {
+async function deletePenilaianConfirm(id){
 
-    const element =
-        document.getElementById(
-            "penilaianModal"
-        );
+    if(
 
-    const modal =
-        bootstrap.Modal.getInstance(
-            element
-        );
+        !confirm(
 
-    if (modal) {
+            "Hapus data Penilaian ini?"
 
-        modal.hide();
+        )
+
+    ){
+
+        return;
+
+    }
+
+    try{
+
+        const result=
+
+            await API.deletePenilaian(
+
+                id
+
+            );
+
+        if(!result.success){
+
+            throw new Error(
+
+                result.message
+
+            );
+
+        }
+
+        alert(result.message);
+
+        await loadPenilaianData();
+
+    }
+
+    catch(err){
+
+        alert(err.message);
 
     }
 
 }
 
+/* ==========================================================
+ * REFRESH
+ * ==========================================================
+ */
+
+async function refreshPenilaian(){
+
+    await initPenilaian();
+
+}
 
 /* ==========================================================
- * EXPORT
+ * FILTER
+ * ==========================================================
+ */
+
+function filterPenilaian(){
+
+    const keyword =
+
+        document.getElementById(
+
+            "searchPenilaian"
+
+        ).value.toLowerCase().trim();
+
+    const bulan =
+
+        document.getElementById(
+
+            "filterBulan"
+
+        ).value;
+
+    const tahun =
+
+        document.getElementById(
+
+            "filterTahun"
+
+        ).value;
+
+    const status =
+
+        document.getElementById(
+
+            "filterStatusPenilaian"
+
+        ).value;
+
+    const hasil = penilaianList.filter(function(item){
+
+        const cocokNama =
+
+            String(item.namaAnggota || "")
+
+            .toLowerCase()
+
+            .includes(keyword);
+
+        const cocokBulan =
+
+            bulan==="" ||
+
+            String(item.bulan)===bulan;
+
+        const cocokTahun =
+
+            tahun==="" ||
+
+            String(item.tahun)===tahun;
+
+        const cocokStatus =
+
+            status==="" ||
+
+            item.status===status;
+
+        return (
+
+            cocokNama &&
+
+            cocokBulan &&
+
+            cocokTahun &&
+
+            cocokStatus
+
+        );
+
+    });
+
+    renderPenilaianTable(
+
+        hasil
+
+    );
+
+}
+
+/* ==========================================================
+ * RESET FILTER
+ * ==========================================================
+ */
+
+function resetFilterPenilaian(){
+
+    document.getElementById(
+
+        "searchPenilaian"
+
+    ).value="";
+
+    document.getElementById(
+
+        "filterBulan"
+
+    ).value="";
+
+    document.getElementById(
+
+        "filterTahun"
+
+    ).value="";
+
+    document.getElementById(
+
+        "filterStatusPenilaian"
+
+    ).value="";
+
+    renderPenilaianTable(
+
+        penilaianList
+
+    );
+
+}
+
+/* ==========================================================
+ * EXPORT GLOBAL
  * ==========================================================
  */
 
 window.initPenilaian = initPenilaian;
 
+window.openPenilaianModal = openPenilaianModal;
+
+window.closePenilaianModal = closePenilaianModal;
+
+window.savePenilaian = savePenilaian;
+
+window.editPenilaian = editPenilaian;
+
+window.deletePenilaianConfirm = deletePenilaianConfirm;
+
 window.loadPenilaianData = loadPenilaianData;
 
-window.loadPenilaianAnggota = loadPenilaianAnggota;
-
-window.loadPenilaianMasterKPI = loadPenilaianMasterKPI;
-
-window.loadPenilaianTahun = loadPenilaianTahun;
+window.refreshPenilaian = refreshPenilaian;
 
 window.renderPenilaianTable = renderPenilaianTable;
 
@@ -797,14 +1391,10 @@ window.renderPenilaianIndikator = renderPenilaianIndikator;
 
 window.hitungNilaiPenilaian = hitungNilaiPenilaian;
 
-window.openPenilaianModal = openPenilaianModal;
+window.filterPenilaian = filterPenilaian;
 
-window.closePenilaianModal = closePenilaianModal;
-
-window.clearPenilaianForm = clearPenilaianForm;
+window.resetFilterPenilaian = resetFilterPenilaian;
 
 window.getPenilaianDetail = getPenilaianDetail;
 
-window.savePenilaian = savePenilaian;
-
-window.validatePenilaian = validatePenilaian;
+window.clearPenilaianForm = clearPenilaianForm;
