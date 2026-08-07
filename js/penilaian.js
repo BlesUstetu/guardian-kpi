@@ -594,11 +594,56 @@ async function savePenilaian(){
 
     };
 
-    console.log(
-        "SAVE PENILAIAN"
+   const btn =
+    document.getElementById(
+        "btnSavePenilaian"
     );
 
-    console.log(data);
+const html =
+    btn.innerHTML;
+
+btn.disabled = true;
+
+btn.innerHTML = `
+
+    <span
+        class="spinner-border spinner-border-sm me-2">
+    </span>
+
+    Menyimpan...
+
+`;
+
+try{
+
+    const result =
+        await API.savePenilaian(data);
+
+    if(!result.success){
+
+        throw new Error(
+            result.message
+        );
+
+    }
+
+    alert(result.message);
+
+    closePenilaianModal();
+
+    await loadPenilaianData();
+
+}
+catch(err){
+
+    alert(err.message);
+
+}
+finally{
+
+    btn.disabled = false;
+
+    btn.innerHTML = html;
 
 }
 
