@@ -110,9 +110,9 @@ function initPage(page) {
 
         case "penilaian":
 
-            if (typeof loadPenilaian === "function") {
+            if (typeof initPenilaian === "function") {
 
-                loadPenilaian();
+                initPenilaian();
 
             }
 
