@@ -2,22 +2,25 @@
  * ==========================================================
  * Guardian KPI Web3
  * File : js/dashboard.js
- * Version : 2.0.0 Production
+ * Version : 3.0.0 Production
+ * Author : BlesProduction
  * ==========================================================
  */
 
 "use strict";
 
 /* ==========================================================
- * GLOBAL
+ * GLOBAL STATE
  * ==========================================================
  */
 
 let dashboardData = {};
 
-let dashboardBarChart = null;
+let barChart = null;
 
-let dashboardPieChart = null;
+let pieChart = null;
+
+let dashboardLoading = false;
 
 /* ==========================================================
  * INIT
@@ -26,20 +29,42 @@ let dashboardPieChart = null;
 
 async function initDashboard(){
 
+    console.clear();
+
+    console.log(
+        "Guardian KPI Dashboard v3"
+    );
+
     await loadDashboard();
 
 }
 
 /* ==========================================================
- * LOAD
+ * LOAD DASHBOARD
  * ==========================================================
  */
 
 async function loadDashboard(){
 
+    if(dashboardLoading){
+
+        return;
+
+    }
+
+    dashboardLoading = true;
+
+    showLoading(true);
+
     try{
 
-        const result = await API.getDashboard();
+        const result =
+            await API.getDashboard();
+
+        console.log(
+            "Dashboard Response",
+            result
+        );
 
         if(!result.success){
 
@@ -51,7 +76,8 @@ async function loadDashboard(){
 
         }
 
-        dashboardData = result.data || {};
+        dashboardData =
+            result.data || {};
 
         renderDashboard();
 
@@ -65,494 +91,44 @@ async function loadDashboard(){
 
     }
 
-}
-
-/* ==========================================================
- * RENDER
- * ==========================================================
- */
-
-function renderDashboard(){
-
-    setValue(
-
-        "totalAnggota",
-
-        dashboardData.totalAnggota
-
-    );
-
-    setValue(
-
-        "anggotaAktif",
-
-        dashboardData.anggotaAktif
-
-    );
-
-    setValue(
-
-        "anggotaNonAktif",
-
-        dashboardData.anggotaNonAktif
-
-    );
-
-    setValue(
-
-        "totalGroup",
-
-        dashboardData.totalGroup
-
-    );
-
-    setValue(
-
-        "totalMasterKPI",
-
-        dashboardData.totalMasterKPI
-
-    );
-
-    setValue(
-
-        "totalPenilaian",
-
-        dashboardData.totalPenilaian
-
-    );
-
-    /* =========================
-       SUMMARY
-    ========================== */
-
-    setValue(
-
-        "summaryTotalAnggota",
-
-        dashboardData.totalAnggota
-
-    );
-
-    setValue(
-
-        "summaryAktif",
-
-        dashboardData.anggotaAktif
-
-    );
-
-    setValue(
-
-        "summaryNonAktif",
-
-        dashboardData.anggotaNonAktif
-
-    );
-
-    setValue(
-
-        "summaryGroup",
-
-        dashboardData.totalGroup
-
-    );
-
-    setValue(
-
-        "summaryKPI",
-
-        dashboardData.totalMasterKPI
-
-    );
-
-    setValue(
-
-        "summaryPenilaian",
-
-        dashboardData.totalPenilaian
-
-    );
-
-    /* =========================
-       DATABASE
-    ========================== */
-
-    setValue(
-
-        "dbAnggota",
-
-        dashboardData.totalAnggota
-
-    );
-
-    setValue(
-
-        "dbGroup",
-
-        dashboardData.totalGroup
-
-    );
-
-    setValue(
-
-        "dbKPI",
-
-        dashboardData.totalMasterKPI
-
-    );
-
-    setValue(
-
-        "dbPenilaian",
-
-        dashboardData.totalPenilaian
-
-    );
-
-    /* =========================
-       LAST REFRESH
-    ========================== */
-
-    const refresh =
-
-        document.getElementById(
-
-            "dashboardLastRefresh"
-
-        );
-
-    if(refresh){
-
-        refresh.textContent =
-
-            new Date()
-
-            .toLocaleString(
-
-                "id-ID"
-
-            );
-
-    }
-
-    renderBarChart();
-
-    renderPieChart();
-
-}
-
-/* ==========================================================
- * HELPER
- * ==========================================================
- */
-
-function setValue(id, value){
-
-    const el = document.getElementById(id);
-
-    if(el){
-
-        el.textContent = value ?? 0;
-
-    }
-
-}
-
-/* ==========================================================
- * BAR CHART
- * ==========================================================
- */
-
-function renderBarChart(){
-
-    const canvas =
-
-        document.getElementById(
-
-            "dashboardChart"
-
-        );
-
-    if(!canvas){
-
-        return;
-
-    }
-
-    if(dashboardBarChart){
-
-        dashboardBarChart.destroy();
-
-    }
-
-    dashboardBarChart = new Chart(
-
-        canvas,
-
-        {
-
-            type:"bar",
-
-            data:{
-
-                labels:[
-
-                    "Anggota",
-
-                    "Group",
-
-                    "Master KPI",
-
-                    "Penilaian"
-
-                ],
-
-                datasets:[
-
-                    {
-
-                        label:"Guardian KPI",
-
-                        data:[
-
-                            Number(
-
-                                dashboardData.totalAnggota || 0
-
-                            ),
-
-                            Number(
-
-                                dashboardData.totalGroup || 0
-
-                            ),
-
-                            Number(
-
-                                dashboardData.totalMasterKPI || 0
-
-                            ),
-
-                            Number(
-
-                                dashboardData.totalPenilaian || 0
-
-                            )
-
-                        ],
-
-                        backgroundColor:[
-
-                            "#0dcaf0",
-
-                            "#ffc107",
-
-                            "#0d6efd",
-
-                            "#20c997"
-
-                        ],
-
-                        borderWidth:1
-
-                    }
-
-                ]
-
-            },
-
-            options:{
-
-                responsive:true,
-
-                maintainAspectRatio:false,
-
-                plugins:{
-
-                    legend:{
-
-                        display:false
-
-                    }
-
-                },
-
-                scales:{
-
-                    y:{
-
-                        beginAtZero:true,
-
-                        ticks:{
-
-                            color:"#ffffff"
-
-                        },
-
-                        grid:{
-
-                            color:"#333"
-
-                        }
-
-                    },
-
-                    x:{
-
-                        ticks:{
-
-                            color:"#ffffff"
-
-                        },
-
-                        grid:{
-
-                            color:"#222"
-
-                        }
-
-                    }
-
-                }
-
-            }
-
-        }
-
-    );
-
-}
-
-/* ==========================================================
- * PIE CHART
- * ==========================================================
- */
-
-function renderPieChart(){
-
-    const canvas =
-
-        document.getElementById(
-
-            "dashboardPieChart"
-
-        );
-
-    if(!canvas){
-
-        return;
-
-    }
-
-    if(dashboardPieChart){
-
-        dashboardPieChart.destroy();
-
-    }
-
-    dashboardPieChart = new Chart(
-
-        canvas,
-
-        {
-
-            type:"doughnut",
-
-            data:{
-
-                labels:[
-
-                    "Aktif",
-
-                    "Non Aktif"
-
-                ],
-
-                datasets:[
-
-                    {
-
-                        data:[
-
-                            Number(
-
-                                dashboardData.anggotaAktif || 0
-
-                            ),
-
-                            Number(
-
-                                dashboardData.anggotaNonAktif || 0
-
-                            )
-
-                        ],
-
-                        backgroundColor:[
-
-                            "#198754",
-
-                            "#dc3545"
-
-                        ]
-
-                    }
-
-                ]
-
-            },
-
-            options:{
-
-                responsive:true,
-
-                maintainAspectRatio:false,
-
-                plugins:{
-
-                    legend:{
-
-                        position:"bottom",
-
-                        labels:{
-
-                            color:"#ffffff"
-
-                        }
-
-                    }
-
-                }
-
-            }
-
-        }
-
-    );
-
-}
-
-/* ==========================================================
- * REFRESH
- * ==========================================================
- */
-
-async function refreshDashboard(){
-
-    try{
-
-        setLoading(true);
-
-        await loadDashboard();
-
-    }
-
     finally{
 
-        setLoading(false);
+        dashboardLoading = false;
+
+        showLoading(false);
 
     }
+
+}
+
+/* ==========================================================
+ * LAST REFRESH
+ * ==========================================================
+ */
+
+function renderLastRefresh(){
+
+    const el = document.getElementById(
+
+        "dashboardLastRefresh"
+
+    );
+
+    if(!el){
+
+        return;
+
+    }
+
+    el.textContent =
+
+        new Date()
+
+        .toLocaleString(
+
+            "id-ID"
+
+        );
 
 }
 
@@ -587,197 +163,105 @@ function renderActivity(){
 
         );
 
-    tbody.innerHTML = `
+    tbody.innerHTML =
 
-        <tr>
+    `
 
-            <td>${now}</td>
+    <tr>
 
-            <td>
+        <td>${now}</td>
 
-                Dashboard berhasil diperbarui.
+        <td>
 
-            </td>
+            Dashboard berhasil dimuat.
 
-            <td>
+        </td>
 
-                <span class="badge bg-success">
+        <td>
 
-                    OK
+            <span class="badge bg-success">
 
-                </span>
+                SUCCESS
 
-            </td>
+            </span>
 
-        </tr>
+        </td>
 
-        <tr>
+    </tr>
 
-            <td>${now}</td>
+    <tr>
 
-            <td>
+        <td>${now}</td>
 
-                Total Anggota :
+        <td>
 
-                ${dashboardData.totalAnggota}
+            Total Penilaian :
 
-            </td>
+            ${dashboardData.totalPenilaian}
 
-            <td>
+        </td>
 
-                <span class="badge bg-info">
+        <td>
 
-                    INFO
+            <span class="badge bg-info">
 
-                </span>
+                INFO
 
-            </td>
+            </span>
 
-        </tr>
+        </td>
 
-        <tr>
+    </tr>
 
-            <td>${now}</td>
+    <tr>
 
-            <td>
+        <td>${now}</td>
 
-                Total Penilaian :
+        <td>
 
-                ${dashboardData.totalPenilaian}
+            Total Anggota :
 
-            </td>
+            ${dashboardData.totalAnggota}
 
-            <td>
+        </td>
 
-                <span class="badge bg-primary">
+        <td>
 
-                    KPI
+            <span class="badge bg-primary">
 
-                </span>
+                DATA
 
-            </td>
+            </span>
 
-        </tr>
+        </td>
+
+    </tr>
 
     `;
 
 }
 
 /* ==========================================================
- * LOADING
+ * SET TEXT
  * ==========================================================
  */
 
-function setLoading(status){
+function setText(id, value){
 
-    const button =
+    const el = document.getElementById(id);
 
-        document.querySelector(
-
-            'button[onclick="refreshDashboard()"]'
-
-        );
-
-    if(!button){
+    if(!el){
 
         return;
 
     }
 
-    if(status){
-
-        button.disabled = true;
-
-        button.innerHTML =
-
-        `
-
-        <span
-
-            class="spinner-border
-
-                   spinner-border-sm
-
-                   me-2">
-
-        </span>
-
-        Refresh...
-
-        `;
-
-    }
-
-    else{
-
-        button.disabled = false;
-
-        button.innerHTML =
-
-        `
-
-        <i class="bi bi-arrow-clockwise"></i>
-
-        Refresh
-
-        `;
-
-    }
+    el.textContent = value ?? 0;
 
 }
 
 /* ==========================================================
- * UPDATE STATUS
- * ==========================================================
- */
-
-function updateSystemStatus(){
-
-    console.log(
-
-        "Dashboard Loaded",
-
-        dashboardData
-
-    );
-
-}
-
-/* ==========================================================
- * AUTO REFRESH (OPTIONAL)
- * ==========================================================
- */
-
-let dashboardTimer = null;
-
-function startDashboardAutoRefresh(minutes = 5){
-
-    stopDashboardAutoRefresh();
-
-    dashboardTimer = setInterval(
-
-        refreshDashboard,
-
-        minutes * 60 * 1000
-
-    );
-
-}
-
-function stopDashboardAutoRefresh(){
-
-    if(dashboardTimer){
-
-        clearInterval(dashboardTimer);
-
-        dashboardTimer = null;
-
-    }
-
-}
-
-/* ==========================================================
- * COUNTER ANIMATION
+ * ANIMATE COUNTER
  * ==========================================================
  */
 
@@ -793,15 +277,17 @@ function animateCounter(id, target){
 
     target = Number(target || 0);
 
+    let current = 0;
+
     const duration = 600;
 
-    const step = Math.max(1, Math.ceil(target / 30));
+    const steps = 30;
 
-    let current = 0;
+    const increment = target / steps;
 
     const timer = setInterval(function(){
 
-        current += step;
+        current += increment;
 
         if(current >= target){
 
@@ -811,68 +297,104 @@ function animateCounter(id, target){
 
         }
 
-        el.textContent = current;
+        el.textContent = Math.round(current);
 
-    }, duration / 30);
+    }, duration / steps);
 
 }
 
 /* ==========================================================
- * UPDATE CARD
+ * SHOW LOADING
  * ==========================================================
  */
 
-function updateDashboardCards(){
+function showLoading(status){
 
-    animateCounter(
+    const btn = document.querySelector(
 
-        "totalAnggota",
-
-        dashboardData.totalAnggota
+        'button[onclick="refreshDashboard()"]'
 
     );
 
-    animateCounter(
+    if(!btn){
 
-        "anggotaAktif",
+        return;
 
-        dashboardData.anggotaAktif
+    }
 
-    );
+    if(status){
 
-    animateCounter(
+        btn.disabled = true;
 
-        "anggotaNonAktif",
+        btn.innerHTML = `
 
-        dashboardData.anggotaNonAktif
+            <span class="spinner-border spinner-border-sm me-2"></span>
 
-    );
+            Memuat...
 
-    animateCounter(
+        `;
 
-        "totalGroup",
+    }
 
-        dashboardData.totalGroup
+    else{
 
-    );
+        btn.disabled = false;
 
-    animateCounter(
+        btn.innerHTML = `
 
-        "totalMasterKPI",
+            <i class="bi bi-arrow-clockwise"></i>
 
-        dashboardData.totalMasterKPI
+            Refresh
 
-    );
+        `;
 
-    animateCounter(
-
-        "totalPenilaian",
-
-        dashboardData.totalPenilaian
-
-    );
+    }
 
 }
+
+/* ==========================================================
+ * WINDOW EXPORT
+ * ==========================================================
+ */
+
+window.initDashboard = initDashboard;
+
+window.loadDashboard = loadDashboard;
+
+window.refreshDashboard = refreshDashboard;
+
+window.startAutoRefresh = startAutoRefresh;
+
+window.stopAutoRefresh = stopAutoRefresh;
+
+/* ==========================================================
+ * PAGE SHOW
+ * ==========================================================
+ */
+
+window.addEventListener(
+
+    "pageshow",
+
+    function(){
+
+        if(
+
+            document.getElementById(
+
+                "dashboardChart"
+
+            )
+
+        ){
+
+            initDashboard();
+
+        }
+
+    }
+
+);
 
 /* ==========================================================
  * DOM READY
@@ -897,7 +419,7 @@ document.addEventListener(
 
             initDashboard();
 
-            startDashboardAutoRefresh();
+            startAutoRefresh(5);
 
         }
 
@@ -906,28 +428,56 @@ document.addEventListener(
 );
 
 /* ==========================================================
- * EXPORT
+ * BEFORE UNLOAD
  * ==========================================================
  */
 
-window.initDashboard = initDashboard;
+window.addEventListener(
 
-window.loadDashboard = loadDashboard;
+    "beforeunload",
 
-window.refreshDashboard = refreshDashboard;
+    function(){
 
-window.renderDashboard = renderDashboard;
+        stopAutoRefresh();
 
-window.renderBarChart = renderBarChart;
+        destroyCharts();
 
-window.renderPieChart = renderPieChart;
+    }
 
-window.renderActivity = renderActivity;
+);
 
-window.startDashboardAutoRefresh =
+/* ==========================================================
+ * DEBUG
+ * ==========================================================
+ */
 
-    startDashboardAutoRefresh;
+function debugDashboard(){
 
-window.stopDashboardAutoRefresh =
+    console.group(
 
-    stopDashboardAutoRefresh;
+        "Guardian KPI Dashboard"
+
+    );
+
+    console.table(
+
+        dashboardData
+
+    );
+
+    console.groupEnd();
+
+}
+
+/* ==========================================================
+ * VERSION
+ * ==========================================================
+ */
+
+console.log(
+
+    "%cGuardian KPI Dashboard v3.0.0",
+
+    "color:#0dcaf0;font-weight:bold;font-size:14px"
+
+);
