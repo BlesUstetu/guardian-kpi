@@ -468,6 +468,67 @@ function hitungNilaiPenilaian(){
 
 }
 
+/* ==========================================================
+ * GET DETAIL KPI
+ * ==========================================================
+ */
+
+function getPenilaianDetail(){
+
+    const detail = [];
+
+    document
+        .querySelectorAll(".nilaiKPI")
+        .forEach(function(input){
+
+            detail.push({
+
+                kpiId: input.dataset.id,
+
+                nilai: Number(input.value),
+
+                bobot: Number(input.dataset.bobot)
+
+            });
+
+        });
+
+    return detail;
+
+}
+
+/* ==========================================================
+ * VALIDASI FORM
+ * ==========================================================
+ */
+
+function validatePenilaian(){
+
+    if(
+        !document.getElementById(
+            "anggotaPenilaian"
+        ).value
+    ){
+
+        alert("Pilih anggota.");
+
+        return false;
+
+    }
+
+    if(
+        getPenilaianDetail().length===0
+    ){
+
+        alert("Belum ada indikator KPI.");
+
+        return false;
+
+    }
+
+    return true;
+
+}
 
 /* ==========================================================
  * CLEAR FORM
@@ -622,3 +683,7 @@ window.openPenilaianModal = openPenilaianModal;
 window.closePenilaianModal = closePenilaianModal;
 
 window.clearPenilaianForm = clearPenilaianForm;
+
+window.getPenilaianDetail = getPenilaianDetail;
+
+window.validatePenilaian = validatePenilaian;
