@@ -531,6 +531,79 @@ function validatePenilaian(){
 }
 
 /* ==========================================================
+ * SAVE PENILAIAN
+ * ==========================================================
+ */
+
+async function savePenilaian(){
+
+    if(!validatePenilaian()){
+
+        return;
+
+    }
+
+    const data = {
+
+        anggotaId:
+            document.getElementById(
+                "anggotaPenilaian"
+            ).value,
+
+        bulan:Number(
+
+            document.getElementById(
+                "bulanPenilaian"
+            ).value
+
+        ),
+
+        tahun:Number(
+
+            document.getElementById(
+                "tahunPenilaian"
+            ).value
+
+        ),
+
+        status:
+
+            document.getElementById(
+                "statusPenilaian"
+            ).value,
+
+        total:Number(
+
+            document.getElementById(
+                "totalNilai"
+            ).value
+
+        ),
+
+        nilaiAkhir:Number(
+
+            document.getElementById(
+                "nilaiAkhir"
+            ).value
+
+        ),
+
+        detail:
+
+            getPenilaianDetail()
+
+    };
+
+    console.log(
+        "SAVE PENILAIAN"
+    );
+
+    console.log(data);
+
+}
+
+
+/* ==========================================================
  * CLEAR FORM
  * ==========================================================
  */
@@ -685,5 +758,7 @@ window.closePenilaianModal = closePenilaianModal;
 window.clearPenilaianForm = clearPenilaianForm;
 
 window.getPenilaianDetail = getPenilaianDetail;
+
+window.savePenilaian = savePenilaian;
 
 window.validatePenilaian = validatePenilaian;
