@@ -343,62 +343,66 @@ const API = {
 
     },
 
-/* ==========================================================
+/* ======================================================
  * PENILAIAN
- * ==========================================================
- */
+ * ====================================================== */
 
-getPenilaian(){
+async getPenilaian() {
 
-    return this.post(
+    return this.get("penilaian");
 
-        "getPenilaian"
+},
+
+async getPenilaianById(id) {
+
+    return this.get(
+
+        "penilaian&id=" +
+        encodeURIComponent(id)
 
     );
 
 },
 
-savePenilaian(data){
+async savePenilaian(data) {
 
-    return this.post(
+    return this.post({
 
-        "savePenilaian",
+        action: "savePenilaian",
 
-        data
+        data: data
 
-    );
-
-},
-
-updatePenilaian(id,data){
-
-    data.id=id;
-
-    return this.post(
-
-        "updatePenilaian",
-
-        data
-
-    );
+    });
 
 },
 
-deletePenilaian(id){
+async updatePenilaian(id, data) {
 
-    return this.post(
+    return this.post({
 
-        "deletePenilaian",
+        action: "updatePenilaian",
 
-        {
+        id: id,
 
-            id:id
+        data: data
 
-        }
-
-    );
+    });
 
 },
+
+async deletePenilaian(id) {
+
+    return this.post({
+
+        action: "deletePenilaian",
+
+        id: id
+
+    });
+
+}
+
+};
 
 /* ==========================================================
  * LOCK OBJECT
