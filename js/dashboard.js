@@ -2,27 +2,29 @@
  * ==========================================================
  * Guardian KPI Web3
  * File    : dashboard.js
- * Version : 6.0.0 Enterprise
+ * Version : 6.1.0 Enterprise
  * ==========================================================
  *
- * Dashboard Frontend
+ * Dashboard Frontend Enterprise
  *
- * Fitur:
- * - API Dashboard
+ * Features:
+ * - API readiness detection
+ * - Dashboard API request
  * - Double-wrapper response support
- * - Statistik utama
- * - Distribusi Anggota
- * - Pie Kategori Master KPI
- * - Bar Indikator Master KPI
- * - Statistik KPI
- * - Ringkasan
+ * - KPI statistic cards
+ * - Anggota distribution doughnut
+ * - Master KPI category doughnut
+ * - Master KPI indicator bar
+ * - KPI statistic bar
+ * - Summary
+ * - Database information
+ * - System status
  * - Chart.js auto loader
- * - Gradient / pseudo 3D visual
+ * - Gradient / pseudo 3D charts
+ * - Chart destroy/recreate
  * - Auto refresh
  * - Error handling
- * - Anti duplicate chart
- * - Anti duplicate interval
- * - Global Dashboard object
+ * - Global Dashboard API
  *
  * ==========================================================
  */
@@ -33,40 +35,105 @@
 
 
     /* ======================================================
-     * GLOBAL
+     * CONFIG
+     * ======================================================
+     */
+
+    const CONFIG = {
+
+        version:
+            "6.1.0 Enterprise",
+
+        refreshMinutes:
+            5,
+
+        apiTimeout:
+            15000,
+
+        apiRetryDelay:
+            100,
+
+        chartTimeout:
+            10000,
+
+        chartJsUrl:
+            "https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"
+
+    };
+
+
+    /* ======================================================
+     * STATE
+     * ======================================================
+     */
+
+    const state = {
+
+        initialized:
+            false,
+
+        initializing:
+            false,
+
+        loading:
+            false,
+
+        data:
+            null,
+
+        charts:
+            {},
+
+        refreshTimer:
+            null,
+
+        chartReady:
+            false,
+
+        lastRefresh:
+            null
+
+    };
+
+
+    /* ======================================================
+     * GLOBAL DASHBOARD OBJECT
      * ======================================================
      */
 
     const Dashboard = {
 
-        version: "6.0.0 Enterprise",
+        version:
+            CONFIG.version,
 
-        state: {
+        state:
+            state,
 
-            initialized: false,
+        init:
+            initDashboard,
 
-            loading: false,
+        render:
+            renderDashboard,
 
-            data: null,
+        refresh:
+            renderDashboard,
 
-            charts: {},
+        getData:
+            function () {
 
-            refreshTimer: null,
+                return state.data;
 
-            refreshMinutes: 5,
-
-            chartReady: false
-
-        }
+            }
 
     };
 
 
-    window.Dashboard = Dashboard;
+    window.Dashboard =
+        Dashboard;
 
 
     /* ======================================================
-     * LOG
+     * LOGGING
      * ======================================================
      */
 
@@ -79,7 +146,9 @@
                 arguments
             );
 
-        } catch (e) {}
+        }
+
+        catch (e) {}
 
     }
 
@@ -93,12 +162,14 @@
                 arguments
             );
 
-        } catch (e) {}
+        }
+
+        catch (e) {}
 
     }
 
 
-    function errorLog() {
+    function logError() {
 
         try {
 
@@ -107,7 +178,9 @@
                 arguments
             );
 
-        } catch (e) {}
+        }
+
+        catch (e) {}
 
     }
 
@@ -120,11 +193,11 @@
     async function initDashboard() {
 
         if (
-            Dashboard.state.initialized
+            state.initialized
         ) {
 
             log(
-                "Guardian KPI Dashboard sudah initialized."
+                "Dashboard sudah initialized."
             );
 
             return;
@@ -132,74 +205,58 @@
         }
 
 
-        Dashboard.state.initialized =
+        if (
+            state.initializing
+        ) {
+
+            return;
+
+        }
+
+
+        state.initializing =
             true;
 
 
         log(
-            "Guardian KPI Dashboard v6.0.0 Enterprise"
+            "Guardian KPI Dashboard v6.1.0 Enterprise"
         );
 
 
-        log(
-            "Guardian KPI Dashboard initialized."
-        );
+        try {
+
+            bindRefreshEvents();
 
 
-        bindEvents();
+            setupAutoRefresh();
 
 
-        setupAutoRefresh();
+            await renderDashboard();
 
 
-        await renderDashboard();
+            state.initialized =
+                true;
 
-    }
 
-
-    /* ======================================================
-     * BIND EVENTS
-     * ======================================================
-     */
-
-    function bindEvents() {
-
-        const buttons =
-            document.querySelectorAll(
-                "[data-dashboard-refresh]"
+            log(
+                "Guardian KPI Dashboard initialized."
             );
 
+        }
 
-        buttons.forEach(
-            function (button) {
+        catch (err) {
 
-                button.onclick =
-                    function () {
-
-                        renderDashboard();
-
-                    };
-
-            }
-        );
-
-
-        const refreshButton =
-            document.getElementById(
-                "btnRefreshDashboard"
+            logError(
+                "Dashboard initialization error:",
+                err
             );
 
+        }
 
-        if (
-            refreshButton
-        ) {
+        finally {
 
-            refreshButton.onclick =
-                function () {
-
-                    renderDashboard();
-
-                };
+            state.initializing =
+                false;
 
         }
 
@@ -207,18 +264,82 @@
 
 
     /* ======================================================
-     * RENDER DASHBOARD
+     * REFRESH EVENTS
+     * ======================================================
+     */
+
+    function bindRefreshEvents() {
+
+        const selectors = [
+
+            "[data-dashboard-refresh]",
+
+            "#btnRefreshDashboard",
+
+            "#refreshDashboard",
+
+            "#btnRefresh"
+
+        ];
+
+
+        selectors.forEach(
+            function (selector) {
+
+                const elements =
+                    document.querySelectorAll(
+                        selector
+                    );
+
+
+                elements.forEach(
+                    function (element) {
+
+                        if (
+                            element.dataset.dashboardBound ===
+                            "true"
+                        ) {
+
+                            return;
+
+                        }
+
+
+                        element.dataset.dashboardBound =
+                            "true";
+
+
+                        element.addEventListener(
+                            "click",
+                            function () {
+
+                                renderDashboard();
+
+                            }
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+    }
+
+
+    /* ======================================================
+     * MAIN RENDER
      * ======================================================
      */
 
     async function renderDashboard() {
 
         if (
-            Dashboard.state.loading
+            state.loading
         ) {
 
             log(
-                "Dashboard sedang loading..."
+                "Dashboard masih loading. Request dilewati."
             );
 
             return;
@@ -226,7 +347,7 @@
         }
 
 
-        Dashboard.state.loading =
+        state.loading =
             true;
 
 
@@ -236,24 +357,23 @@
         try {
 
             log(
-                "Dashboard V6: requesting data..."
+                "Dashboard V6.1: requesting data..."
             );
 
 
-            if (
-                typeof window.API ===
-                "undefined"
-            ) {
+            /*
+             * Tunggu API tersedia.
+             */
 
-                throw new Error(
-                    "API tidak ditemukan. Pastikan api.js sudah dimuat."
+            const api =
+                await waitForAPI(
+                    CONFIG.apiTimeout
                 );
 
-            }
-
 
             if (
-                typeof API.getDashboard !==
+                !api ||
+                typeof api.getDashboard !==
                 "function"
             ) {
 
@@ -265,13 +385,11 @@
 
 
             /*
-             * ==============================================
-             * API REQUEST
-             * ==============================================
+             * Request Dashboard.
              */
 
             const response =
-                await API.getDashboard();
+                await api.getDashboard();
 
 
             log(
@@ -281,9 +399,7 @@
 
 
             /*
-             * ==============================================
-             * NORMALIZE RESPONSE
-             * ==============================================
+             * Normalize response.
              */
 
             const data =
@@ -293,18 +409,24 @@
 
 
             if (
-                !data
+                !data ||
+                typeof data !==
+                "object"
             ) {
 
                 throw new Error(
-                    "Data Dashboard kosong."
+                    "Data Dashboard tidak valid."
                 );
 
             }
 
 
-            Dashboard.state.data =
+            state.data =
                 data;
+
+
+            state.lastRefresh =
+                new Date();
 
 
             log(
@@ -314,9 +436,7 @@
 
 
             /*
-             * ==============================================
-             * RENDER
-             * ==============================================
+             * Render semua bagian.
              */
 
             renderStatistics(
@@ -334,7 +454,17 @@
             );
 
 
-            await renderCharts(
+            renderDistributionChart(
+                data
+            );
+
+
+            renderMasterKPICategoryChart(
+                data
+            );
+
+
+            renderMasterKPIIndicatorChart(
                 data
             );
 
@@ -358,15 +488,14 @@
 
 
             log(
-                "Dashboard v6 render selesai."
+                "Dashboard v6.1 render selesai."
             );
 
         }
 
-
         catch (err) {
 
-            errorLog(
+            logError(
                 "Dashboard render error:",
                 err
             );
@@ -378,10 +507,9 @@
 
         }
 
-
         finally {
 
-            Dashboard.state.loading =
+            state.loading =
                 false;
 
         }
@@ -390,16 +518,119 @@
 
 
     /* ======================================================
-     * NORMALIZE RESPONSE
+     * WAIT FOR API
+     * ======================================================
+     *
+     * Menunggu api.js selesai membuat:
+     *
+     * window.API
+     *
+     * ======================================================
+     */
+
+    function waitForAPI(
+        timeout
+    ) {
+
+        timeout =
+            Number(
+                timeout ||
+                CONFIG.apiTimeout
+            );
+
+
+        return new Promise(
+            function (
+                resolve,
+                reject
+            ) {
+
+                const started =
+                    Date.now();
+
+
+                function check() {
+
+                    if (
+                        window.API &&
+                        typeof window.API.getDashboard ===
+                        "function"
+                    ) {
+
+                        log(
+                            "API berhasil tersedia."
+                        );
+
+
+                        resolve(
+                            window.API
+                        );
+
+
+                        return;
+
+                    }
+
+
+                    if (
+                        Date.now() -
+                        started >=
+                        timeout
+                    ) {
+
+                        reject(
+                            new Error(
+                                "API tidak tersedia setelah menunggu " +
+                                Math.round(
+                                    timeout /
+                                    1000
+                                ) +
+                                " detik. Pastikan api.js sudah dimuat."
+                            )
+                        );
+
+
+                        return;
+
+                    }
+
+
+                    setTimeout(
+                        check,
+                        CONFIG.apiRetryDelay
+                    );
+
+                }
+
+
+                check();
+
+            }
+        );
+
+    }
+
+
+    /* ======================================================
+     * NORMALIZE API RESPONSE
      * ======================================================
      *
      * Mendukung:
      *
-     * response.data
+     * 1.
+     * {
+     *   success:true,
+     *   data:{...}
+     * }
      *
-     * dan:
-     *
-     * response.data.data
+     * 2.
+     * {
+     *   success:true,
+     *   data:{
+     *      success:true,
+     *      data:{...}
+     *   }
+     * }
      *
      * ======================================================
      */
@@ -418,23 +649,33 @@
 
 
         /*
-         * Response:
-         *
-         * {
-         *   success: true,
-         *   data: {
-         *      totalAnggota: 7
-         *   }
-         * }
+         * Level 1:
          */
 
         if (
             response.data &&
             typeof response.data ===
-                "object" &&
-            response.data.totalAnggota !==
-                undefined
+            "object"
         ) {
+
+            /*
+             * Double wrapper.
+             */
+
+            if (
+                response.data.data &&
+                typeof response.data.data ===
+                "object"
+            ) {
+
+                return response.data.data;
+
+            }
+
+
+            /*
+             * Normal wrapper.
+             */
 
             return response.data;
 
@@ -442,53 +683,26 @@
 
 
         /*
-         * Double wrapper:
-         *
-         * {
-         *   success: true,
-         *   data: {
-         *      success: true,
-         *      data: {
-         *          totalAnggota: 7
-         *      }
-         *   }
-         * }
+         * Direct object.
          */
 
         if (
-            response.data &&
-            response.data.data &&
-            typeof response.data.data ===
-                "object"
+            typeof response ===
+            "object"
         ) {
 
-            return response.data.data;
+            return response;
 
         }
 
 
-        /*
-         * Fallback:
-         */
-
-        if (
-            response.data &&
-            typeof response.data ===
-                "object"
-        ) {
-
-            return response.data;
-
-        }
-
-
-        return response;
+        return null;
 
     }
 
 
     /* ======================================================
-     * STATISTICS
+     * STATISTICS CARDS
      * ======================================================
      */
 
@@ -580,10 +794,6 @@
         );
 
 
-        /*
-         * Master KPI aktif
-         */
-
         setText(
             [
                 "masterKPIAktif",
@@ -594,10 +804,6 @@
             )
         );
 
-
-        /*
-         * Master KPI non aktif
-         */
 
         setText(
             [
@@ -622,8 +828,11 @@
     ) {
 
         const summary =
-            data.ringkasan ||
-            {};
+            data.ringkasan &&
+            typeof data.ringkasan ===
+            "object"
+                ? data.ringkasan
+                : {};
 
 
         setText(
@@ -631,8 +840,10 @@
                 "summaryTotalAnggota"
             ],
             formatNumber(
-                summary.totalAnggota ??
-                data.totalAnggota
+                valueOr(
+                    summary.totalAnggota,
+                    data.totalAnggota
+                )
             )
         );
 
@@ -642,8 +853,10 @@
                 "summaryAnggotaAktif"
             ],
             formatNumber(
-                summary.anggotaAktif ??
-                data.anggotaAktif
+                valueOr(
+                    summary.anggotaAktif,
+                    data.anggotaAktif
+                )
             )
         );
 
@@ -653,8 +866,10 @@
                 "summaryAnggotaNonAktif"
             ],
             formatNumber(
-                summary.anggotaNonAktif ??
-                data.anggotaNonAktif
+                valueOr(
+                    summary.anggotaNonAktif,
+                    data.anggotaNonAktif
+                )
             )
         );
 
@@ -664,8 +879,10 @@
                 "summaryTotalGroup"
             ],
             formatNumber(
-                summary.totalGroup ??
-                data.totalGroup
+                valueOr(
+                    summary.totalGroup,
+                    data.totalGroup
+                )
             )
         );
 
@@ -675,8 +892,10 @@
                 "summaryMasterKPI"
             ],
             formatNumber(
-                summary.totalMasterKPI ??
-                data.totalMasterKPI
+                valueOr(
+                    summary.totalMasterKPI,
+                    data.totalMasterKPI
+                )
             )
         );
 
@@ -686,8 +905,10 @@
                 "summaryTotalPenilaian"
             ],
             formatNumber(
-                summary.totalPenilaian ??
-                data.totalPenilaian
+                valueOr(
+                    summary.totalPenilaian,
+                    data.totalPenilaian
+                )
             )
         );
 
@@ -697,8 +918,10 @@
                 "summaryAverageKPI"
             ],
             formatDecimal(
-                summary.averageKPI ??
-                data.averageKPI
+                valueOr(
+                    summary.averageKPI,
+                    data.averageKPI
+                )
             )
         );
 
@@ -706,7 +929,7 @@
 
 
     /* ======================================================
-     * STATISTICS CHART
+     * KPI STATISTICS BAR
      * ======================================================
      */
 
@@ -714,267 +937,112 @@
         data
     ) {
 
-        const stats =
-            Array.isArray(
-                data.statistikKPI
-            )
-                ? data.statistikKPI
-                : [
+        let stats =
+            data.statistikKPI;
 
-                    {
-                        label:
-                            "Anggota",
-
-                        value:
-                            toNumber(
-                                data.totalAnggota
-                            )
-
-                    },
-
-                    {
-                        label:
-                            "Group",
-
-                        value:
-                            toNumber(
-                                data.totalGroup
-                            )
-
-                    },
-
-                    {
-                        label:
-                            "Master KPI",
-
-                        value:
-                            toNumber(
-                                data.totalMasterKPI
-                            )
-
-                    },
-
-                    {
-                        label:
-                            "Penilaian",
-
-                        value:
-                            toNumber(
-                                data.totalPenilaian
-                            )
-
-                    }
-
-                ];
-
-
-        renderBarChart(
-            "dashboardChart",
-            stats.map(
-                item =>
-                    item.label
-            ),
-            stats.map(
-                item =>
-                    toNumber(
-                        item.value
-                    )
-            ),
-            "Statistik KPI",
-            [
-                "#00c6ff",
-                "#ffbd00",
-                "#1478ff",
-                "#20a464"
-            ]
-        );
-
-    }
-
-
-    /* ======================================================
-     * CHARTS
-     * ======================================================
-     */
-
-    async function renderCharts(
-        data
-    ) {
-
-        await loadChartJS();
-
-
-        /*
-         * Distribusi anggota
-         */
-
-        renderDistributionChart(
-            data
-        );
-
-
-        /*
-         * Kategori Master KPI
-         */
-
-        renderKategoriChart(
-            data
-        );
-
-
-        /*
-         * Indikator Master KPI
-         */
-
-        renderIndikatorChart(
-            data
-        );
-
-    }
-
-
-    /* ======================================================
-     * LOAD CHART.JS
-     * ======================================================
-     */
-
-    function loadChartJS() {
 
         if (
-            window.Chart
+            !Array.isArray(
+                stats
+            ) ||
+            stats.length ===
+            0
         ) {
 
-            Dashboard.state.chartReady =
-                true;
+            stats = [
 
-            return Promise.resolve();
+                {
+                    label:
+                        "Anggota",
+
+                    value:
+                        toNumber(
+                            data.totalAnggota
+                        )
+
+                },
+
+                {
+                    label:
+                        "Group",
+
+                    value:
+                        toNumber(
+                            data.totalGroup
+                        )
+
+                },
+
+                {
+                    label:
+                        "Master KPI",
+
+                    value:
+                        toNumber(
+                            data.totalMasterKPI
+                        )
+
+                },
+
+                {
+                    label:
+                        "Penilaian",
+
+                    value:
+                        toNumber(
+                            data.totalPenilaian
+                        )
+
+                }
+
+            ];
 
         }
 
 
-        return new Promise(
-            function (
-                resolve,
-                reject
-            ) {
+        const labels =
+            stats.map(
+                function (item) {
 
-                /*
-                 * Jangan membuat script ganda
-                 */
-
-                const existing =
-                    document.querySelector(
-                        'script[data-guardian-chartjs="true"]'
+                    return (
+                        item.label ||
+                        item.nama ||
+                        ""
                     );
-
-
-                if (
-                    existing
-                ) {
-
-                    existing.addEventListener(
-                        "load",
-                        function () {
-
-                            Dashboard.state.chartReady =
-                                true;
-
-                            resolve();
-
-                        }
-                    );
-
-
-                    existing.addEventListener(
-                        "error",
-                        function () {
-
-                            reject(
-                                new Error(
-                                    "Chart.js gagal dimuat."
-                                )
-                            );
-
-                        }
-                    );
-
-
-                    return;
 
                 }
+            );
 
 
-                const script =
-                    document.createElement(
-                        "script"
+        const values =
+            stats.map(
+                function (item) {
+
+                    return toNumber(
+                        item.value ??
+                        item.jumlah ??
+                        item.count
                     );
 
-
-                script.src =
-                    "https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js";
-
-
-                script.async =
-                    true;
+                }
+            );
 
 
-                script.dataset.guardianChartjs =
-                    "true";
-
-
-                script.onload =
-                    function () {
-
-                        if (
-                            window.Chart
-                        ) {
-
-                            Dashboard.state.chartReady =
-                                true;
-
-                            log(
-                                "Chart.js berhasil dimuat."
-                            );
-
-                            resolve();
-
-                        } else {
-
-                            reject(
-                                new Error(
-                                    "Chart.js tidak tersedia."
-                                )
-                            );
-
-                        }
-
-                    };
-
-
-                script.onerror =
-                    function () {
-
-                        reject(
-                            new Error(
-                                "Gagal memuat Chart.js dari CDN."
-                            )
-                        );
-
-                    };
-
-
-                document.head.appendChild(
-                    script
-                );
-
-            }
+        renderBarChart(
+            [
+                "dashboardChart",
+                "statistikKPIChart"
+            ],
+            labels,
+            values,
+            "Statistik KPI"
         );
 
     }
 
 
     /* ======================================================
-     * DISTRIBUTION CHART
+     * DISTRIBUTION ANGGOTA
      * ======================================================
      */
 
@@ -988,16 +1056,23 @@
             data.distribution;
 
 
+        /*
+         * Fallback.
+         */
+
         if (
             !Array.isArray(
                 distribution
-            )
+            ) ||
+            distribution.length ===
+            0
         ) {
 
             distribution = [
 
                 {
-                    label: "Aktif",
+                    label:
+                        "Aktif",
 
                     value:
                         toNumber(
@@ -1007,7 +1082,8 @@
                 },
 
                 {
-                    label: "Non Aktif",
+                    label:
+                        "Non Aktif",
 
                     value:
                         toNumber(
@@ -1023,21 +1099,30 @@
 
         const labels =
             distribution.map(
-                item =>
-                    item.label ||
-                    item.nama ||
-                    ""
+                function (item) {
+
+                    return (
+                        item.label ||
+                        item.nama ||
+                        item.status ||
+                        ""
+                    );
+
+                }
             );
 
 
         const values =
             distribution.map(
-                item =>
-                    toNumber(
+                function (item) {
+
+                    return toNumber(
                         item.value ??
                         item.jumlah ??
                         item.count
-                    )
+                    );
+
+                }
             );
 
 
@@ -1056,49 +1141,66 @@
 
 
     /* ======================================================
-     * KATEGORI MASTER KPI
+     * MASTER KPI CATEGORY
      * ======================================================
      */
 
-    function renderKategoriChart(
+    function renderMasterKPICategoryChart(
         data
     ) {
 
         let kategori =
             data.masterKPIKategori ||
             data.kategoriMasterKPI ||
-            data.categoryData;
+            data.categoryData ||
+            data.kategori;
 
 
         /*
-         * Fallback langsung dari raw Master KPI
+         * Kalau backend belum mengirim
+         * array kategori, bangun dari
+         * raw Master KPI.
          */
 
         if (
-            !Array.isArray(kategori) ||
-            kategori.length === 0
+            !Array.isArray(
+                kategori
+            ) ||
+            kategori.length ===
+            0
         ) {
 
             kategori =
-                buildKategoriFromRaw(
-                    data.masterKPI
+                buildCategoryFromRaw(
+                    data.masterKPI ||
+                    data.masterKPIData ||
+                    data.kpi
                 );
 
         }
 
 
+        /*
+         * Tidak ada data.
+         */
+
         if (
-            !Array.isArray(kategori) ||
-            kategori.length === 0
+            !Array.isArray(
+                kategori
+            ) ||
+            kategori.length ===
+            0
         ) {
 
-            showChartEmpty(
+            showEmptyChart(
                 [
                     "categoryMasterKPIChart",
-                    "kategoriMasterKPIChart"
+                    "kategoriMasterKPIChart",
+                    "masterKPIKategoriChart"
                 ],
                 "Data kategori Master KPI belum tersedia."
             );
+
 
             return;
 
@@ -1107,31 +1209,40 @@
 
         const labels =
             kategori.map(
-                item =>
-                    item.kategori ||
-                    item.label ||
-                    ""
+                function (item) {
+
+                    return (
+                        item.kategori ||
+                        item.category ||
+                        item.label ||
+                        item.nama ||
+                        ""
+                    );
+
+                }
             );
 
 
         const values =
             kategori.map(
-                item =>
-                    toNumber(
+                function (item) {
+
+                    return toNumber(
                         item.jumlah ??
                         item.count ??
-                        item.value
-                    )
+                        item.value ??
+                        item.total
+                    );
+
+                }
             );
 
 
-        /*
-         * Canvas:
-         *
-         * categoryMasterKPIChart
-         * kategoriMasterKPIChart
-         * masterKPIKategoriChart
-         */
+        log(
+            "Master KPI kategori:",
+            kategori
+        );
+
 
         renderDoughnutChart(
             [
@@ -1144,40 +1255,35 @@
             "Master KPI"
         );
 
-
-        markChartAvailable(
-            [
-                "categoryMasterKPIChart",
-                "kategoriMasterKPIChart",
-                "masterKPIKategoriChart"
-            ]
-        );
-
     }
 
 
     /* ======================================================
-     * INDIKATOR MASTER KPI
+     * MASTER KPI INDICATOR
      * ======================================================
      */
 
-    function renderIndikatorChart(
+    function renderMasterKPIIndicatorChart(
         data
     ) {
 
         let indikator =
             data.masterKPIIndikator ||
             data.indikatorMasterKPI ||
-            data.indicatorData;
+            data.indicatorData ||
+            data.indikator;
 
 
         /*
-         * Fallback raw
+         * Fallback raw Master KPI.
          */
 
         if (
-            !Array.isArray(indikator) ||
-            indikator.length === 0
+            !Array.isArray(
+                indikator
+            ) ||
+            indikator.length ===
+            0
         ) {
 
             indikator =
@@ -1191,10 +1297,14 @@
 
 
         if (
-            !indikator.length
+            !Array.isArray(
+                indikator
+            ) ||
+            indikator.length ===
+            0
         ) {
 
-            showChartEmpty(
+            showEmptyChart(
                 [
                     "indicatorMasterKPIChart",
                     "indikatorMasterKPIChart",
@@ -1203,6 +1313,7 @@
                 "Data indikator Master KPI belum tersedia."
             );
 
+
             return;
 
         }
@@ -1210,22 +1321,40 @@
 
         const labels =
             indikator.map(
-                item =>
-                    item.indicator ||
-                    item.indikator ||
-                    item.nama ||
-                    item.id ||
-                    ""
+                function (item) {
+
+                    return (
+                        item.indicator ||
+                        item.indikator ||
+                        item.nama ||
+                        item.label ||
+                        item.id ||
+                        ""
+                    );
+
+                }
             );
 
 
         const values =
             indikator.map(
-                item =>
-                    toNumber(
-                        item.bobot
-                    )
+                function (item) {
+
+                    return toNumber(
+                        item.bobot ??
+                        item.value ??
+                        item.jumlah ??
+                        item.count
+                    );
+
+                }
             );
+
+
+        log(
+            "Master KPI indikator:",
+            indikator
+        );
 
 
         renderHorizontalBarChart(
@@ -1237,6 +1366,179 @@
             labels,
             values,
             "Bobot KPI (%)"
+        );
+
+    }
+
+
+    /* ======================================================
+     * LOAD CHART.JS
+     * ======================================================
+     */
+
+    function loadChartJS() {
+
+        if (
+            window.Chart
+        ) {
+
+            state.chartReady =
+                true;
+
+
+            return Promise.resolve(
+                window.Chart
+            );
+
+        }
+
+
+        return new Promise(
+            function (
+                resolve,
+                reject
+            ) {
+
+                const existing =
+                    document.querySelector(
+                        'script[data-guardian-chartjs="true"]'
+                    );
+
+
+                if (
+                    existing
+                ) {
+
+                    const started =
+                        Date.now();
+
+
+                    const poll =
+                        setInterval(
+                            function () {
+
+                                if (
+                                    window.Chart
+                                ) {
+
+                                    clearInterval(
+                                        poll
+                                    );
+
+
+                                    state.chartReady =
+                                        true;
+
+
+                                    resolve(
+                                        window.Chart
+                                    );
+
+
+                                    return;
+
+                                }
+
+
+                                if (
+                                    Date.now() -
+                                    started >
+                                    CONFIG.chartTimeout
+                                ) {
+
+                                    clearInterval(
+                                        poll
+                                    );
+
+
+                                    reject(
+                                        new Error(
+                                            "Chart.js tidak berhasil dimuat."
+                                        )
+                                    );
+
+                                }
+
+                            },
+                            100
+                        );
+
+
+                    return;
+
+                }
+
+
+                const script =
+                    document.createElement(
+                        "script"
+                    );
+
+
+                script.src =
+                    CONFIG.chartJsUrl;
+
+
+                script.async =
+                    true;
+
+
+                script.dataset.guardianChartjs =
+                    "true";
+
+
+                script.onload =
+                    function () {
+
+                        if (
+                            window.Chart
+                        ) {
+
+                            state.chartReady =
+                                true;
+
+
+                            log(
+                                "Chart.js berhasil dimuat."
+                            );
+
+
+                            resolve(
+                                window.Chart
+                            );
+
+                        }
+
+                        else {
+
+                            reject(
+                                new Error(
+                                    "Chart.js loaded tetapi object Chart tidak tersedia."
+                                )
+                            );
+
+                        }
+
+                    };
+
+
+                script.onerror =
+                    function () {
+
+                        reject(
+                            new Error(
+                                "Gagal memuat Chart.js."
+                            )
+                        );
+
+                    };
+
+
+                document.head.appendChild(
+                    script
+                );
+
+            }
         );
 
     }
@@ -1262,6 +1564,7 @@
                 "Chart.js tidak tersedia."
             );
 
+
             return;
 
         }
@@ -1278,19 +1581,14 @@
         ) {
 
             warn(
-                "Canvas tidak ditemukan:",
+                "Canvas doughnut tidak ditemukan:",
                 canvasIds
             );
+
 
             return;
 
         }
-
-
-        const ctx =
-            canvas.getContext(
-                "2d"
-            );
 
 
         destroyChart(
@@ -1298,9 +1596,11 @@
         );
 
 
-        /*
-         * Gradient
-         */
+        const ctx =
+            canvas.getContext(
+                "2d"
+            );
+
 
         const gradients =
             createPieGradients(
@@ -1316,17 +1616,19 @@
                     value
                 ) {
 
-                    return sum +
+                    return (
+                        sum +
                         toNumber(
                             value
-                        );
+                        )
+                    );
 
                 },
                 0
             );
 
 
-        Dashboard.state.charts[
+        state.charts[
             canvas.id
         ] =
             new Chart(
@@ -1357,11 +1659,11 @@
                                 borderWidth:
                                     4,
 
-                                hoverOffset:
-                                    14,
-
                                 spacing:
-                                    2
+                                    2,
+
+                                hoverOffset:
+                                    12
 
                             }
 
@@ -1394,13 +1696,16 @@
 
                             legend: {
 
+                                display:
+                                    true,
+
                                 position:
                                     "bottom",
 
                                 labels: {
 
                                     color:
-                                        "#d8e4ef",
+                                        "#d7e4ef",
 
                                     usePointStyle:
                                         true,
@@ -1409,7 +1714,14 @@
                                         "circle",
 
                                     padding:
-                                        16
+                                        15,
+
+                                    font: {
+
+                                        size:
+                                            11
+
+                                    }
 
                                 }
 
@@ -1431,7 +1743,8 @@
 
 
                                             const percentage =
-                                                total > 0
+                                                total >
+                                                0
                                                     ? (
                                                         value /
                                                         total *
@@ -1484,11 +1797,10 @@
      */
 
     function renderBarChart(
-        canvasId,
+        canvasIds,
         labels,
         values,
-        title,
-        colors
+        title
     ) {
 
         if (
@@ -1502,11 +1814,7 @@
 
         const canvas =
             findCanvas(
-                Array.isArray(
-                    canvasId
-                )
-                    ? canvasId
-                    : [canvasId]
+                canvasIds
             );
 
 
@@ -1514,9 +1822,20 @@
             !canvas
         ) {
 
+            warn(
+                "Canvas bar tidak ditemukan:",
+                canvasIds
+            );
+
+
             return;
 
         }
+
+
+        destroyChart(
+            canvas
+        );
 
 
         const ctx =
@@ -1525,18 +1844,12 @@
             );
 
 
-        destroyChart(
-            canvas
-        );
-
-
         const gradient =
             ctx.createLinearGradient(
                 0,
                 0,
                 0,
-                canvas.height ||
-                    300
+                320
             );
 
 
@@ -1547,18 +1860,18 @@
 
 
         gradient.addColorStop(
-            0.5,
+            0.45,
             "#1478ff"
         );
 
 
         gradient.addColorStop(
             1,
-            "#143a9a"
+            "#163c9c"
         );
 
 
-        Dashboard.state.charts[
+        state.charts[
             canvas.id
         ] =
             new Chart(
@@ -1584,10 +1897,7 @@
                                     values,
 
                                 backgroundColor:
-                                    colors &&
-                                    colors.length
-                                        ? colors
-                                        : gradient,
+                                    gradient,
 
                                 borderColor:
                                     "#00d9ff",
@@ -1643,7 +1953,7 @@
                                 ticks: {
 
                                     color:
-                                        "#9fb0c0"
+                                        "#9baebe"
 
                                 },
 
@@ -1664,14 +1974,14 @@
                                 ticks: {
 
                                     color:
-                                        "#9fb0c0"
+                                        "#9baebe"
 
                                 },
 
                                 grid: {
 
                                     color:
-                                        "rgba(255,255,255,0.08)"
+                                        "rgba(255,255,255,0.07)"
 
                                 }
 
@@ -1702,7 +2012,7 @@
         canvasIds,
         labels,
         values,
-        label
+        title
     ) {
 
         if (
@@ -1724,9 +2034,20 @@
             !canvas
         ) {
 
+            warn(
+                "Canvas indikator Master KPI tidak ditemukan:",
+                canvasIds
+            );
+
+
             return;
 
         }
+
+
+        destroyChart(
+            canvas
+        );
 
 
         const ctx =
@@ -1735,17 +2056,12 @@
             );
 
 
-        destroyChart(
-            canvas
-        );
-
-
         const gradient =
             ctx.createLinearGradient(
                 0,
                 0,
                 canvas.width ||
-                    800,
+                800,
                 0
             );
 
@@ -1764,11 +2080,11 @@
 
         gradient.addColorStop(
             1,
-            "#7a4cff"
+            "#7b4dff"
         );
 
 
-        Dashboard.state.charts[
+        state.charts[
             canvas.id
         ] =
             new Chart(
@@ -1788,7 +2104,7 @@
                             {
 
                                 label:
-                                    label,
+                                    title,
 
                                 data:
                                     values,
@@ -1797,13 +2113,13 @@
                                     gradient,
 
                                 borderColor:
-                                    "#00c6ff",
+                                    "#00d9ff",
 
                                 borderWidth:
                                     1,
 
                                 borderRadius:
-                                    8,
+                                    7,
 
                                 borderSkipped:
                                     false
@@ -1828,7 +2144,7 @@
                         animation: {
 
                             duration:
-                                1200,
+                                1100,
 
                             easing:
                                 "easeOutQuart"
@@ -1876,13 +2192,10 @@
                                 beginAtZero:
                                     true,
 
-                                max:
-                                    20,
-
                                 ticks: {
 
                                     color:
-                                        "#9fb0c0",
+                                        "#9baebe",
 
                                     callback:
                                         function (
@@ -1901,7 +2214,7 @@
                                 grid: {
 
                                     color:
-                                        "rgba(255,255,255,0.08)"
+                                        "rgba(255,255,255,0.07)"
 
                                 }
 
@@ -1917,7 +2230,7 @@
                                     font: {
 
                                         size:
-                                            12
+                                            11
 
                                     }
 
@@ -1958,7 +2271,9 @@
     ) {
 
         if (
-            !Array.isArray(ids)
+            !Array.isArray(
+                ids
+            )
         ) {
 
             ids =
@@ -1980,41 +2295,46 @@
 
 
             if (
-                element
+                !element
             ) {
 
-                if (
-                    element.tagName
-                        .toLowerCase() ===
+                continue;
+
+            }
+
+
+            if (
+                element.tagName &&
+                element.tagName.toLowerCase() ===
+                "canvas"
+            ) {
+
+                prepareCanvas(
+                    element
+                );
+
+
+                return element;
+
+            }
+
+
+            const canvas =
+                element.querySelector(
                     "canvas"
-                ) {
-
-                    ensureCanvasSize(
-                        element
-                    );
-
-                    return element;
-
-                }
+                );
 
 
-                const canvas =
-                    element.querySelector(
-                        "canvas"
-                    );
+            if (
+                canvas
+            ) {
 
-
-                if (
+                prepareCanvas(
                     canvas
-                ) {
+                );
 
-                    ensureCanvasSize(
-                        canvas
-                    );
 
-                    return canvas;
-
-                }
+                return canvas;
 
             }
 
@@ -2027,13 +2347,30 @@
 
 
     /* ======================================================
-     * ENSURE CANVAS SIZE
+     * PREPARE CANVAS
      * ======================================================
      */
 
-    function ensureCanvasSize(
+    function prepareCanvas(
         canvas
     ) {
+
+        if (
+            !canvas
+        ) {
+
+            return;
+
+        }
+
+
+        canvas.style.width =
+            "100%";
+
+
+        canvas.style.height =
+            "100%";
+
 
         const parent =
             canvas.parentElement;
@@ -2042,20 +2379,13 @@
         if (
             parent &&
             parent.clientHeight <
-                200
+            200
         ) {
 
             parent.style.minHeight =
                 "280px";
 
         }
-
-
-        canvas.style.width =
-            "100%";
-
-        canvas.style.height =
-            "100%";
 
     }
 
@@ -2078,28 +2408,30 @@
         }
 
 
-        const existing =
-            Dashboard.state.charts[
+        const chart =
+            state.charts[
                 canvas.id
             ];
 
 
         if (
-            existing &&
-            typeof existing.destroy ===
-                "function"
+            chart &&
+            typeof chart.destroy ===
+            "function"
         ) {
 
             try {
 
-                existing.destroy();
+                chart.destroy();
 
-            } catch (e) {}
+            }
+
+            catch (e) {}
 
         }
 
 
-        delete Dashboard.state.charts[
+        delete state.charts[
             canvas.id
         ];
 
@@ -2107,7 +2439,7 @@
 
 
     /* ======================================================
-     * PIE GRADIENTS
+     * PIE GRADIENT
      * ======================================================
      */
 
@@ -2116,42 +2448,43 @@
         count
     ) {
 
-        const colors = [
+        const palettes = [
 
             [
                 "#00f5a0",
-                "#00c6ff"
+                "#00b894"
             ],
 
             [
-                "#1478ff",
-                "#6246ea"
+                "#00c6ff",
+                "#1478ff"
             ],
 
             [
-                "#ffbd00",
-                "#ff6b00"
+                "#ffcf33",
+                "#ff9800"
             ],
 
             [
-                "#ff3d71",
-                "#c9184a"
-            ],
-
-            [
-                "#00d9ff",
-                "#0077b6"
+                "#ff4d6d",
+                "#d90429"
             ],
 
             [
                 "#a855f7",
                 "#6d28d9"
+            ],
+
+            [
+                "#22d3ee",
+                "#0284c7"
             ]
 
         ];
 
 
-        const result = [];
+        const gradients =
+            [];
 
 
         for (
@@ -2160,10 +2493,10 @@
             i++
         ) {
 
-            const pair =
-                colors[
+            const palette =
+                palettes[
                     i %
-                    colors.length
+                    palettes.length
                 ];
 
 
@@ -2172,36 +2505,36 @@
                     0,
                     0,
                     0,
-                    250
+                    280
                 );
 
 
             gradient.addColorStop(
                 0,
-                pair[0]
+                palette[0]
             );
 
 
             gradient.addColorStop(
                 1,
-                pair[1]
+                palette[1]
             );
 
 
-            result.push(
+            gradients.push(
                 gradient
             );
 
         }
 
 
-        return result;
+        return gradients;
 
     }
 
 
     /* ======================================================
-     * CENTER TEXT PLUGIN
+     * CENTER TEXT
      * ======================================================
      */
 
@@ -2219,8 +2552,13 @@
                     chart
                 ) {
 
-                    const ctx =
-                        chart.ctx;
+                    if (
+                        !chart.data.datasets.length
+                    ) {
+
+                        return;
+
+                    }
 
 
                     const meta =
@@ -2240,16 +2578,16 @@
                     }
 
 
-                    const first =
+                    const point =
                         meta.data[0];
 
 
                     const x =
-                        first.x;
+                        point.x;
 
 
                     const y =
-                        first.y;
+                        point.y;
 
 
                     const total =
@@ -2273,6 +2611,10 @@
                         );
 
 
+                    const ctx =
+                        chart.ctx;
+
+
                     ctx.save();
 
 
@@ -2284,6 +2626,14 @@
                         "middle";
 
 
+                    ctx.shadowColor =
+                        "rgba(0,0,0,.8)";
+
+
+                    ctx.shadowBlur =
+                        8;
+
+
                     ctx.font =
                         "bold 22px Arial";
 
@@ -2292,18 +2642,12 @@
                         "#ffffff";
 
 
-                    ctx.shadowColor =
-                        "rgba(0,0,0,0.8)";
-
-
-                    ctx.shadowBlur =
-                        8;
-
-
                     ctx.fillText(
-                        String(total),
+                        String(
+                            total
+                        ),
                         x,
-                        y - 6
+                        y - 7
                     );
 
 
@@ -2316,11 +2660,12 @@
 
 
                     ctx.fillStyle =
-                        "#9fb0c0";
+                        "#aab7c4";
 
 
                     ctx.fillText(
-                        text || "",
+                        text ||
+                        "",
                         x,
                         y + 14
                     );
@@ -2336,7 +2681,7 @@
 
 
     /* ======================================================
-     * SHADOW PLUGIN
+     * SHADOW
      * ======================================================
      */
 
@@ -2352,27 +2697,23 @@
                     chart
                 ) {
 
-                    const ctx =
-                        chart.ctx;
+                    chart.ctx.save();
 
 
-                    ctx.save();
+                    chart.ctx.shadowColor =
+                        "rgba(0,0,0,.35)";
 
 
-                    ctx.shadowColor =
-                        "rgba(0,0,0,0.35)";
+                    chart.ctx.shadowBlur =
+                        10;
 
 
-                    ctx.shadowBlur =
-                        12;
-
-
-                    ctx.shadowOffsetX =
+                    chart.ctx.shadowOffsetX =
                         3;
 
 
-                    ctx.shadowOffsetY =
-                        5;
+                    chart.ctx.shadowOffsetY =
+                        4;
 
                 },
 
@@ -2392,16 +2733,18 @@
 
 
     /* ======================================================
-     * BUILD KATEGORI FROM RAW
+     * BUILD CATEGORY FROM RAW KPI
      * ======================================================
      */
 
-    function buildKategoriFromRaw(
+    function buildCategoryFromRaw(
         raw
     ) {
 
         if (
-            !Array.isArray(raw)
+            !Array.isArray(
+                raw
+            )
         ) {
 
             return [];
@@ -2409,30 +2752,43 @@
         }
 
 
-        const map = {};
+        const map =
+            {};
 
 
         raw.forEach(
             function (item) {
 
-                const kategori =
+                if (
+                    !item ||
+                    typeof item !==
+                    "object"
+                ) {
+
+                    return;
+
+                }
+
+
+                const category =
                     String(
                         item.kategori ||
+                        item.category ||
                         "Tanpa Kategori"
                     ).trim();
 
 
                 if (
-                    !map[kategori]
+                    !map[category]
                 ) {
 
-                    map[kategori] =
+                    map[category] =
                         0;
 
                 }
 
 
-                map[kategori]++;
+                map[category]++;
 
             }
         );
@@ -2441,15 +2797,21 @@
         return Object.keys(
             map
         ).map(
-            function (kategori) {
+            function (category) {
 
                 return {
 
+                    label:
+                        category,
+
                     kategori:
-                        kategori,
+                        category,
+
+                    value:
+                        map[category],
 
                     jumlah:
-                        map[kategori]
+                        map[category]
 
                 };
 
@@ -2460,11 +2822,11 @@
 
 
     /* ======================================================
-     * CHART EMPTY
+     * EMPTY CHART
      * ======================================================
      */
 
-    function showChartEmpty(
+    function showEmptyChart(
         ids,
         message
     ) {
@@ -2476,220 +2838,63 @@
 
 
         if (
-            canvas
+            !canvas
         ) {
 
-            const ctx =
-                canvas.getContext(
-                    "2d"
-                );
-
-
-            ctx.clearRect(
-                0,
-                0,
-                canvas.width,
-                canvas.height
-            );
-
-
-            ctx.save();
-
-
-            ctx.fillStyle =
-                "#6f7f8f";
-
-
-            ctx.font =
-                "14px Arial";
-
-
-            ctx.textAlign =
-                "center";
-
-
-            ctx.textBaseline =
-                "middle";
-
-
-            ctx.fillText(
+            warn(
                 message,
-                canvas.width / 2,
-                canvas.height / 2
+                ids
             );
 
-
-            ctx.restore();
 
             return;
 
         }
 
 
-        /*
-         * Kalau canvas belum ada,
-         * coba cari host berdasarkan
-         * ID panel.
-         */
-
-        const host =
-            findChartHost(
-                ids
+        const ctx =
+            canvas.getContext(
+                "2d"
             );
 
 
-        if (
-            host
-        ) {
-
-            host.innerHTML =
-                '<div style="' +
-                'display:flex;' +
-                'align-items:center;' +
-                'justify-content:center;' +
-                'height:240px;' +
-                'color:#718096;' +
-                'font-size:14px;' +
-                '">' +
-                escapeHTML(
-                    message
-                ) +
-                "</div>";
-
-        }
-
-    }
-
-
-    /* ======================================================
-     * MARK CHART AVAILABLE
-     * ======================================================
-     */
-
-    function markChartAvailable(
-        ids
-    ) {
-
-        ids.forEach(
-            function (id) {
-
-                const el =
-                    document.getElementById(
-                        id
-                    );
-
-
-                if (
-                    el
-                ) {
-
-                    el.dataset.chartReady =
-                        "true";
-
-                }
-
-            }
+        ctx.clearRect(
+            0,
+            0,
+            canvas.width,
+            canvas.height
         );
 
-    }
+
+        ctx.save();
 
 
-    /* ======================================================
-     * FIND CHART HOST
-     * ======================================================
-     */
-
-    function findChartHost(
-        ids
-    ) {
-
-        for (
-            let i = 0;
-            i < ids.length;
-            i++
-        ) {
-
-            const element =
-                document.getElementById(
-                    ids[i]
-                );
+        ctx.textAlign =
+            "center";
 
 
-            if (
-                element
-            ) {
-
-                return element;
-
-            }
-
-        }
+        ctx.textBaseline =
+            "middle";
 
 
-        /*
-         * Cari berdasarkan text heading
-         */
-
-        const headings =
-            Array.from(
-                document.querySelectorAll(
-                    "h2,h3,h4,h5,.card-title"
-                )
-            );
+        ctx.font =
+            "13px Arial";
 
 
-        const keywords = [
-
-            "kategori master kpi",
-
-            "indikator master kpi",
-
-            "distribusi data"
-
-        ];
+        ctx.fillStyle =
+            "#6f7f8f";
 
 
-        for (
-            let i = 0;
-            i < headings.length;
-            i++
-        ) {
-
-            const text =
-                dashboardNormalize(
-                    headings[i]
-                        .textContent
-                );
+        ctx.fillText(
+            message,
+            canvas.width /
+            2,
+            canvas.height /
+            2
+        );
 
 
-            for (
-                let j = 0;
-                j < keywords.length;
-                j++
-            ) {
-
-                if (
-                    text.indexOf(
-                        keywords[j]
-                    ) !== -1
-                ) {
-
-                    return (
-                        headings[i]
-                            .closest(
-                                ".card,.dashboard-card,.chart-card"
-                            ) ||
-                        headings[i].parentElement
-                    );
-
-                }
-
-            }
-
-        }
-
-
-        return null;
+        ctx.restore();
 
     }
 
@@ -2725,7 +2930,8 @@
 
         setText(
             [
-                "dbTotalKPI"
+                "dbTotalKPI",
+                "dbTotalMasterKPI"
             ],
             formatNumber(
                 data.totalMasterKPI
@@ -2765,16 +2971,6 @@
 
         setText(
             [
-                "systemVersion",
-                "dashboardSystemVersion"
-            ],
-            data.version ||
-            Dashboard.version
-        );
-
-
-        setText(
-            [
                 "systemDatabase",
                 "dashboardDatabaseStatus"
             ],
@@ -2790,6 +2986,16 @@
             "Connected"
         );
 
+
+        setText(
+            [
+                "systemVersion",
+                "dashboardSystemVersion"
+            ],
+            data.version ||
+            CONFIG.version
+        );
+
     }
 
 
@@ -2802,16 +3008,10 @@
         data
     ) {
 
-        const value =
+        const timestamp =
             data.generatedAt ||
             data.updatedAt ||
-            new Date().toISOString();
-
-
-        const formatted =
-            formatDateTime(
-                value
-            );
+            new Date();
 
 
         setText(
@@ -2820,7 +3020,68 @@
                 "dashboardLastUpdate",
                 "lastRefresh"
             ],
-            formatted
+            formatDateTime(
+                timestamp
+            )
+        );
+
+    }
+
+
+    /* ======================================================
+     * AUTO REFRESH
+     * ======================================================
+     */
+
+    function setupAutoRefresh() {
+
+        /*
+         * Selalu clear timer sebelumnya.
+         */
+
+        if (
+            state.refreshTimer
+        ) {
+
+            clearInterval(
+                state.refreshTimer
+            );
+
+
+            state.refreshTimer =
+                null;
+
+        }
+
+
+        const interval =
+            CONFIG.refreshMinutes *
+            60 *
+            1000;
+
+
+        state.refreshTimer =
+            setInterval(
+                function () {
+
+                    log(
+                        "Dashboard auto-refresh:",
+                        CONFIG.refreshMinutes,
+                        "menit"
+                    );
+
+
+                    renderDashboard();
+
+                },
+                interval
+            );
+
+
+        log(
+            "Dashboard auto-refresh:",
+            CONFIG.refreshMinutes,
+            "menit"
         );
 
     }
@@ -2871,12 +3132,6 @@
                 : "Gagal memuat Dashboard.";
 
 
-        warn(
-            "Dashboard error:",
-            message
-        );
-
-
         setText(
             [
                 "dashboardError"
@@ -2885,64 +3140,9 @@
         );
 
 
-        /*
-         * Jangan menghapus data chart
-         * yang sudah berhasil dirender.
-         */
-
-    }
-
-
-    /* ======================================================
-     * AUTO REFRESH
-     * ======================================================
-     */
-
-    function setupAutoRefresh() {
-
-        /*
-         * Hapus timer lama
-         */
-
-        if (
-            Dashboard.state.refreshTimer
-        ) {
-
-            clearInterval(
-                Dashboard.state.refreshTimer
-            );
-
-        }
-
-
-        const milliseconds =
-            Dashboard.state.refreshMinutes *
-            60 *
-            1000;
-
-
-        Dashboard.state.refreshTimer =
-            setInterval(
-                function () {
-
-                    log(
-                        "Dashboard auto-refresh:",
-                        Dashboard.state.refreshMinutes,
-                        "menit"
-                    );
-
-
-                    renderDashboard();
-
-                },
-                milliseconds
-            );
-
-
-        log(
-            "Dashboard auto-refresh:",
-            Dashboard.state.refreshMinutes,
-            "menit"
+        warn(
+            "Dashboard error:",
+            message
         );
 
     }
@@ -2959,7 +3159,9 @@
     ) {
 
         if (
-            !Array.isArray(ids)
+            !Array.isArray(
+                ids
+            )
         ) {
 
             ids =
@@ -2993,6 +3195,32 @@
 
 
     /* ======================================================
+     * VALUE OR
+     * ======================================================
+     */
+
+    function valueOr(
+        value,
+        fallback
+    ) {
+
+        if (
+            value === undefined ||
+            value === null ||
+            value === ""
+        ) {
+
+            return fallback;
+
+        }
+
+
+        return value;
+
+    }
+
+
+    /* ======================================================
      * NUMBER
      * ======================================================
      */
@@ -3002,8 +3230,8 @@
     ) {
 
         if (
-            value === null ||
             value === undefined ||
+            value === null ||
             value === ""
         ) {
 
@@ -3012,22 +3240,66 @@
         }
 
 
-        const n =
-            Number(
-                String(value)
-                    .replace(
-                        "%",
-                        ""
-                    )
-                    .replace(
-                        ",",
-                        "."
-                    )
+        if (
+            typeof value ===
+            "number"
+        ) {
+
+            return isFinite(
+                value
+            )
+                ? value
+                : 0;
+
+        }
+
+
+        let text =
+            String(
+                value
+            ).trim();
+
+
+        text =
+            text.replace(
+                "%",
+                ""
             );
 
 
-        return isFinite(n)
-            ? n
+        /*
+         * Handle:
+         *
+         * 97,17
+         * 97.17
+         */
+
+        if (
+            text.indexOf(",") !==
+            -1 &&
+            text.indexOf(".") ===
+            -1
+        ) {
+
+            text =
+                text.replace(
+                    ",",
+                    "."
+                );
+
+        }
+
+
+        const number =
+            Number(
+                text
+            );
+
+
+        return isFinite(
+            number
+        )
+            ? number
             : 0;
 
     }
@@ -3101,9 +3373,7 @@
                 )
             ) {
 
-                return String(
-                    value || "-"
-                );
+                return "-";
 
             }
 
@@ -3135,12 +3405,9 @@
 
         }
 
-
         catch (e) {
 
-            return String(
-                value || "-"
-            );
+            return "-";
 
         }
 
@@ -3148,61 +3415,7 @@
 
 
     /* ======================================================
-     * ESCAPE HTML
-     * ======================================================
-     */
-
-    function escapeHTML(
-        value
-    ) {
-
-        return String(
-            value
-        )
-            .replace(
-                /&/g,
-                "&amp;"
-            )
-            .replace(
-                /</g,
-                "&lt;"
-            )
-            .replace(
-                />/g,
-                "&gt;"
-            )
-            .replace(
-                /"/g,
-                "&quot;"
-            )
-            .replace(
-                /'/g,
-                "&#039;"
-            );
-
-    }
-
-
-    /* ======================================================
-     * NORMALIZE TEXT
-     * ======================================================
-     */
-
-    function dashboardNormalize(
-        value
-    ) {
-
-        return String(
-            value || ""
-        )
-            .trim()
-            .toLowerCase();
-
-    }
-
-
-    /* ======================================================
-     * PUBLIC API
+     * GLOBAL FUNCTIONS
      * ======================================================
      */
 
@@ -3215,17 +3428,13 @@
 
 
     window.refreshDashboard =
+        renderDashboard;
+
+
+    window.getDashboardData =
         function () {
 
-            return renderDashboard();
-
-        };
-
-
-    window.getDashboardState =
-        function () {
-
-            return Dashboard.state;
+            return state.data;
 
         };
 
@@ -3235,6 +3444,25 @@
      * ======================================================
      */
 
+    function bootDashboard() {
+
+        /*
+         * Beri kesempatan api.js
+         * melakukan initialization.
+         */
+
+        setTimeout(
+            function () {
+
+                initDashboard();
+
+            },
+            150
+        );
+
+    }
+
+
     if (
         document.readyState ===
         "loading"
@@ -3242,19 +3470,17 @@
 
         document.addEventListener(
             "DOMContentLoaded",
-            function () {
-
-                initDashboard();
-
-            },
+            bootDashboard,
             {
                 once: true
             }
         );
 
-    } else {
+    }
 
-        initDashboard();
+    else {
+
+        bootDashboard();
 
     }
 
