@@ -2,29 +2,40 @@
  * ==========================================================
  * Guardian KPI Web3
  * File    : dashboard.js
- * Version : 6.1.0 Enterprise
+ * Version : 6.2.0 Enterprise FINAL
  * ==========================================================
  *
  * Dashboard Frontend Enterprise
  *
- * Features:
- * - API readiness detection
- * - Dashboard API request
- * - Double-wrapper response support
- * - KPI statistic cards
- * - Anggota distribution doughnut
- * - Master KPI category doughnut
- * - Master KPI indicator bar
- * - KPI statistic bar
- * - Summary
- * - Database information
- * - System status
- * - Chart.js auto loader
- * - Gradient / pseudo 3D charts
- * - Chart destroy/recreate
- * - Auto refresh
- * - Error handling
- * - Global Dashboard API
+ * ==========================================================
+ * FEATURES
+ * ==========================================================
+ *
+ * 1. API resolver yang aman
+ * 2. Menunggu api.js siap
+ * 3. Mendukung window.API
+ * 4. Mendukung global API
+ * 5. Mendukung globalThis.API
+ * 6. Dashboard API
+ * 7. Double wrapper response
+ * 8. Statistik anggota
+ * 9. Statistik group
+ * 10. Statistik Master KPI
+ * 11. Statistik penilaian
+ * 12. Average KPI
+ * 13. Pie distribusi anggota
+ * 14. Pie kategori Master KPI
+ * 15. Bar indikator Master KPI
+ * 16. Bar statistik KPI
+ * 17. Ringkasan
+ * 18. Database info
+ * 19. System status
+ * 20. Chart.js loader
+ * 21. Gradient chart
+ * 22. Pseudo 3D visual
+ * 23. Auto refresh
+ * 24. Anti duplicate chart
+ * 25. Anti duplicate timer
  *
  * ==========================================================
  */
@@ -42,7 +53,7 @@
     const CONFIG = {
 
         version:
-            "6.1.0 Enterprise",
+            "6.2.0 Enterprise FINAL",
 
         refreshMinutes:
             5,
@@ -87,11 +98,14 @@
         refreshTimer:
             null,
 
+        lastRefresh:
+            null,
+
         chartReady:
             false,
 
-        lastRefresh:
-            null
+        apiReady:
+            false
 
     };
 
@@ -123,6 +137,13 @@
 
                 return state.data;
 
+            },
+
+        getAPI:
+            function () {
+
+                return resolveAPI();
+
             }
 
     };
@@ -133,7 +154,7 @@
 
 
     /* ======================================================
-     * LOGGING
+     * LOGGER
      * ======================================================
      */
 
@@ -219,7 +240,8 @@
 
 
         log(
-            "Guardian KPI Dashboard v6.1.0 Enterprise"
+            "Guardian KPI Dashboard " +
+            CONFIG.version
         );
 
 
@@ -264,7 +286,7 @@
 
 
     /* ======================================================
-     * REFRESH EVENTS
+     * BIND REFRESH EVENTS
      * ======================================================
      */
 
@@ -328,7 +350,7 @@
 
 
     /* ======================================================
-     * MAIN RENDER
+     * MAIN DASHBOARD RENDER
      * ======================================================
      */
 
@@ -339,7 +361,7 @@
         ) {
 
             log(
-                "Dashboard masih loading. Request dilewati."
+                "Dashboard masih loading."
             );
 
             return;
@@ -357,12 +379,14 @@
         try {
 
             log(
-                "Dashboard V6.1: requesting data..."
+                "Dashboard V6.2: requesting data..."
             );
 
 
             /*
-             * Tunggu API tersedia.
+             * ==========================================
+             * RESOLVE API
+             * ==========================================
              */
 
             const api =
@@ -372,7 +396,17 @@
 
 
             if (
-                !api ||
+                !api
+            ) {
+
+                throw new Error(
+                    "API tidak tersedia."
+                );
+
+            }
+
+
+            if (
                 typeof api.getDashboard !==
                 "function"
             ) {
@@ -384,8 +418,14 @@
             }
 
 
+            state.apiReady =
+                true;
+
+
             /*
-             * Request Dashboard.
+             * ==========================================
+             * REQUEST
+             * ==========================================
              */
 
             const response =
@@ -399,7 +439,9 @@
 
 
             /*
-             * Normalize response.
+             * ==========================================
+             * NORMALIZE
+             * ==========================================
              */
 
             const data =
@@ -429,14 +471,51 @@
                 new Date();
 
 
+            /*
+             * ==========================================
+             * LOG DATA UTAMA
+             * ==========================================
+             */
+
             log(
                 "Dashboard Data:",
                 data
             );
 
 
+            log(
+                "Dashboard Statistics:",
+                {
+
+                    totalAnggota:
+                        data.totalAnggota,
+
+                    totalGroup:
+                        data.totalGroup,
+
+                    totalMasterKPI:
+                        data.totalMasterKPI,
+
+                    totalPenilaian:
+                        data.totalPenilaian,
+
+                    anggotaAktif:
+                        data.anggotaAktif,
+
+                    anggotaNonAktif:
+                        data.anggotaNonAktif,
+
+                    averageKPI:
+                        data.averageKPI
+
+                }
+            );
+
+
             /*
-             * Render semua bagian.
+             * ==========================================
+             * RENDER CARDS
+             * ==========================================
              */
 
             renderStatistics(
@@ -444,40 +523,88 @@
             );
 
 
+            /*
+             * ==========================================
+             * RENDER SUMMARY
+             * ==========================================
+             */
+
             renderSummary(
                 data
             );
 
+
+            /*
+             * ==========================================
+             * RENDER STATISTICS CHART
+             * ==========================================
+             */
 
             renderStatisticsChart(
                 data
             );
 
 
+            /*
+             * ==========================================
+             * RENDER DISTRIBUTION
+             * ==========================================
+             */
+
             renderDistributionChart(
                 data
             );
 
+
+            /*
+             * ==========================================
+             * RENDER MASTER KPI CATEGORY
+             * ==========================================
+             */
 
             renderMasterKPICategoryChart(
                 data
             );
 
 
+            /*
+             * ==========================================
+             * RENDER MASTER KPI INDICATOR
+             * ==========================================
+             */
+
             renderMasterKPIIndicatorChart(
                 data
             );
 
+
+            /*
+             * ==========================================
+             * DATABASE
+             * ==========================================
+             */
 
             renderDatabaseInfo(
                 data
             );
 
 
+            /*
+             * ==========================================
+             * SYSTEM
+             * ==========================================
+             */
+
             renderSystemStatus(
                 data
             );
 
+
+            /*
+             * ==========================================
+             * LAST UPDATE
+             * ==========================================
+             */
 
             renderLastUpdate(
                 data
@@ -488,7 +615,7 @@
 
 
             log(
-                "Dashboard v6.1 render selesai."
+                "Dashboard v6.2 render selesai."
             );
 
         }
@@ -518,13 +645,147 @@
 
 
     /* ======================================================
-     * WAIT FOR API
+     * API RESOLVER
      * ======================================================
      *
-     * Menunggu api.js selesai membuat:
+     * Mencoba beberapa kemungkinan:
      *
-     * window.API
+     * 1. window.API
+     * 2. globalThis.API
+     * 3. global API
+     * 4. Function global scope
      *
+     * ======================================================
+     */
+
+    function resolveAPI() {
+
+        /*
+         * ----------------------------------------------
+         * 1. window.API
+         * ----------------------------------------------
+         */
+
+        try {
+
+            if (
+                window.API &&
+                typeof window.API.getDashboard ===
+                "function"
+            ) {
+
+                return window.API;
+
+            }
+
+        }
+
+        catch (e) {}
+
+
+        /*
+         * ----------------------------------------------
+         * 2. globalThis.API
+         * ----------------------------------------------
+         */
+
+        try {
+
+            if (
+                globalThis.API &&
+                typeof globalThis.API.getDashboard ===
+                "function"
+            ) {
+
+                return globalThis.API;
+
+            }
+
+        }
+
+        catch (e) {}
+
+
+        /*
+         * ----------------------------------------------
+         * 3. Global lexical API
+         *
+         * Jika api.js menggunakan:
+         *
+         * const API = {...}
+         *
+         * ----------------------------------------------
+         */
+
+        try {
+
+            if (
+                typeof API !==
+                "undefined"
+            ) {
+
+                if (
+                    API &&
+                    typeof API.getDashboard ===
+                    "function"
+                ) {
+
+                    return API;
+
+                }
+
+            }
+
+        }
+
+        catch (e) {}
+
+
+        /*
+         * ----------------------------------------------
+         * 4. Function global scope
+         *
+         * Dipakai sebagai fallback untuk
+         * global lexical binding.
+         * ----------------------------------------------
+         */
+
+        try {
+
+            const globalAPI =
+                Function(
+                    "return typeof API !== 'undefined' ? API : null;"
+                )();
+
+
+            if (
+                globalAPI &&
+                typeof globalAPI.getDashboard ===
+                "function"
+            ) {
+
+                return globalAPI;
+
+            }
+
+        }
+
+        catch (e) {}
+
+
+        /*
+         * ----------------------------------------------
+         * Tidak ditemukan.
+         * ----------------------------------------------
+         */
+
+        return null;
+
+    }
+
+
+    /* ======================================================
+     * WAIT FOR API
      * ======================================================
      */
 
@@ -549,21 +810,29 @@
                     Date.now();
 
 
+                let lastLog =
+                    0;
+
+
                 function check() {
 
+                    const api =
+                        resolveAPI();
+
+
                     if (
-                        window.API &&
-                        typeof window.API.getDashboard ===
+                        api &&
+                        typeof api.getDashboard ===
                         "function"
                     ) {
 
                         log(
-                            "API berhasil tersedia."
+                            "API berhasil ditemukan."
                         );
 
 
                         resolve(
-                            window.API
+                            api
                         );
 
 
@@ -572,9 +841,39 @@
                     }
 
 
-                    if (
+                    const elapsed =
                         Date.now() -
-                        started >=
+                        started;
+
+
+                    /*
+                     * Log setiap 2 detik.
+                     */
+
+                    if (
+                        elapsed -
+                        lastLog >=
+                        2000
+                    ) {
+
+                        lastLog =
+                            elapsed;
+
+
+                        log(
+                            "Menunggu API...",
+                            Math.round(
+                                elapsed /
+                                1000
+                            ),
+                            "detik"
+                        );
+
+                    }
+
+
+                    if (
+                        elapsed >=
                         timeout
                     ) {
 
@@ -614,25 +913,6 @@
     /* ======================================================
      * NORMALIZE API RESPONSE
      * ======================================================
-     *
-     * Mendukung:
-     *
-     * 1.
-     * {
-     *   success:true,
-     *   data:{...}
-     * }
-     *
-     * 2.
-     * {
-     *   success:true,
-     *   data:{
-     *      success:true,
-     *      data:{...}
-     *   }
-     * }
-     *
-     * ======================================================
      */
 
     function normalizeDashboardResponse(
@@ -649,7 +929,9 @@
 
 
         /*
-         * Level 1:
+         * ----------------------------------------------
+         * Wrapper pertama
+         * ----------------------------------------------
          */
 
         if (
@@ -659,7 +941,11 @@
         ) {
 
             /*
-             * Double wrapper.
+             * ------------------------------------------
+             * Double wrapper:
+             *
+             * response.data.data
+             * ------------------------------------------
              */
 
             if (
@@ -674,7 +960,11 @@
 
 
             /*
-             * Normal wrapper.
+             * ------------------------------------------
+             * Single wrapper:
+             *
+             * response.data
+             * ------------------------------------------
              */
 
             return response.data;
@@ -683,7 +973,9 @@
 
 
         /*
-         * Direct object.
+         * ----------------------------------------------
+         * Direct response
+         * ----------------------------------------------
          */
 
         if (
@@ -702,7 +994,7 @@
 
 
     /* ======================================================
-     * STATISTICS CARDS
+     * STATISTICS
      * ======================================================
      */
 
@@ -929,7 +1221,7 @@
 
 
     /* ======================================================
-     * KPI STATISTICS BAR
+     * STATISTICS BAR
      * ======================================================
      */
 
@@ -956,9 +1248,7 @@
                         "Anggota",
 
                     value:
-                        toNumber(
-                            data.totalAnggota
-                        )
+                        data.totalAnggota
 
                 },
 
@@ -967,9 +1257,7 @@
                         "Group",
 
                     value:
-                        toNumber(
-                            data.totalGroup
-                        )
+                        data.totalGroup
 
                 },
 
@@ -978,9 +1266,7 @@
                         "Master KPI",
 
                     value:
-                        toNumber(
-                            data.totalMasterKPI
-                        )
+                        data.totalMasterKPI
 
                 },
 
@@ -989,9 +1275,7 @@
                         "Penilaian",
 
                     value:
-                        toNumber(
-                            data.totalPenilaian
-                        )
+                        data.totalPenilaian
 
                 }
 
@@ -1056,10 +1340,6 @@
             data.distribution;
 
 
-        /*
-         * Fallback.
-         */
-
         if (
             !Array.isArray(
                 distribution
@@ -1075,9 +1355,7 @@
                         "Aktif",
 
                     value:
-                        toNumber(
-                            data.anggotaAktif
-                        )
+                        data.anggotaAktif
 
                 },
 
@@ -1086,9 +1364,7 @@
                         "Non Aktif",
 
                     value:
-                        toNumber(
-                            data.anggotaNonAktif
-                        )
+                        data.anggotaNonAktif
 
                 }
 
@@ -1157,9 +1433,7 @@
 
 
         /*
-         * Kalau backend belum mengirim
-         * array kategori, bangun dari
-         * raw Master KPI.
+         * Fallback dari raw Master KPI.
          */
 
         if (
@@ -1181,7 +1455,7 @@
 
 
         /*
-         * Tidak ada data.
+         * Jika masih kosong.
          */
 
         if (
@@ -1191,6 +1465,11 @@
             kategori.length ===
             0
         ) {
+
+            log(
+                "Kategori Master KPI belum tersedia."
+            );
+
 
             showEmptyChart(
                 [
@@ -1275,7 +1554,7 @@
 
 
         /*
-         * Fallback raw Master KPI.
+         * Fallback raw.
          */
 
         if (
@@ -1303,6 +1582,11 @@
             indikator.length ===
             0
         ) {
+
+            log(
+                "Indikator Master KPI belum tersedia."
+            );
+
 
             showEmptyChart(
                 [
@@ -1372,7 +1656,7 @@
 
 
     /* ======================================================
-     * LOAD CHART.JS
+     * CHART.JS LOADER
      * ======================================================
      */
 
@@ -1399,6 +1683,10 @@
                 reject
             ) {
 
+                /*
+                 * Jika script sudah ada.
+                 */
+
                 const existing =
                     document.querySelector(
                         'script[data-guardian-chartjs="true"]'
@@ -1413,7 +1701,7 @@
                         Date.now();
 
 
-                    const poll =
+                    const timer =
                         setInterval(
                             function () {
 
@@ -1422,7 +1710,7 @@
                                 ) {
 
                                     clearInterval(
-                                        poll
+                                        timer
                                     );
 
 
@@ -1447,7 +1735,7 @@
                                 ) {
 
                                     clearInterval(
-                                        poll
+                                        timer
                                     );
 
 
@@ -1468,6 +1756,10 @@
 
                 }
 
+
+                /*
+                 * Buat script.
+                 */
 
                 const script =
                     document.createElement(
@@ -1513,7 +1805,7 @@
 
                             reject(
                                 new Error(
-                                    "Chart.js loaded tetapi object Chart tidak tersedia."
+                                    "Chart.js tidak tersedia."
                                 )
                             );
 
@@ -1545,7 +1837,7 @@
 
 
     /* ======================================================
-     * DOUGHNUT CHART
+     * DOUGHNUT
      * ======================================================
      */
 
@@ -1556,13 +1848,36 @@
         centerText
     ) {
 
+        /*
+         * Pastikan Chart.js.
+         */
+
         if (
             !window.Chart
         ) {
 
-            warn(
-                "Chart.js tidak tersedia."
-            );
+            loadChartJS()
+                .then(
+                    function () {
+
+                        renderDoughnutChart(
+                            canvasIds,
+                            labels,
+                            values,
+                            centerText
+                        );
+
+                    }
+                )
+                .catch(
+                    function (err) {
+
+                        warn(
+                            err
+                        );
+
+                    }
+                );
 
 
             return;
@@ -1663,7 +1978,7 @@
                                     2,
 
                                 hoverOffset:
-                                    12
+                                    14
 
                             }
 
@@ -1696,16 +2011,13 @@
 
                             legend: {
 
-                                display:
-                                    true,
-
                                 position:
                                     "bottom",
 
                                 labels: {
 
                                     color:
-                                        "#d7e4ef",
+                                        "#d8e4ef",
 
                                     usePointStyle:
                                         true,
@@ -1714,14 +2026,7 @@
                                         "circle",
 
                                     padding:
-                                        15,
-
-                                    font: {
-
-                                        size:
-                                            11
-
-                                    }
+                                        15
 
                                 }
 
@@ -1742,7 +2047,7 @@
                                                 );
 
 
-                                            const percentage =
+                                            const percent =
                                                 total >
                                                 0
                                                     ? (
@@ -1761,7 +2066,7 @@
                                                 ": " +
                                                 value +
                                                 " (" +
-                                                percentage +
+                                                percent +
                                                 "%)"
                                             );
 
@@ -1792,7 +2097,7 @@
 
 
     /* ======================================================
-     * BAR CHART
+     * BAR
      * ======================================================
      */
 
@@ -1806,6 +2111,30 @@
         if (
             !window.Chart
         ) {
+
+            loadChartJS()
+                .then(
+                    function () {
+
+                        renderBarChart(
+                            canvasIds,
+                            labels,
+                            values,
+                            title
+                        );
+
+                    }
+                )
+                .catch(
+                    function (err) {
+
+                        warn(
+                            err
+                        );
+
+                    }
+                );
+
 
             return;
 
@@ -1981,7 +2310,7 @@
                                 grid: {
 
                                     color:
-                                        "rgba(255,255,255,0.07)"
+                                        "rgba(255,255,255,.07)"
 
                                 }
 
@@ -2019,6 +2348,30 @@
             !window.Chart
         ) {
 
+            loadChartJS()
+                .then(
+                    function () {
+
+                        renderHorizontalBarChart(
+                            canvasIds,
+                            labels,
+                            values,
+                            title
+                        );
+
+                    }
+                )
+                .catch(
+                    function (err) {
+
+                        warn(
+                            err
+                        );
+
+                    }
+                );
+
+
             return;
 
         }
@@ -2035,7 +2388,7 @@
         ) {
 
             warn(
-                "Canvas indikator Master KPI tidak ditemukan:",
+                "Canvas horizontal bar tidak ditemukan:",
                 canvasIds
             );
 
@@ -2214,7 +2567,7 @@
                                 grid: {
 
                                     color:
-                                        "rgba(255,255,255,0.07)"
+                                        "rgba(255,255,255,.07)"
 
                                 }
 
@@ -2534,7 +2887,7 @@
 
 
     /* ======================================================
-     * CENTER TEXT
+     * CENTER TEXT PLUGIN
      * ======================================================
      */
 
@@ -2582,6 +2935,10 @@
                         meta.data[0];
 
 
+                    const ctx =
+                        chart.ctx;
+
+
                     const x =
                         point.x;
 
@@ -2611,10 +2968,6 @@
                         );
 
 
-                    const ctx =
-                        chart.ctx;
-
-
                     ctx.save();
 
 
@@ -2627,7 +2980,7 @@
 
 
                     ctx.shadowColor =
-                        "rgba(0,0,0,.8)";
+                        "rgba(0,0,0,.85)";
 
 
                     ctx.shadowBlur =
@@ -2681,7 +3034,7 @@
 
 
     /* ======================================================
-     * SHADOW
+     * SHADOW PLUGIN
      * ======================================================
      */
 
@@ -2733,7 +3086,7 @@
 
 
     /* ======================================================
-     * BUILD CATEGORY FROM RAW KPI
+     * BUILD CATEGORY
      * ======================================================
      */
 
@@ -3036,7 +3389,7 @@
     function setupAutoRefresh() {
 
         /*
-         * Selalu clear timer sebelumnya.
+         * Clear timer sebelumnya.
          */
 
         if (
@@ -3267,13 +3620,6 @@
             );
 
 
-        /*
-         * Handle:
-         *
-         * 97,17
-         * 97.17
-         */
-
         if (
             text.indexOf(",") !==
             -1 &&
@@ -3415,7 +3761,7 @@
 
 
     /* ======================================================
-     * GLOBAL FUNCTIONS
+     * PUBLIC GLOBAL FUNCTIONS
      * ======================================================
      */
 
@@ -3439,16 +3785,24 @@
         };
 
 
+    window.getDashboardAPI =
+        function () {
+
+            return resolveAPI();
+
+        };
+
+
     /* ======================================================
-     * DOM READY
+     * BOOT
      * ======================================================
      */
 
     function bootDashboard() {
 
         /*
-         * Beri kesempatan api.js
-         * melakukan initialization.
+         * Buffer kecil agar api.js
+         * mempunyai waktu initialization.
          */
 
         setTimeout(
