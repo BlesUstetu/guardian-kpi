@@ -1,35 +1,35 @@
-<!-- ==========================================================
-     Guardian KPI Web3
-     dashboard.html
-     Version : 2.0.0 Production
-=========================================================== -->
+<!--
+==========================================================
+Guardian KPI Web3
+File : dashboard.html
+Version : 5.0.0 Enterprise
+==========================================================
+-->
 
-<div class="container-fluid">
+<div class="container-fluid py-3">
 
-    <!-- ======================================================
+    <!-- ==================================================
          HEADER
-    ======================================================= -->
+    ================================================== -->
 
     <div class="d-flex justify-content-between align-items-center mb-4">
 
         <div>
 
-            <h2 class="fw-bold text-info">
-
+            <h2 class="fw-bold text-info mb-1">
+                <i class="bi bi-speedometer2"></i>
                 Dashboard
-
             </h2>
 
             <small class="text-secondary">
-
-                Guardian KPI Web3 Dashboard
-
+                Guardian KPI Web3 — Enterprise Analytics
             </small>
 
         </div>
 
         <button
-            class="btn btn-info"
+            type="button"
+            class="btn btn-outline-info"
             onclick="refreshDashboard()">
 
             <i class="bi bi-arrow-clockwise"></i>
@@ -40,454 +40,58 @@
 
     </div>
 
-    <!-- ======================================================
-         STATISTIC CARD
-    ======================================================= -->
 
-    <div class="row g-4 mb-4">
+    <!-- ==================================================
+         CHART 1
+         STATISTIK KPI
+    ================================================== -->
 
-        <!-- Total Anggota -->
+    <div class="card bg-dark border-info shadow-lg mb-4">
 
-        <div class="col-xl-3 col-md-6">
+        <div class="card-header border-info">
 
-            <div class="card bg-dark border-info shadow h-100">
+            <div class="d-flex justify-content-between align-items-center">
 
-                <div class="card-body">
+                <div>
 
-                    <div
-                        class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 text-info fw-bold">
 
-                        <div>
-
-                            <small class="text-secondary">
-
-                                Total Anggota
-
-                            </small>
-
-                            <h2
-                                id="totalAnggota"
-                                class="fw-bold text-info mt-2">
-
-                                ...
-
-                            </h2>
-
-                        </div>
-
-                        <div class="fs-1 text-info">
-
-                            <i class="bi bi-people-fill"></i>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <!-- Aktif -->
-
-        <div class="col-xl-3 col-md-6">
-
-            <div class="card bg-dark border-success shadow h-100">
-
-                <div class="card-body">
-
-                    <div
-                        class="d-flex justify-content-between align-items-center">
-
-                        <div>
-
-                            <small class="text-secondary">
-
-                                Anggota Aktif
-
-                            </small>
-
-                            <h2
-                                id="anggotaAktif"
-                                class="fw-bold text-success mt-2">
-
-                                ...
-
-                            </h2>
-
-                        </div>
-
-                        <div class="fs-1 text-success">
-
-                            <i class="bi bi-person-check-fill"></i>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <!-- Non Aktif -->
-
-        <div class="col-xl-3 col-md-6">
-
-            <div class="card bg-dark border-danger shadow h-100">
-
-                <div class="card-body">
-
-                    <div
-                        class="d-flex justify-content-between align-items-center">
-
-                        <div>
-
-                            <small class="text-secondary">
-
-                                Non Aktif
-
-                            </small>
-
-                            <h2
-                                id="anggotaNonAktif"
-                                class="fw-bold text-danger mt-2">
-
-                                ...
-
-                            </h2>
-
-                        </div>
-
-                        <div class="fs-1 text-danger">
-
-                            <i class="bi bi-person-x-fill"></i>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <!-- Group -->
-
-        <div class="col-xl-3 col-md-6">
-
-            <div class="card bg-dark border-warning shadow h-100">
-
-                <div class="card-body">
-
-                    <div
-                        class="d-flex justify-content-between align-items-center">
-
-                        <div>
-
-                            <small class="text-secondary">
-
-                                Total Group
-
-                            </small>
-
-                            <h2
-                                id="totalGroup"
-                                class="fw-bold text-warning mt-2">
-
-                                ...
-
-                            </h2>
-
-                        </div>
-
-                        <div class="fs-1 text-warning">
-
-                            <i class="bi bi-diagram-3-fill"></i>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-    <!-- ======================================================
-         ROW 2
-    ======================================================= -->
-
-    <div class="row g-4 mb-4">
-
-        <!-- Master KPI -->
-
-        <div class="col-xl-6">
-
-            <div class="card bg-dark border-primary shadow h-100">
-
-                <div class="card-body">
-
-                    <div
-                        class="d-flex justify-content-between align-items-center">
-
-                        <div>
-
-                            <small class="text-secondary">
-
-                                Total Master KPI
-
-                            </small>
-
-                            <h2
-                                id="totalMasterKPI"
-                                class="fw-bold text-primary mt-2">
-
-                                ...
-
-                            </h2>
-
-                        </div>
-
-                        <div class="fs-1 text-primary">
-
-                            <i class="bi bi-bar-chart-fill"></i>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <!-- Penilaian -->
-
-        <div class="col-xl-6">
-
-            <div class="card bg-dark border-info shadow h-100">
-
-                <div class="card-body">
-
-                    <div
-                        class="d-flex justify-content-between align-items-center">
-
-                        <div>
-
-                            <small class="text-secondary">
-
-                                Total Penilaian
-
-                            </small>
-
-                            <h2
-                                id="totalPenilaian"
-                                class="fw-bold text-info mt-2">
-
-                                ...
-
-                            </h2>
-
-                        </div>
-
-                        <div class="fs-1 text-info">
-
-                            <i class="bi bi-clipboard-data-fill"></i>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-    <!-- ======================================================
-         GRAFIK & RINGKASAN
-    ======================================================= -->
-
-    <div class="row g-4 mb-4">
-
-        <!-- Grafik KPI -->
-
-        <div class="col-xl-8">
-
-            <div class="card bg-dark border-info shadow h-100">
-
-                <div class="card-header border-secondary">
-
-                    <h5 class="mb-0 text-info">
-
-                        <i class="bi bi-bar-chart-line-fill me-2"></i>
+                        <i class="bi bi-bar-chart-fill"></i>
 
                         Statistik KPI
 
                     </h5>
 
-                </div>
+                    <small class="text-secondary">
 
-                <div class="card-body">
+                        Ringkasan data utama Guardian KPI
 
-                    <canvas
-                        id="dashboardChart"
-                        height="120">
-
-                    </canvas>
+                    </small>
 
                 </div>
+
+                <span
+                    id="dashboardGeneratedAt"
+                    class="small text-secondary">
+
+                    --
+
+                </span>
 
             </div>
 
         </div>
 
-        <!-- Ringkasan -->
 
-        <div class="col-xl-4">
+        <div class="card-body">
 
-            <div class="card bg-dark border-secondary shadow h-100">
+            <div
+                class="dashboard-chart-container"
+                style="height:340px;">
 
-                <div class="card-header border-secondary">
-
-                    <h5 class="mb-0 text-info">
-
-                        Ringkasan
-
-                    </h5>
-
-                </div>
-
-                <div class="card-body">
-
-                    <table
-                        class="table table-dark table-borderless align-middle mb-0">
-
-                        <tbody>
-
-                            <tr>
-
-                                <td>
-
-                                    Total Anggota
-
-                                </td>
-
-                                <td
-                                    class="text-end fw-bold text-info"
-                                    id="summaryTotalAnggota">
-
-                                    ...
-
-                                </td>
-
-                            </tr>
-
-                            <tr>
-
-                                <td>
-
-                                    Anggota Aktif
-
-                                </td>
-
-                                <td
-                                    class="text-end fw-bold text-success"
-                                    id="summaryAktif">
-
-                                    ...
-
-                                </td>
-
-                            </tr>
-
-                            <tr>
-
-                                <td>
-
-                                    Non Aktif
-
-                                </td>
-
-                                <td
-                                    class="text-end fw-bold text-danger"
-                                    id="summaryNonAktif">
-
-                                    ...
-
-                                </td>
-
-                            </tr>
-
-                            <tr>
-
-                                <td>
-
-                                    Total Group
-
-                                </td>
-
-                                <td
-                                    class="text-end fw-bold text-warning"
-                                    id="summaryGroup">
-
-                                    ...
-
-                                </td>
-
-                            </tr>
-
-                            <tr>
-
-                                <td>
-
-                                    Master KPI
-
-                                </td>
-
-                                <td
-                                    class="text-end fw-bold text-primary"
-                                    id="summaryKPI">
-
-                                    ...
-
-                                </td>
-
-                            </tr>
-
-                            <tr>
-
-                                <td>
-
-                                    Total Penilaian
-
-                                </td>
-
-                                <td
-                                    class="text-end fw-bold text-info"
-                                    id="summaryPenilaian">
-
-                                    ...
-
-                                </td>
-
-                            </tr>
-
-                        </tbody>
-
-                    </table>
-
-                </div>
+                <canvas
+                    id="dashboardChart">
+                </canvas>
 
             </div>
 
@@ -495,390 +99,53 @@
 
     </div>
 
-    <!-- ======================================================
-         ROW 3
-         AKTIVITAS & QUICK MENU
-    ======================================================= -->
+
+    <!-- ==================================================
+         CHART 2 + CHART 3
+         DISTRIBUSI + KATEGORI
+    ================================================== -->
 
     <div class="row g-4 mb-4">
 
-        <!-- Aktivitas -->
 
-        <div class="col-xl-8">
+        <!-- ==============================================
+             DISTRIBUSI DATA
+        =============================================== -->
 
-            <div class="card bg-dark border-info shadow h-100">
+        <div class="col-lg-5">
 
-                <div class="card-header">
+            <div class="card bg-dark border-info shadow-lg h-100">
 
-                    <h5 class="mb-0 text-info">
+                <div class="card-header border-info">
 
-                        <i class="bi bi-clock-history me-2"></i>
+                    <h5 class="mb-0 text-info fw-bold">
 
-                        Aktivitas Terbaru
-
-                    </h5>
-
-                </div>
-
-                <div class="card-body p-0">
-
-                    <table
-                        class="table table-dark table-hover mb-0">
-
-                        <thead>
-
-                            <tr>
-
-                                <th width="170">
-
-                                    Waktu
-
-                                </th>
-
-                                <th>
-
-                                    Aktivitas
-
-                                </th>
-
-                                <th width="120">
-
-                                    Status
-
-                                </th>
-
-                            </tr>
-
-                        </thead>
-
-                        <tbody id="dashboardActivity">
-
-                            <tr>
-
-                                <td colspan="3"
-                                    class="text-center text-secondary">
-
-                                    Belum ada aktivitas.
-
-                                </td>
-
-                            </tr>
-
-                        </tbody>
-
-                    </table>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <!-- Quick Action -->
-
-        <div class="col-xl-4">
-
-            <div class="card bg-dark border-success shadow h-100">
-
-                <div class="card-header">
-
-                    <h5 class="mb-0 text-success">
-
-                        Quick Action
-
-                    </h5>
-
-                </div>
-
-                <div class="card-body d-grid gap-3">
-
-                    <button
-                        class="btn btn-info"
-
-                        onclick="loadPage('anggota')">
-
-                        <i class="bi bi-people-fill me-2"></i>
-
-                        Kelola Anggota
-
-                    </button>
-
-                    <button
-                        class="btn btn-warning"
-
-                        onclick="loadPage('group')">
-
-                        <i class="bi bi-diagram-3-fill me-2"></i>
-
-                        Kelola Group
-
-                    </button>
-
-                    <button
-                        class="btn btn-primary"
-
-                        onclick="loadPage('masterkpi')">
-
-                        <i class="bi bi-bar-chart-fill me-2"></i>
-
-                        Master KPI
-
-                    </button>
-
-                    <button
-                        class="btn btn-success"
-
-                        onclick="loadPage('penilaian')">
-
-                        <i class="bi bi-clipboard-data-fill me-2"></i>
-
-                        Penilaian KPI
-
-                    </button>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-    <!-- ======================================================
-         ROW 4
-         STATUS SISTEM
-    ======================================================= -->
-
-    <div class="row g-4 mb-4">
-
-        <div class="col-xl-6">
-
-            <div class="card bg-dark border-secondary shadow">
-
-                <div class="card-header">
-
-                    <h5 class="mb-0 text-info">
-
-                        Status Sistem
-
-                    </h5>
-
-                </div>
-
-                <div class="card-body">
-
-                    <table
-                        class="table table-dark table-borderless mb-0">
-
-                        <tbody>
-
-                            <tr>
-
-                                <td>
-
-                                    REST API
-
-                                </td>
-
-                                <td
-                                    class="text-end">
-
-                                    <span
-                                        class="badge bg-success">
-
-                                        Online
-
-                                    </span>
-
-                                </td>
-
-                            </tr>
-
-                            <tr>
-
-                                <td>
-
-                                    Database
-
-                                </td>
-
-                                <td
-                                    class="text-end">
-
-                                    <span
-                                        class="badge bg-success">
-
-                                        Connected
-
-                                    </span>
-
-                                </td>
-
-                            </tr>
-
-                            <tr>
-
-                                <td>
-
-                                    Version
-
-                                </td>
-
-                                <td
-                                    class="text-end">
-
-                                    v2.0 Production
-
-                                </td>
-
-                            </tr>
-
-                        </tbody>
-
-                    </table>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <div class="col-xl-6">
-
-            <div class="card bg-dark border-secondary shadow">
-
-                <div class="card-header">
-
-                    <h5 class="mb-0 text-info">
-
-                        Informasi Database
-
-                    </h5>
-
-                </div>
-
-                <div class="card-body">
-
-                    <table
-                        class="table table-dark table-borderless mb-0">
-
-                        <tbody>
-
-                            <tr>
-
-                                <td>
-
-                                    Total Anggota
-
-                                </td>
-
-                                <td
-                                    id="dbAnggota"
-                                    class="text-end">
-
-                                    ...
-
-                                </td>
-
-                            </tr>
-
-                            <tr>
-
-                                <td>
-
-                                    Total Group
-
-                                </td>
-
-                                <td
-                                    id="dbGroup"
-                                    class="text-end">
-
-                                    ...
-
-                                </td>
-
-                            </tr>
-
-                            <tr>
-
-                                <td>
-
-                                    Total KPI
-
-                                </td>
-
-                                <td
-                                    id="dbKPI"
-                                    class="text-end">
-
-                                    ...
-
-                                </td>
-
-                            </tr>
-
-                            <tr>
-
-                                <td>
-
-                                    Total Penilaian
-
-                                </td>
-
-                                <td
-                                    id="dbPenilaian"
-                                    class="text-end">
-
-                                    ...
-
-                                </td>
-
-                            </tr>
-
-                        </tbody>
-
-                    </table>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-    <!-- ======================================================
-         FOOTER DASHBOARD
-    ======================================================= -->
-
-    <div class="row g-4 mb-4">
-
-        <!-- Grafik Distribusi -->
-
-        <div class="col-xl-6">
-
-            <div class="card bg-dark border-info shadow h-100">
-
-                <div class="card-header">
-
-                    <h5 class="mb-0 text-info">
-
-                        <i class="bi bi-pie-chart-fill me-2"></i>
+                        <i class="bi bi-pie-chart-fill"></i>
 
                         Distribusi Data
 
                     </h5>
 
+                    <small class="text-secondary">
+
+                        Status Anggota
+
+                    </small>
+
                 </div>
+
 
                 <div class="card-body">
 
-                    <canvas
-                        id="dashboardPieChart"
-                        height="180">
+                    <div
+                        class="dashboard-chart-container"
+                        style="height:320px;">
 
-                    </canvas>
+                        <canvas
+                            id="dashboardPieChart">
+                        </canvas>
+
+                    </div>
 
                 </div>
 
@@ -886,129 +153,71 @@
 
         </div>
 
-        <!-- Informasi -->
 
-        <div class="col-xl-6">
+        <!-- ==============================================
+             KATEGORI MASTER KPI
+        =============================================== -->
 
-            <div class="card bg-dark border-secondary shadow h-100">
+        <div class="col-lg-7">
 
-                <div class="card-header">
+            <div class="card bg-dark border-info shadow-lg h-100">
 
-                    <h5 class="mb-0 text-info">
+                <div class="card-header border-info">
 
-                        Informasi Aplikasi
+                    <div
+                        class="d-flex justify-content-between align-items-center">
 
-                    </h5>
+                        <div>
+
+                            <h5 class="mb-0 text-info fw-bold">
+
+                                <i class="bi bi-pie-chart"></i>
+
+                                Kategori Master KPI
+
+                            </h5>
+
+                            <small class="text-secondary">
+
+                                Distribusi indikator berdasarkan kategori
+
+                            </small>
+
+                        </div>
+
+                        <span
+                            id="kategoriKPIStatus"
+                            class="badge bg-secondary">
+
+                            Memuat...
+
+                        </span>
+
+                    </div>
 
                 </div>
 
+
                 <div class="card-body">
 
-                    <table
-                        class="table table-dark table-borderless align-middle mb-0">
+                    <div
+                        class="dashboard-chart-container"
+                        style="height:320px;">
 
-                        <tbody>
+                        <canvas
+                            id="dashboardKategoriChart">
+                        </canvas>
 
-                            <tr>
+                    </div>
 
-                                <td width="180">
 
-                                    Nama Aplikasi
+                    <div
+                        id="kategoriKPINotice"
+                        class="text-center text-secondary d-none">
 
-                                </td>
+                        Data kategori Master KPI belum tersedia.
 
-                                <td>
-
-                                    Guardian KPI Web3
-
-                                </td>
-
-                            </tr>
-
-                            <tr>
-
-                                <td>
-
-                                    Versi
-
-                                </td>
-
-                                <td>
-
-                                    v2.0 Production
-
-                                </td>
-
-                            </tr>
-
-                            <tr>
-
-                                <td>
-
-                                    Backend
-
-                                </td>
-
-                                <td>
-
-                                    Google Apps Script REST API
-
-                                </td>
-
-                            </tr>
-
-                            <tr>
-
-                                <td>
-
-                                    Database
-
-                                </td>
-
-                                <td>
-
-                                    Google Spreadsheet
-
-                                </td>
-
-                            </tr>
-
-                            <tr>
-
-                                <td>
-
-                                    Frontend
-
-                                </td>
-
-                                <td>
-
-                                    Bootstrap 5 + JavaScript
-
-                                </td>
-
-                            </tr>
-
-                            <tr>
-
-                                <td>
-
-                                    Last Refresh
-
-                                </td>
-
-                                <td
-                                    id="dashboardLastRefresh">
-
-                                    -
-
-                                </td>
-
-                            </tr>
-
-                        </tbody>
-
-                    </table>
+                    </div>
 
                 </div>
 
@@ -1018,10 +227,477 @@
 
     </div>
 
+
+    <!-- ==================================================
+         CHART 4
+         INDIKATOR MASTER KPI
+    ================================================== -->
+
+    <div class="card bg-dark border-info shadow-lg mb-4">
+
+        <div class="card-header border-info">
+
+            <div
+                class="d-flex justify-content-between align-items-center">
+
+                <div>
+
+                    <h5 class="mb-0 text-info fw-bold">
+
+                        <i class="bi bi-bar-chart-steps"></i>
+
+                        Indikator Master KPI
+
+                    </h5>
+
+                    <small class="text-secondary">
+
+                        Perbandingan bobot indikator KPI aktif
+
+                    </small>
+
+                </div>
+
+                <span
+                    id="indikatorKPIStatus"
+                    class="badge bg-info">
+
+                    --
+
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="card-body">
+
+            <div
+                class="dashboard-chart-container"
+                style="height:430px;">
+
+                <canvas
+                    id="dashboardIndikatorChart">
+                </canvas>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==================================================
+         RINGKASAN
+    ================================================== -->
+
+    <div class="card bg-dark border-secondary shadow-sm mb-4">
+
+        <div class="card-header border-secondary">
+
+            <h5 class="mb-0">
+
+                <i class="bi bi-list-check"></i>
+
+                Ringkasan
+
+            </h5>
+
+        </div>
+
+
+        <div class="card-body">
+
+            <div class="row g-3 text-center">
+
+
+                <div class="col-6 col-md-3">
+
+                    <div class="border rounded p-3">
+
+                        <div class="text-secondary small">
+                            Anggota
+                        </div>
+
+                        <div
+                            id="summaryTotalAnggota"
+                            class="fs-3 fw-bold text-info">
+
+                            --
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-6 col-md-3">
+
+                    <div class="border rounded p-3">
+
+                        <div class="text-secondary small">
+                            Aktif
+                        </div>
+
+                        <div
+                            id="summaryAnggotaAktif"
+                            class="fs-3 fw-bold text-success">
+
+                            --
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-6 col-md-3">
+
+                    <div class="border rounded p-3">
+
+                        <div class="text-secondary small">
+                            Group
+                        </div>
+
+                        <div
+                            id="summaryTotalGroup"
+                            class="fs-3 fw-bold text-warning">
+
+                            --
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-6 col-md-3">
+
+                    <div class="border rounded p-3">
+
+                        <div class="text-secondary small">
+                            Master KPI
+                        </div>
+
+                        <div
+                            id="summaryTotalMasterKPI"
+                            class="fs-3 fw-bold text-primary">
+
+                            --
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-12">
+
+                    <div class="border rounded p-3">
+
+                        <div class="text-secondary small">
+                            Total Penilaian
+                        </div>
+
+                        <div
+                            id="summaryTotalPenilaian"
+                            class="fs-2 fw-bold text-info">
+
+                            --
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==================================================
+         AKTIVITAS TERBARU
+    ================================================== -->
+
+    <div class="card bg-dark border-secondary shadow-sm mb-4">
+
+        <div class="card-header border-secondary">
+
+            <h5 class="mb-0">
+
+                <i class="bi bi-clock-history"></i>
+
+                Aktivitas Terbaru
+
+            </h5>
+
+        </div>
+
+
+        <div class="card-body">
+
+            <div
+                id="dashboardActivity"
+                class="text-secondary text-center">
+
+                Memuat aktivitas...
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==================================================
+         QUICK ACTION
+    ================================================== -->
+
+    <div class="card bg-dark border-secondary shadow-sm mb-4">
+
+        <div class="card-header border-secondary">
+
+            <h5 class="mb-0">
+
+                <i class="bi bi-lightning-charge-fill"></i>
+
+                Quick Action
+
+            </h5>
+
+        </div>
+
+
+        <div class="card-body">
+
+            <div class="d-flex flex-wrap gap-2">
+
+                <button
+                    type="button"
+                    class="btn btn-outline-info"
+                    onclick="openPenilaianModal()">
+
+                    <i class="bi bi-plus-circle"></i>
+
+                    Penilaian Baru
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="btn btn-outline-primary"
+                    onclick="openMasterKPIModal()">
+
+                    <i class="bi bi-plus-circle"></i>
+
+                    Master KPI
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="btn btn-outline-success"
+                    onclick="openAnggotaModal()">
+
+                    <i class="bi bi-person-plus"></i>
+
+                    Anggota
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==================================================
+         STATUS SISTEM
+    ================================================== -->
+
+    <div class="card bg-dark border-secondary shadow-sm mb-4">
+
+        <div class="card-header border-secondary">
+
+            <h5 class="mb-0">
+
+                <i class="bi bi-cpu"></i>
+
+                Status Sistem
+
+            </h5>
+
+        </div>
+
+
+        <div class="card-body">
+
+            <div class="row g-3">
+
+
+                <div class="col-md-4">
+
+                    <div
+                        class="d-flex justify-content-between align-items-center">
+
+                        <span>
+                            API
+                        </span>
+
+                        <span
+                            id="systemAPIStatus"
+                            class="badge bg-secondary">
+
+                            Checking
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <div
+                        class="d-flex justify-content-between align-items-center">
+
+                        <span>
+                            Database
+                        </span>
+
+                        <span
+                            id="systemDatabaseStatus"
+                            class="badge bg-secondary">
+
+                            Checking
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <div
+                        class="d-flex justify-content-between align-items-center">
+
+                        <span>
+                            Dashboard
+                        </span>
+
+                        <span
+                            id="systemDashboardStatus"
+                            class="badge bg-success">
+
+                            Online
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==================================================
+         INFORMASI APLIKASI
+    ================================================== -->
+
+    <div class="text-center text-secondary small pb-3">
+
+        Guardian KPI Web3
+
+        <span class="mx-1">•</span>
+
+        Dashboard v5 Enterprise
+
+        <span class="mx-1">•</span>
+
+        <span id="dashboardVersion">
+            5.0.0
+        </span>
+
+    </div>
+
 </div>
 
+
 <!-- ======================================================
-     CHART.JS
+     DASHBOARD STYLE
 ====================================================== -->
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+
+.dashboard-chart-container {
+
+    position: relative;
+
+    width: 100%;
+
+}
+
+
+.dashboard-chart-container canvas {
+
+    width: 100% !important;
+
+    height: 100% !important;
+
+}
+
+
+.card {
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+
+}
+
+
+.card:hover {
+
+    box-shadow:
+        0 0 20px
+        rgba(13, 202, 240, 0.08);
+
+}
+
+
+#dashboardActivity {
+
+    min-height: 50px;
+
+}
+
+
+@media (max-width: 768px) {
+
+    .dashboard-chart-container {
+
+        height: 280px !important;
+
+    }
+
+}
+
+</style>
