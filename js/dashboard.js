@@ -1463,51 +1463,119 @@ window.destroyDashboard =
 
 
 /* ==========================================================
- * DOM READY
+ * DYNAMIC PAGE OBSERVER
  *
- * Penting:
- * Guardian KPI menggunakan kemungkinan halaman
- * dinamis. Karena itu init hanya dilakukan jika
- * elemen Dashboard sudah tersedia.
+ * Guardian KPI menggunakan loadPage() untuk memasukkan
+ * halaman secara dinamis.
+ *
+ * MutationObserver memastikan Dashboard otomatis
+ * diinisialisasi setelah dashboard.html masuk ke DOM.
  * ==========================================================
  */
 
-document.addEventListener(
-    "DOMContentLoaded",
-    function() {
+let dashboardObserver = null;
 
-        if (
-            Dashboard.isDashboardVisible()
-        ) {
+function startDashboardObserver() {
 
-            Dashboard.init();
+    /*
+     * Jika Dashboard sudah ada saat script dijalankan,
+     * langsung initialize.
+     */
+
+    if (
+        Dashboard.isDashboardVisible()
+    ) {
+
+        Dashboard.init();
+
+        return;
+
+    }
+
+    /*
+     * Hindari membuat observer lebih dari satu.
+     */
+
+    if (dashboardObserver) {
+
+        return;
+
+    }
+
+    dashboardObserver =
+        new MutationObserver(
+            function() {
+
+                if (
+                    Dashboard.isDashboardVisible()
+                ) {
+
+                    /*
+                     * Dashboard sudah masuk DOM.
+                     */
+
+                    Dashboard.init();
+
+                    /*
+                     * Tidak perlu terus mengamati
+                     * setelah Dashboard berhasil ditemukan.
+                     */
+
+                    if (dashboardObserver) {
+
+                        dashboardObserver.disconnect();
+
+                        dashboardObserver =
+                            null;
+
+                    }
+
+                }
+
+            }
+        );
+
+    dashboardObserver.observe(
+
+        document.body,
+
+        {
+
+            childList: true,
+
+            subtree: true
 
         }
 
-    }
-);
+    );
+
+}
 
 
 /* ==========================================================
- * PAGE SHOW
+ * START OBSERVER
  * ==========================================================
  */
 
-window.addEventListener(
-    "pageshow",
-    function() {
+if (
+    document.readyState === "loading"
+) {
 
-        if (
-            Dashboard.isDashboardVisible() &&
-            !Dashboard.state.initialized
-        ) {
+    document.addEventListener(
+        "DOMContentLoaded",
+        function() {
 
-            Dashboard.init();
+            startDashboardObserver();
 
         }
+    );
 
-    }
-);
+}
+else {
+
+    startDashboardObserver();
+
+}
 
 
 /* ==========================================================
