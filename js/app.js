@@ -1,27 +1,23 @@
 /**
  * ==========================================================
- * GUARDIAN KPI
- * UI CONTROLLER
+ * GUARDIAN KPI WEB3
+ * APP.JS — UI CONTROLLER
  * ==========================================================
  *
  * Fungsi:
+ * - Hamburger menu
+ * - Dropdown Dashboard / Settings
+ * - Dark / Light mode
+ * - Settings PIN
+ * - Page loader
+ * - Menjalankan initializer halaman
  *
- * 1. Hamburger dropdown
- * 2. Dashboard navigation
- * 3. Settings navigation
- * 4. PIN Settings
- * 5. Dark / Light mode
- * 6. Dynamic page loader
- *
- * PENTING:
- *
- * File ini TIDAK mengolah data KPI.
- *
- * Data tetap diproses oleh:
- *
- * dashboard.js
- * api.js
- * backend Google Apps Script
+ * TIDAK mengubah:
+ * - api.js
+ * - dashboard.js
+ * - backend Apps Script
+ * - data KPI
+ * - chart
  *
  * ==========================================================
  */
@@ -30,136 +26,258 @@
 
 
 /* ==========================================================
-   STORAGE KEYS
+   STORAGE
 ========================================================== */
 
-const THEME_KEY =
+const GKP_THEME_KEY =
     "guardianKPI.theme";
 
-const SETTINGS_PIN_KEY =
+const GKP_PIN_KEY =
     "guardianKPI.settingsPinHash";
 
-const SETTINGS_SESSION_KEY =
+const GKP_SETTINGS_SESSION =
     "guardianKPI.settingsUnlocked";
 
 
 /* ==========================================================
-   GLOBAL
+   STATE
 ========================================================== */
 
-let currentPage =
+let gkpCurrentPage =
     "dashboard";
 
 
 /* ==========================================================
-   PAGE INFORMATION
-========================================================== */
-
-const PAGE_INFO = {
-
-    dashboard: {
-
-        title: "Dashboard"
-
-    },
-
-    setting: {
-
-        title: "Settings"
-
-    },
-
-    anggota: {
-
-        title: "Anggota"
-
-    },
-
-    group: {
-
-        title: "Group"
-
-    },
-
-    masterkpi: {
-
-        title: "Master KPI"
-
-    },
-
-    penilaian: {
-
-        title: "Penilaian"
-
-    }
-
-};
-
-
-/* ==========================================================
-   DOM READY
+   INITIALIZATION
 ========================================================== */
 
 document.addEventListener(
     "DOMContentLoaded",
     function () {
 
-        initTheme();
+        console.log(
+            "Guardian KPI UI initialized."
+        );
 
-        initMenu();
 
-        initSettings();
+        gkpInitTheme();
 
-        loadPage("dashboard");
+        gkpInitMenu();
+
+        gkpInitPin();
+
+        gkpLoadPage(
+            "dashboard"
+        );
 
     }
 );
 
 
 /* ==========================================================
+   THEME
+========================================================== */
+
+function gkpInitTheme() {
+
+    const savedTheme =
+        localStorage.getItem(
+            GKP_THEME_KEY
+        );
+
+
+    const theme =
+        savedTheme === "light"
+            ? "light"
+            : "dark";
+
+
+    gkpApplyTheme(
+        theme
+    );
+
+}
+
+
+/* ----------------------------------------------------------
+   APPLY THEME
+---------------------------------------------------------- */
+
+function gkpApplyTheme(
+    theme
+) {
+
+    const normalized =
+        theme === "light"
+            ? "light"
+            : "dark";
+
+
+    document.documentElement
+        .setAttribute(
+            "data-theme",
+            normalized
+        );
+
+
+    localStorage.setItem(
+        GKP_THEME_KEY,
+        normalized
+    );
+
+
+    /*
+     * Support beberapa kemungkinan
+     * ID icon agar tidak error jika
+     * HTML menggunakan salah satu.
+     */
+
+    const icon =
+        document.getElementById(
+            "guardianThemeIcon"
+        ) ||
+        document.getElementById(
+            "themeIcon"
+        );
+
+
+    if (icon) {
+
+        if (
+            normalized === "dark"
+        ) {
+
+            icon.className =
+                "bi bi-sun-fill";
+
+        } else {
+
+            icon.className =
+                "bi bi-moon-stars-fill";
+
+        }
+
+    }
+
+
+    /*
+     * Support tombol theme lama
+     */
+
+    const button =
+        document.getElementById(
+            "guardianThemeButton"
+        ) ||
+        document.getElementById(
+            "themeToggle"
+        );
+
+
+    if (button) {
+
+        button.setAttribute(
+            "aria-label",
+            normalized === "dark"
+                ? "Gunakan mode terang"
+                : "Gunakan mode gelap"
+        );
+
+    }
+
+
+    console.log(
+        "Guardian KPI theme:",
+        normalized
+    );
+
+}
+
+
+/* ----------------------------------------------------------
+   TOGGLE THEME
+---------------------------------------------------------- */
+
+function gkpToggleTheme() {
+
+    const current =
+        document.documentElement
+            .getAttribute(
+                "data-theme"
+            ) ||
+        "dark";
+
+
+    const next =
+        current === "dark"
+            ? "light"
+            : "dark";
+
+
+    gkpApplyTheme(
+        next
+    );
+
+}
+
+
+/* ==========================================================
    MENU
 ========================================================== */
 
-function initMenu() {
+function gkpInitMenu() {
 
-    const menuButton =
+    const button =
+        document.getElementById(
+            "guardianMenuButton"
+        ) ||
         document.getElementById(
             "menuButton"
         );
 
 
-    const mainMenu =
+    const menu =
+        document.getElementById(
+            "guardianMenu"
+        ) ||
         document.getElementById(
             "mainMenu"
         );
 
 
-    if (!menuButton || !mainMenu) {
+    if (!button || !menu) {
+
+        console.warn(
+            "Guardian KPI: menu element tidak ditemukan."
+        );
 
         return;
 
     }
 
 
-    /* OPEN / CLOSE */
+    /*
+     * HAMBURGER
+     */
 
-    menuButton.addEventListener(
+    button.addEventListener(
         "click",
         function (event) {
 
             event.stopPropagation();
 
-            toggleMenu();
+            gkpToggleMenu();
 
         }
     );
 
 
-    /* MENU ITEMS */
+    /*
+     * MENU ITEMS
+     */
 
-    mainMenu
+    menu
         .querySelectorAll(
-            ".main-menu-item"
+            "[data-page]"
         )
         .forEach(
             function (item) {
@@ -172,7 +290,7 @@ function initMenu() {
                             item.dataset.page;
 
 
-                        closeMenu();
+                        gkpCloseMenu();
 
 
                         if (
@@ -180,14 +298,16 @@ function initMenu() {
                             "setting"
                         ) {
 
-                            requestSettingsAccess();
+                            gkpRequestSettings();
 
                             return;
 
                         }
 
 
-                        loadPage(page);
+                        gkpLoadPage(
+                            page
+                        );
 
                     }
                 );
@@ -196,27 +316,56 @@ function initMenu() {
         );
 
 
-    /* CLICK OUTSIDE */
+    /*
+     * CLICK OUTSIDE
+     */
 
     document.addEventListener(
         "click",
         function (event) {
 
             if (
-                !mainMenu.contains(
+                !menu.contains(
                     event.target
                 ) &&
-                !menuButton.contains(
+                !button.contains(
                     event.target
                 )
             ) {
 
-                closeMenu();
+                gkpCloseMenu();
 
             }
 
         }
     );
+
+
+    /*
+     * THEME BUTTON
+     */
+
+    const themeButton =
+        document.getElementById(
+            "guardianThemeButton"
+        ) ||
+        document.getElementById(
+            "themeToggle"
+        );
+
+
+    if (themeButton) {
+
+        themeButton.addEventListener(
+            "click",
+            function () {
+
+                gkpToggleTheme();
+
+            }
+        );
+
+    }
 
 }
 
@@ -225,9 +374,12 @@ function initMenu() {
    TOGGLE MENU
 ========================================================== */
 
-function toggleMenu() {
+function gkpToggleMenu() {
 
     const menu =
+        document.getElementById(
+            "guardianMenu"
+        ) ||
         document.getElementById(
             "mainMenu"
         );
@@ -235,11 +387,14 @@ function toggleMenu() {
 
     const button =
         document.getElementById(
+            "guardianMenuButton"
+        ) ||
+        document.getElementById(
             "menuButton"
         );
 
 
-    if (!menu || !button) {
+    if (!menu) {
 
         return;
 
@@ -248,17 +403,20 @@ function toggleMenu() {
 
     const isOpen =
         menu.classList.contains(
+            "open"
+        ) ||
+        menu.classList.contains(
             "show"
         );
 
 
     if (isOpen) {
 
-        closeMenu();
+        gkpCloseMenu();
 
     } else {
 
-        openMenu();
+        gkpOpenMenu();
 
     }
 
@@ -269,9 +427,12 @@ function toggleMenu() {
    OPEN MENU
 ========================================================== */
 
-function openMenu() {
+function gkpOpenMenu() {
 
     const menu =
+        document.getElementById(
+            "guardianMenu"
+        ) ||
         document.getElementById(
             "mainMenu"
         );
@@ -279,37 +440,50 @@ function openMenu() {
 
     const button =
         document.getElementById(
+            "guardianMenuButton"
+        ) ||
+        document.getElementById(
             "menuButton"
         );
 
 
-    if (!menu || !button) {
+    if (!menu) {
 
         return;
 
     }
 
 
+    /*
+     * Support kedua class.
+     */
+
+    menu.classList.add(
+        "open"
+    );
+
     menu.classList.add(
         "show"
     );
 
 
-    menu.setAttribute(
-        "aria-hidden",
-        "false"
-    );
+    if (button) {
+
+        button.classList.add(
+            "open"
+        );
+
+        button.classList.add(
+            "active"
+        );
 
 
-    button.classList.add(
-        "active"
-    );
+        button.setAttribute(
+            "aria-expanded",
+            "true"
+        );
 
-
-    button.setAttribute(
-        "aria-expanded",
-        "true"
-    );
+    }
 
 }
 
@@ -318,9 +492,12 @@ function openMenu() {
    CLOSE MENU
 ========================================================== */
 
-function closeMenu() {
+function gkpCloseMenu() {
 
     const menu =
+        document.getElementById(
+            "guardianMenu"
+        ) ||
         document.getElementById(
             "mainMenu"
         );
@@ -328,37 +505,43 @@ function closeMenu() {
 
     const button =
         document.getElementById(
+            "guardianMenuButton"
+        ) ||
+        document.getElementById(
             "menuButton"
         );
 
 
-    if (!menu || !button) {
+    if (menu) {
 
-        return;
+        menu.classList.remove(
+            "open"
+        );
+
+        menu.classList.remove(
+            "show"
+        );
 
     }
 
 
-    menu.classList.remove(
-        "show"
-    );
+    if (button) {
+
+        button.classList.remove(
+            "open"
+        );
+
+        button.classList.remove(
+            "active"
+        );
 
 
-    menu.setAttribute(
-        "aria-hidden",
-        "true"
-    );
+        button.setAttribute(
+            "aria-expanded",
+            "false"
+        );
 
-
-    button.classList.remove(
-        "active"
-    );
-
-
-    button.setAttribute(
-        "aria-expanded",
-        "false"
-    );
+    }
 
 }
 
@@ -367,34 +550,50 @@ function closeMenu() {
    ACTIVE MENU
 ========================================================== */
 
-function setActiveMenu(
+function gkpSetActiveMenu(
     page
 ) {
 
     document
         .querySelectorAll(
-            ".main-menu-item"
+            "[data-page]"
         )
         .forEach(
             function (item) {
 
-                item.classList.remove(
-                    "active"
-                );
+                /*
+                 * Jangan menganggap semua
+                 * data-page sebagai menu.
+                 */
+
+                if (
+                    item.classList.contains(
+                        "guardian-menu-item"
+                    ) ||
+                    item.classList.contains(
+                        "main-menu-item"
+                    )
+                ) {
+
+                    item.classList.remove(
+                        "active"
+                    );
+
+                }
 
             }
         );
 
 
-    const item =
+    const active =
         document.querySelector(
-            `.main-menu-item[data-page="${page}"]`
+            `.guardian-menu-item[data-page="${page}"], .main-menu-item[data-page="${page}"]`
         );
 
 
-    if (item) {
+    if (active) {
 
-        item.classList.add(
+        active.classList.add(
             "active"
         );
 
@@ -407,53 +606,56 @@ function setActiveMenu(
    PAGE LOADER
 ========================================================== */
 
-async function loadPage(
+async function gkpLoadPage(
     page
 ) {
 
-    /* ------------------------------------------
-       SETTINGS PROTECTION
-    ------------------------------------------ */
+    /*
+     * SETTINGS HARUS PIN
+     */
 
     if (
-        page ===
-        "setting" &&
-        !isSettingsUnlocked()
+        page === "setting" &&
+        !gkpSettingsUnlocked()
     ) {
 
-        requestSettingsAccess();
+        gkpRequestSettings();
 
         return;
 
     }
 
 
-    currentPage =
+    gkpCurrentPage =
         page;
 
 
-    const app =
+    const container =
         document.getElementById(
             "appContent"
         );
 
 
-    if (!app) {
+    if (!container) {
+
+        console.error(
+            "Guardian KPI: #appContent tidak ditemukan."
+        );
 
         return;
 
     }
 
 
-    /* ------------------------------------------
-       LOADING
-    ------------------------------------------ */
+    /*
+     * LOADING
+     */
 
-    app.innerHTML = `
+    container.innerHTML = `
 
-        <div class="page-loading">
+        <div class="guardian-loading">
 
-            <div class="loading-ring"></div>
+            <div class="guardian-spinner"></div>
 
         </div>
 
@@ -462,9 +664,15 @@ async function loadPage(
 
     try {
 
+        /*
+         * Halaman HTML
+         */
+
         const response =
             await fetch(
-                `pages/${page}.html`,
+                "pages/" +
+                page +
+                ".html",
                 {
                     cache:
                         "no-store"
@@ -475,7 +683,9 @@ async function loadPage(
         if (!response.ok) {
 
             throw new Error(
-                `Halaman ${page}.html tidak ditemukan.`
+                "Halaman pages/" +
+                page +
+                ".html tidak ditemukan."
             );
 
         }
@@ -485,23 +695,43 @@ async function loadPage(
             await response.text();
 
 
-        app.innerHTML =
+        container.innerHTML =
             html;
 
 
-        setActiveMenu(
+        /*
+         * ACTIVE MENU
+         */
+
+        gkpSetActiveMenu(
             page
         );
 
 
-        initializePage(
+        /*
+         * INITIALIZER
+         */
+
+        gkpInitializePage(
             page
         );
 
+
+        /*
+         * SCROLL TOP
+         */
 
         window.scrollTo(
-            0,
-            0
+            {
+                top: 0,
+                behavior: "smooth"
+            }
+        );
+
+
+        console.log(
+            "Guardian KPI page loaded:",
+            page
         );
 
     }
@@ -515,23 +745,38 @@ async function loadPage(
         );
 
 
-        app.innerHTML = `
+        container.innerHTML = `
 
-            <div class="ui-error">
+            <div style="
+                max-width:650px;
+                margin:50px auto;
+                padding:20px;
+                border:1px solid rgba(255,80,100,.25);
+                border-radius:12px;
+                background:rgba(255,80,100,.07);
+                color:#ff6478;
+            ">
 
-                <i class="bi bi-exclamation-triangle"></i>
+                <div style="
+                    font-weight:700;
+                    margin-bottom:7px;
+                ">
 
-                <div>
+                    <i class="bi bi-exclamation-triangle"></i>
 
-                    <strong>
-                        Halaman gagal dimuat
-                    </strong>
+                    Halaman gagal dimuat
 
-                    <p>
-                        ${escapeHtml(
-                            error.message
-                        )}
-                    </p>
+                </div>
+
+
+                <div style="
+                    color:#8995a5;
+                    font-size:13px;
+                ">
+
+                    ${gkpEscape(
+                        error.message
+                    )}
 
                 </div>
 
@@ -548,95 +793,143 @@ async function loadPage(
    PAGE INITIALIZER
 ========================================================== */
 
-function initializePage(
+function gkpInitializePage(
     page
 ) {
 
-    switch (
-        page
+    /*
+     * DASHBOARD
+     *
+     * Jangan membuat ulang API.
+     * Gunakan dashboard.js yang sudah ada.
+     */
+
+    if (
+        page === "dashboard"
     ) {
 
+        if (
+            typeof window.init ===
+            "function"
+        ) {
 
-        case "dashboard":
+            try {
 
-            /*
-             * dashboard.js
-             * sudah memiliki init()
-             */
-
-            if (
-                typeof init ===
-                "function"
-            ) {
-
-                init();
+                window.init();
 
             }
 
-            break;
+            catch (error) {
 
-
-        case "anggota":
-
-            if (
-                typeof initAnggota ===
-                "function"
-            ) {
-
-                initAnggota();
+                console.error(
+                    "Dashboard init error:",
+                    error
+                );
 
             }
 
-            break;
+        }
+
+        else {
+
+            console.warn(
+                "Dashboard: fungsi init() tidak ditemukan."
+            );
+
+        }
+
+    }
 
 
-        case "group":
+    /*
+     * ANGGOTA
+     */
 
-            if (
-                typeof initGroup ===
-                "function"
-            ) {
+    if (
+        page === "anggota"
+    ) {
 
-                initGroup();
+        if (
+            typeof window.initAnggota ===
+            "function"
+        ) {
 
-            }
+            window.initAnggota();
 
-            break;
+        }
 
-
-        case "masterkpi":
-
-            if (
-                typeof initMasterKPI ===
-                "function"
-            ) {
-
-                initMasterKPI();
-
-            }
-
-            break;
+    }
 
 
-        case "penilaian":
+    /*
+     * GROUP
+     */
 
-            if (
-                typeof initPenilaian ===
-                "function"
-            ) {
+    if (
+        page === "group"
+    ) {
 
-                initPenilaian();
+        if (
+            typeof window.initGroup ===
+            "function"
+        ) {
 
-            }
+            window.initGroup();
 
-            break;
+        }
+
+    }
 
 
-        case "setting":
+    /*
+     * MASTER KPI
+     */
 
-            initializeSettingsPage();
+    if (
+        page === "masterkpi"
+    ) {
 
-            break;
+        if (
+            typeof window.initMasterKPI ===
+            "function"
+        ) {
+
+            window.initMasterKPI();
+
+        }
+
+    }
+
+
+    /*
+     * PENILAIAN
+     */
+
+    if (
+        page === "penilaian"
+    ) {
+
+        if (
+            typeof window.initPenilaian ===
+            "function"
+        ) {
+
+            window.initPenilaian();
+
+        }
+
+    }
+
+
+    /*
+     * SETTINGS
+     */
+
+    if (
+        page === "setting"
+    ) {
+
+        gkpInitializeSettings();
 
     }
 
@@ -647,34 +940,59 @@ function initializePage(
    SETTINGS
 ========================================================== */
 
-function initSettings() {
+function gkpSettingsUnlocked() {
 
-    const submitButton =
+    return (
+        sessionStorage.getItem(
+            GKP_SETTINGS_SESSION
+        ) === "1"
+    );
+
+}
+
+
+/* ==========================================================
+   PIN INITIALIZATION
+========================================================== */
+
+function gkpInitPin() {
+
+    const submit =
+        document.getElementById(
+            "guardianPinSubmit"
+        ) ||
         document.getElementById(
             "settingsPinSubmit"
         );
 
 
-    if (!submitButton) {
+    if (!submit) {
 
         return;
 
     }
 
 
-    submitButton.addEventListener(
+    submit.addEventListener(
         "click",
-        submitSettingsAccess
+        gkpSubmitPin
     );
 
 
-    [
+    const inputs = [
+
+        "guardianPinInput",
+        "guardianNewPin",
+        "guardianConfirmPin",
+
         "settingsPinInput",
         "settingsNewPin",
         "settingsConfirmPin"
 
-    ]
-    .forEach(
+    ];
+
+
+    inputs.forEach(
         function (id) {
 
             const input =
@@ -699,7 +1017,7 @@ function initSettings() {
                         "Enter"
                     ) {
 
-                        submitSettingsAccess();
+                        gkpSubmitPin();
 
                     }
 
@@ -716,78 +1034,43 @@ function initSettings() {
    REQUEST SETTINGS
 ========================================================== */
 
-function requestSettingsAccess() {
+function gkpRequestSettings() {
 
-    const modalElement =
+    const modal =
+        document.getElementById(
+            "guardianPinModal"
+        ) ||
         document.getElementById(
             "settingsPinModal"
         );
 
 
-    if (!modalElement) {
+    if (!modal) {
+
+        /*
+         * Jika modal belum tersedia,
+         * buat fallback sederhana.
+         */
+
+        console.error(
+            "Guardian KPI: PIN modal tidak ditemukan."
+        );
 
         return;
 
     }
 
 
-    prepareSettingsModal();
-
-
-    const modal =
-        bootstrap.Modal.getOrCreateInstance(
-            modalElement
-        );
-
-
-    modal.show();
-
-
-    setTimeout(
-        function () {
-
-            const hasPin =
-                Boolean(
-                    localStorage.getItem(
-                        SETTINGS_PIN_KEY
-                    )
-                );
-
-
-            const inputId =
-                hasPin
-                    ? "settingsPinInput"
-                    : "settingsNewPin";
-
-
-            document
-                .getElementById(
-                    inputId
-                )
-                ?.focus();
-
-        },
-        350
-    );
-
-}
-
-
-/* ==========================================================
-   PREPARE SETTINGS MODAL
-========================================================== */
-
-function prepareSettingsModal() {
-
-    const hasPin =
-        Boolean(
-            localStorage.getItem(
-                SETTINGS_PIN_KEY
-            )
+    const storedPin =
+        localStorage.getItem(
+            GKP_PIN_KEY
         );
 
 
     const title =
+        document.getElementById(
+            "guardianPinTitle"
+        ) ||
         document.getElementById(
             "settingsPinTitle"
         );
@@ -795,11 +1078,17 @@ function prepareSettingsModal() {
 
     const message =
         document.getElementById(
+            "guardianPinMessage"
+        ) ||
+        document.getElementById(
             "settingsPinMessage"
         );
 
 
     const createGroup =
+        document.getElementById(
+            "guardianCreatePin"
+        ) ||
         document.getElementById(
             "settingsCreatePinGroup"
         );
@@ -807,11 +1096,17 @@ function prepareSettingsModal() {
 
     const enterGroup =
         document.getElementById(
+            "guardianEnterPin"
+        ) ||
+        document.getElementById(
             "settingsEnterPinGroup"
         );
 
 
-    const submitButton =
+    const submit =
+        document.getElementById(
+            "guardianPinSubmit"
+        ) ||
         document.getElementById(
             "settingsPinSubmit"
         );
@@ -819,9 +1114,16 @@ function prepareSettingsModal() {
 
     const error =
         document.getElementById(
+            "guardianPinError"
+        ) ||
+        document.getElementById(
             "settingsPinError"
         );
 
+
+    /*
+     * CLEAR
+     */
 
     if (error) {
 
@@ -836,10 +1138,12 @@ function prepareSettingsModal() {
 
 
     [
+        "guardianPinInput",
+        "guardianNewPin",
+        "guardianConfirmPin",
         "settingsPinInput",
         "settingsNewPin",
         "settingsConfirmPin"
-
     ]
     .forEach(
         function (id) {
@@ -861,69 +1165,173 @@ function prepareSettingsModal() {
     );
 
 
-    if (!hasPin) {
+    /*
+     * FIRST TIME
+     */
 
-        title.textContent =
-            "Buat PIN Settings";
+    if (!storedPin) {
+
+        if (title) {
+
+            title.textContent =
+                "Buat PIN Settings";
+
+        }
 
 
-        message.textContent =
-            "Buat PIN 4–12 digit untuk melindungi Settings.";
+        if (message) {
+
+            message.textContent =
+                "Buat PIN 4–12 digit untuk melindungi Settings.";
+
+        }
 
 
-        createGroup
-            .classList.remove(
+        if (createGroup) {
+
+            createGroup.classList.remove(
                 "d-none"
             );
 
+        }
 
-        enterGroup
-            .classList.add(
+
+        if (enterGroup) {
+
+            enterGroup.classList.add(
                 "d-none"
             );
 
+        }
 
-        submitButton.textContent =
-            "Simpan PIN & Buka";
+
+        if (submit) {
+
+            submit.textContent =
+                "Simpan PIN & Buka";
+
+        }
 
     }
 
+
+    /*
+     * EXISTING PIN
+     */
 
     else {
 
-        title.textContent =
-            "Settings Terkunci";
+        if (title) {
+
+            title.textContent =
+                "Settings Terkunci";
+
+        }
 
 
-        message.textContent =
-            "Masukkan PIN untuk membuka Settings.";
+        if (message) {
+
+            message.textContent =
+                "Masukkan PIN untuk membuka Settings.";
+
+        }
 
 
-        createGroup
-            .classList.add(
+        if (createGroup) {
+
+            createGroup.classList.add(
                 "d-none"
             );
 
+        }
 
-        enterGroup
-            .classList.remove(
+
+        if (enterGroup) {
+
+            enterGroup.classList.remove(
                 "d-none"
             );
 
+        }
 
-        submitButton.textContent =
-            "Buka Settings";
+
+        if (submit) {
+
+            submit.textContent =
+                "Buka Settings";
+
+        }
 
     }
+
+
+    /*
+     * SHOW MODAL
+     */
+
+    if (
+        typeof bootstrap !==
+        "undefined" &&
+        bootstrap.Modal
+    ) {
+
+        const instance =
+            bootstrap.Modal
+                .getOrCreateInstance(
+                    modal
+                );
+
+
+        instance.show();
+
+    }
+
+
+    /*
+     * FOCUS
+     */
+
+    setTimeout(
+        function () {
+
+            const target =
+                storedPin
+                    ? (
+                        document.getElementById(
+                            "guardianPinInput"
+                        ) ||
+                        document.getElementById(
+                            "settingsPinInput"
+                        )
+                    )
+                    : (
+                        document.getElementById(
+                            "guardianNewPin"
+                        ) ||
+                        document.getElementById(
+                            "settingsNewPin"
+                        )
+                    );
+
+
+            if (target) {
+
+                target.focus();
+
+            }
+
+        },
+        350
+    );
 
 }
 
 
 /* ==========================================================
-   PIN FORMAT
+   PIN VALIDATION
 ========================================================== */
 
-function validPin(
+function gkpValidPin(
     pin
 ) {
 
@@ -941,9 +1349,13 @@ function validPin(
    HASH
 ========================================================== */
 
-async function hashText(
+async function gkpHash(
     text
 ) {
+
+    /*
+     * SHA-256
+     */
 
     if (
         window.crypto &&
@@ -957,17 +1369,18 @@ async function hashText(
                 );
 
 
-        const buffer =
-            await crypto.subtle.digest(
-                "SHA-256",
-                data
-            );
+        const hashBuffer =
+            await window.crypto.subtle
+                .digest(
+                    "SHA-256",
+                    data
+                );
 
 
         return Array
             .from(
                 new Uint8Array(
-                    buffer
+                    hashBuffer
                 )
             )
             .map(
@@ -987,7 +1400,9 @@ async function hashText(
     }
 
 
-    /* Fallback */
+    /*
+     * Fallback sederhana
+     */
 
     let hash =
         0;
@@ -1025,12 +1440,15 @@ async function hashText(
 
 
 /* ==========================================================
-   SUBMIT SETTINGS PIN
+   SUBMIT PIN
 ========================================================== */
 
-async function submitSettingsAccess() {
+async function gkpSubmitPin() {
 
     const error =
+        document.getElementById(
+            "guardianPinError"
+        ) ||
         document.getElementById(
             "settingsPinError"
         );
@@ -1058,37 +1476,47 @@ async function submitSettingsAccess() {
     }
 
 
-    const storedHash =
+    const storedPin =
         localStorage.getItem(
-            SETTINGS_PIN_KEY
+            GKP_PIN_KEY
         );
 
 
-    /* ======================================================
-       FIRST TIME
-    ====================================================== */
+    /*
+     * FIRST TIME
+     */
 
-    if (!storedHash) {
+    if (!storedPin) {
 
-        const pin =
-            document.getElementById(
-                "settingsNewPin"
+        const newPin =
+            (
+                document.getElementById(
+                    "guardianNewPin"
+                ) ||
+                document.getElementById(
+                    "settingsNewPin"
+                )
             )
             ?.value
             .trim();
 
 
         const confirmPin =
-            document.getElementById(
-                "settingsConfirmPin"
+            (
+                document.getElementById(
+                    "guardianConfirmPin"
+                ) ||
+                document.getElementById(
+                    "settingsConfirmPin"
+                )
             )
             ?.value
             .trim();
 
 
         if (
-            !validPin(
-                pin
+            !gkpValidPin(
+                newPin
             )
         ) {
 
@@ -1102,7 +1530,7 @@ async function submitSettingsAccess() {
 
 
         if (
-            pin !==
+            newPin !==
             confirmPin
         ) {
 
@@ -1116,27 +1544,27 @@ async function submitSettingsAccess() {
 
 
         const hash =
-            await hashText(
-                pin
+            await gkpHash(
+                newPin
             );
 
 
         localStorage.setItem(
-            SETTINGS_PIN_KEY,
+            GKP_PIN_KEY,
             hash
         );
 
 
         sessionStorage.setItem(
-            SETTINGS_SESSION_KEY,
+            GKP_SETTINGS_SESSION,
             "1"
         );
 
 
-        closeSettingsModal();
+        gkpClosePinModal();
 
 
-        loadPage(
+        gkpLoadPage(
             "setting"
         );
 
@@ -1146,20 +1574,27 @@ async function submitSettingsAccess() {
     }
 
 
-    /* ======================================================
-       EXISTING PIN
-    ====================================================== */
+    /*
+     * EXISTING PIN
+     */
 
-    const pin =
+    const pinInput =
+        document.getElementById(
+            "guardianPinInput"
+        ) ||
         document.getElementById(
             "settingsPinInput"
-        )
-        ?.value
-        .trim();
+        );
+
+
+    const pin =
+        pinInput
+            ?.value
+            .trim();
 
 
     if (
-        !validPin(
+        !gkpValidPin(
             pin
         )
     ) {
@@ -1174,14 +1609,14 @@ async function submitSettingsAccess() {
 
 
     const hash =
-        await hashText(
+        await gkpHash(
             pin
         );
 
 
     if (
         hash !==
-        storedHash
+        storedPin
     ) {
 
         showError(
@@ -1194,15 +1629,15 @@ async function submitSettingsAccess() {
 
 
     sessionStorage.setItem(
-        SETTINGS_SESSION_KEY,
+        GKP_SETTINGS_SESSION,
         "1"
     );
 
 
-    closeSettingsModal();
+    gkpClosePinModal();
 
 
-    loadPage(
+    gkpLoadPage(
         "setting"
     );
 
@@ -1210,49 +1645,45 @@ async function submitSettingsAccess() {
 
 
 /* ==========================================================
-   SETTINGS SESSION
+   CLOSE PIN MODAL
 ========================================================== */
 
-function isSettingsUnlocked() {
+function gkpClosePinModal() {
 
-    return (
-        sessionStorage.getItem(
-            SETTINGS_SESSION_KEY
-        ) ===
-        "1"
-    );
-
-}
-
-
-/* ==========================================================
-   CLOSE MODAL
-========================================================== */
-
-function closeSettingsModal() {
-
-    const element =
+    const modal =
+        document.getElementById(
+            "guardianPinModal"
+        ) ||
         document.getElementById(
             "settingsPinModal"
         );
 
 
-    if (!element) {
+    if (!modal) {
 
         return;
 
     }
 
 
-    const modal =
-        bootstrap.Modal.getInstance(
-            element
-        );
+    if (
+        typeof bootstrap !==
+        "undefined" &&
+        bootstrap.Modal
+    ) {
+
+        const instance =
+            bootstrap.Modal
+                .getInstance(
+                    modal
+                );
 
 
-    if (modal) {
+        if (instance) {
 
-        modal.hide();
+            instance.hide();
+
+        }
 
     }
 
@@ -1263,14 +1694,14 @@ function closeSettingsModal() {
    LOCK SETTINGS
 ========================================================== */
 
-function lockSettings() {
+function gkpLockSettings() {
 
     sessionStorage.removeItem(
-        SETTINGS_SESSION_KEY
+        GKP_SETTINGS_SESSION
     );
 
 
-    loadPage(
+    gkpLoadPage(
         "dashboard"
     );
 
@@ -1278,144 +1709,14 @@ function lockSettings() {
 
 
 /* ==========================================================
-   SETTINGS PAGE
+   SETTINGS INITIALIZER
 ========================================================== */
 
-function initializeSettingsPage() {
+function gkpInitializeSettings() {
 
-    /*
-     * Tidak ada header tambahan.
-     * Halaman Settings menggunakan
-     * layout miliknya sendiri.
-     */
-
-}
-
-
-/* ==========================================================
-   THEME
-========================================================== */
-
-function initTheme() {
-
-    const savedTheme =
-        localStorage.getItem(
-            THEME_KEY
-        );
-
-
-    const theme =
-        savedTheme ===
-        "light"
-            ? "light"
-            : "dark";
-
-
-    applyTheme(
-        theme
+    console.log(
+        "Guardian KPI Settings initialized."
     );
-
-
-    const toggle =
-        document.getElementById(
-            "themeToggle"
-        );
-
-
-    if (toggle) {
-
-        toggle.addEventListener(
-            "click",
-            function () {
-
-                const current =
-                    document.documentElement
-                        .getAttribute(
-                            "data-theme"
-                        ) ||
-                    "dark";
-
-
-                applyTheme(
-                    current ===
-                    "dark"
-                        ? "light"
-                        : "dark"
-                );
-
-            }
-        );
-
-    }
-
-}
-
-
-/* ==========================================================
-   APPLY THEME
-========================================================== */
-
-function applyTheme(
-    theme
-) {
-
-    const normalized =
-        theme ===
-        "light"
-            ? "light"
-            : "dark";
-
-
-    document.documentElement
-        .setAttribute(
-            "data-theme",
-            normalized
-        );
-
-
-    localStorage.setItem(
-        THEME_KEY,
-        normalized
-    );
-
-
-    const icon =
-        document.getElementById(
-            "themeIcon"
-        );
-
-
-    if (!icon) {
-
-        return;
-
-    }
-
-
-    /*
-     * Dark mode:
-     * icon SUN
-     *
-     * Light mode:
-     * icon MOON
-     */
-
-    if (
-        normalized ===
-        "dark"
-    ) {
-
-        icon.className =
-            "bi bi-sun-fill";
-
-    }
-
-    else {
-
-        icon.className =
-            "bi bi-moon-stars-fill";
-
-    }
 
 }
 
@@ -1424,7 +1725,7 @@ function applyTheme(
    ESCAPE HTML
 ========================================================== */
 
-function escapeHtml(
+function gkpEscape(
     value
 ) {
 
@@ -1456,29 +1757,20 @@ function escapeHtml(
 
 
 /* ==========================================================
-   GLOBAL FUNCTIONS
+   GLOBAL
 ========================================================== */
 
-window.loadPage =
-    loadPage;
+window.gkpLoadPage =
+    gkpLoadPage;
 
-window.requestSettingsAccess =
-    requestSettingsAccess;
+window.gkpToggleTheme =
+    gkpToggleTheme;
 
-window.submitSettingsAccess =
-    submitSettingsAccess;
+window.gkpApplyTheme =
+    gkpApplyTheme;
 
-window.lockSettings =
-    lockSettings;
+window.gkpRequestSettings =
+    gkpRequestSettings;
 
-window.toggleMenu =
-    toggleMenu;
-
-window.closeMenu =
-    closeMenu;
-
-window.applyTheme =
-    applyTheme;
-
-window.isSettingsUnlocked =
-    isSettingsUnlocked;
+window.gkpLockSettings =
+    gkpLockSettings;
