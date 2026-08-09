@@ -11,26 +11,582 @@
 
     <title>Guardian KPI</title>
 
-
-    <!-- Bootstrap -->
-
+    <!-- Bootstrap hanya untuk komponen dashboard yang sudah ada -->
     <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-        rel="stylesheet">
-
-
-    <!-- Bootstrap Icons -->
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
 
     <link
         rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 
+    <style>
 
-    <!-- Guardian KPI UI -->
+        /* ==================================================
+           GUARDIAN KPI UI
+        ================================================== */
 
-    <link
-        rel="stylesheet"
-        href="css/style.css">
+        :root {
+            --g-bg: #080d16;
+            --g-surface: #111923;
+            --g-surface-2: #17212d;
+            --g-border: rgba(255,255,255,.10);
+            --g-text: #f4f7fa;
+            --g-muted: #8995a5;
+            --g-primary: #00c8ff;
+            --g-primary-soft: rgba(0,200,255,.12);
+            --g-shadow: 0 12px 35px rgba(0,0,0,.30);
+        }
+
+        html[data-theme="light"] {
+            --g-bg: #f4f7fa;
+            --g-surface: #ffffff;
+            --g-surface-2: #eef3f7;
+            --g-border: rgba(15,23,42,.10);
+            --g-text: #17202a;
+            --g-muted: #687587;
+            --g-primary: #0879d1;
+            --g-primary-soft: rgba(8,121,209,.10);
+            --g-shadow: 0 12px 30px rgba(15,23,42,.10);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100%;
+        }
+
+        body {
+            background: var(--g-bg) !important;
+            color: var(--g-text) !important;
+            font-family:
+                Inter,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Roboto,
+                Arial,
+                sans-serif !important;
+
+            transition:
+                background .25s ease,
+                color .25s ease;
+
+            overflow-x: hidden;
+        }
+
+        /* ==================================================
+           TOP BAR
+        ================================================== */
+
+        .guardian-topbar {
+            position: sticky;
+            top: 0;
+            z-index: 9999;
+
+            width: 100%;
+            height: 58px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            padding: 0 18px;
+
+            background: var(--g-bg);
+
+            border-bottom:
+                1px solid var(--g-border);
+
+            box-shadow:
+                0 3px 18px rgba(0,0,0,.08);
+        }
+
+        .guardian-left {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        /* ==================================================
+           HAMBURGER
+        ================================================== */
+
+        .guardian-menu-button {
+            width: 40px;
+            height: 40px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border: 0 !important;
+            outline: none !important;
+
+            border-radius: 9px;
+
+            background: transparent !important;
+
+            color: var(--g-text) !important;
+
+            font-size: 22px;
+
+            cursor: pointer;
+
+            padding: 0 !important;
+
+            box-shadow: none !important;
+
+            transition:
+                background .18s ease,
+                color .18s ease;
+        }
+
+        .guardian-menu-button:hover,
+        .guardian-menu-button.open {
+            background: var(--g-primary-soft) !important;
+            color: var(--g-primary) !important;
+        }
+
+        /* ==================================================
+           DROPDOWN
+        ================================================== */
+
+        .guardian-menu {
+            position: absolute;
+
+            top: 49px;
+            left: 0;
+
+            width: 205px;
+
+            padding: 7px;
+
+            background: var(--g-surface);
+
+            border:
+                1px solid var(--g-border);
+
+            border-radius: 12px;
+
+            box-shadow: var(--g-shadow);
+
+            opacity: 0;
+            visibility: hidden;
+
+            transform: translateY(-6px);
+
+            transition:
+                opacity .16s ease,
+                visibility .16s ease,
+                transform .16s ease;
+        }
+
+        .guardian-menu.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .guardian-menu-item {
+            width: 100%;
+
+            min-height: 42px;
+
+            display: flex;
+            align-items: center;
+
+            gap: 11px;
+
+            border: 0 !important;
+            outline: none !important;
+
+            border-radius: 8px;
+
+            padding: 9px 11px;
+
+            background: transparent !important;
+
+            color: var(--g-text) !important;
+
+            font-size: 13px;
+            font-weight: 600;
+
+            text-align: left;
+
+            cursor: pointer;
+
+            box-shadow: none !important;
+        }
+
+        .guardian-menu-item:hover {
+            background: var(--g-surface-2) !important;
+        }
+
+        .guardian-menu-item.active {
+            background: var(--g-primary-soft) !important;
+            color: var(--g-primary) !important;
+        }
+
+        .guardian-menu-item i:first-child {
+            width: 19px;
+            text-align: center;
+        }
+
+        .guardian-lock {
+            margin-left: auto;
+            opacity: .65;
+            font-size: 11px;
+        }
+
+        /* ==================================================
+           THEME BUTTON
+        ================================================== */
+
+        .guardian-theme-button {
+            width: 40px;
+            height: 40px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border: 0 !important;
+            outline: none !important;
+
+            border-radius: 9px;
+
+            background: transparent !important;
+
+            color: var(--g-text) !important;
+
+            font-size: 18px;
+
+            cursor: pointer;
+
+            padding: 0 !important;
+
+            box-shadow: none !important;
+
+            transition:
+                background .18s ease,
+                color .18s ease,
+                transform .2s ease;
+        }
+
+        .guardian-theme-button:hover {
+            background: var(--g-surface) !important;
+            color: var(--g-primary) !important;
+            transform: rotate(12deg);
+        }
+
+        /* ==================================================
+           MAIN
+        ================================================== */
+
+        #appContent {
+            width: 100%;
+            min-height: calc(100vh - 58px);
+
+            padding: 22px 24px 40px;
+
+            background: var(--g-bg);
+        }
+
+        /* ==================================================
+           LOADING
+        ================================================== */
+
+        .guardian-loading {
+            min-height: 300px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .guardian-spinner {
+            width: 32px;
+            height: 32px;
+
+            border: 3px solid var(--g-border);
+
+            border-top-color:
+                var(--g-primary);
+
+            border-radius: 50%;
+
+            animation:
+                guardianSpin .7s linear infinite;
+        }
+
+        @keyframes guardianSpin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ==================================================
+           SETTINGS
+        ================================================== */
+
+        .guardian-settings {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .guardian-settings-header {
+            margin-bottom: 22px;
+        }
+
+        .guardian-settings-title {
+            margin: 0;
+
+            color: var(--g-text);
+
+            font-size: 25px;
+            font-weight: 750;
+        }
+
+        .guardian-settings-subtitle {
+            margin-top: 5px;
+
+            color: var(--g-muted);
+
+            font-size: 12px;
+        }
+
+        .guardian-settings-grid {
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, minmax(0,1fr));
+
+            gap: 13px;
+        }
+
+        .guardian-settings-card {
+            width: 100%;
+
+            display: flex;
+            align-items: center;
+
+            gap: 13px;
+
+            padding: 16px;
+
+            border:
+                1px solid var(--g-border);
+
+            border-radius: 12px;
+
+            background:
+                var(--g-surface);
+
+            color: var(--g-text);
+
+            text-align: left;
+
+            cursor: pointer;
+
+            transition:
+                transform .18s ease,
+                background .18s ease,
+                border-color .18s ease;
+        }
+
+        .guardian-settings-card:hover {
+            transform: translateY(-2px);
+
+            background:
+                var(--g-surface-2);
+
+            border-color:
+                rgba(0,200,255,.30);
+        }
+
+        .guardian-settings-icon {
+            width: 42px;
+            height: 42px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            flex: 0 0 42px;
+
+            border-radius: 10px;
+
+            background:
+                var(--g-primary-soft);
+
+            color:
+                var(--g-primary);
+
+            font-size: 18px;
+        }
+
+        .guardian-settings-text {
+            flex: 1;
+        }
+
+        .guardian-settings-text strong {
+            display: block;
+
+            color: var(--g-text);
+
+            font-size: 13px;
+        }
+
+        .guardian-settings-text small {
+            display: block;
+
+            margin-top: 4px;
+
+            color: var(--g-muted);
+
+            font-size: 11px;
+        }
+
+        .guardian-settings-arrow {
+            color: var(--g-muted);
+        }
+
+        /* ==================================================
+           PIN MODAL
+        ================================================== */
+
+        .guardian-pin-modal {
+            background: var(--g-surface) !important;
+
+            border:
+                1px solid var(--g-border) !important;
+
+            border-radius: 14px !important;
+
+            color: var(--g-text) !important;
+        }
+
+        .guardian-pin-modal .modal-header,
+        .guardian-pin-modal .modal-footer {
+            border-color: var(--g-border) !important;
+        }
+
+        .guardian-pin-icon {
+            width: 42px;
+            height: 42px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 10px;
+
+            background:
+                var(--g-primary-soft);
+
+            color:
+                var(--g-primary);
+
+            font-size: 18px;
+        }
+
+        .guardian-input {
+            width: 100%;
+
+            height: 42px;
+
+            border:
+                1px solid var(--g-border) !important;
+
+            border-radius: 8px !important;
+
+            background:
+                var(--g-bg) !important;
+
+            color:
+                var(--g-text) !important;
+
+            outline: none;
+        }
+
+        .guardian-input:focus {
+            border-color:
+                var(--g-primary) !important;
+
+            box-shadow:
+                0 0 0 3px var(--g-primary-soft) !important;
+        }
+
+        .guardian-primary-button {
+            border: 0 !important;
+
+            border-radius: 8px !important;
+
+            background:
+                var(--g-primary) !important;
+
+            color: #fff !important;
+
+            padding: 9px 15px;
+
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .guardian-secondary-button {
+            border:
+                1px solid var(--g-border) !important;
+
+            border-radius: 8px !important;
+
+            background:
+                transparent !important;
+
+            color:
+                var(--g-muted) !important;
+
+            padding: 9px 15px;
+
+            font-size: 12px;
+        }
+
+        /* ==================================================
+           MOBILE
+        ================================================== */
+
+        @media (max-width: 700px) {
+
+            .guardian-topbar {
+                height: 54px;
+                padding: 0 10px;
+            }
+
+            #appContent {
+                min-height:
+                    calc(100vh - 54px);
+
+                padding:
+                    14px 10px 30px;
+            }
+
+            .guardian-menu {
+                width: 190px;
+            }
+
+            .guardian-settings-grid {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+    </style>
 
 </head>
 
@@ -39,193 +595,125 @@
 
 
 <!-- ======================================================
-     APPLICATION
+     TOP BAR
 ====================================================== -->
 
-<div id="guardianApp">
+<header class="guardian-topbar">
+
+    <!-- KIRI -->
+    <div class="guardian-left">
+
+        <button
+            id="guardianMenuButton"
+            type="button"
+            class="guardian-menu-button"
+            aria-label="Menu"
+            aria-expanded="false">
+
+            <i class="bi bi-list"></i>
+
+        </button>
 
 
-    <!-- ==================================================
-         TOP BAR
-    ================================================== -->
-
-    <header class="guardian-topbar">
-
-
-        <!-- ================================
-             LEFT MENU
-        ================================= -->
-
-        <div class="topbar-left">
-
-
-            <!-- HAMBURGER -->
-
-            <div class="menu-wrapper">
-
-
-                <button
-                    id="menuButton"
-                    type="button"
-                    class="icon-button menu-button"
-                    aria-label="Menu"
-                    aria-expanded="false"
-                    title="Menu">
-
-                    <i class="bi bi-list"></i>
-
-                </button>
-
-
-                <!-- ==========================
-                     DROPDOWN MENU
-                =========================== -->
-
-                <div
-                    id="mainMenu"
-                    class="main-menu"
-                    aria-hidden="true">
-
-
-                    <!-- DASHBOARD -->
-
-                    <button
-                        type="button"
-                        class="main-menu-item active"
-                        data-page="dashboard">
-
-                        <span class="main-menu-icon">
-
-                            <i class="bi bi-speedometer2"></i>
-
-                        </span>
-
-                        <span>
-                            Dashboard
-                        </span>
-
-                    </button>
-
-
-                    <!-- SETTINGS -->
-
-                    <button
-                        type="button"
-                        class="main-menu-item"
-                        data-page="setting">
-
-                        <span class="main-menu-icon">
-
-                            <i class="bi bi-gear"></i>
-
-                        </span>
-
-                        <span>
-                            Settings
-                        </span>
-
-                        <span class="main-menu-lock">
-
-                            <i class="bi bi-lock-fill"></i>
-
-                        </span>
-
-                    </button>
-
-
-                </div>
-
-            </div>
-
-
-        </div>
-
-
-        <!-- ==================================================
-             RIGHT SIDE
-             SINGLE THEME ICON
-        ================================================== -->
-
-        <div class="topbar-right">
-
+        <!-- DROPDOWN -->
+        <div
+            id="guardianMenu"
+            class="guardian-menu">
 
             <button
-                id="themeToggle"
                 type="button"
-                class="theme-icon-button"
-                aria-label="Ubah tema"
-                title="Ubah tema">
+                class="guardian-menu-item active"
+                data-page="dashboard">
 
-                <i
-                    id="themeIcon"
-                    class="bi bi-moon-stars-fill">
-                </i>
+                <i class="bi bi-speedometer2"></i>
+
+                <span>
+                    Dashboard
+                </span>
 
             </button>
 
 
-        </div>
+            <button
+                type="button"
+                class="guardian-menu-item"
+                data-page="setting">
 
+                <i class="bi bi-gear"></i>
 
-    </header>
+                <span>
+                    Settings
+                </span>
 
+                <span class="guardian-lock">
+                    <i class="bi bi-lock-fill"></i>
+                </span>
 
-    <!-- ==================================================
-         MAIN CONTENT
-    ================================================== -->
-
-    <main
-        id="appContent"
-        class="guardian-content">
-
-
-        <div class="initial-loading">
-
-            <div class="spinner-border"></div>
+            </button>
 
         </div>
 
+    </div>
 
-    </main>
 
+    <!-- KANAN -->
+    <button
+        id="guardianThemeButton"
+        type="button"
+        class="guardian-theme-button"
+        aria-label="Ubah tema"
+        title="Ubah tema">
 
-</div>
+        <i
+            id="guardianThemeIcon"
+            class="bi bi-sun-fill">
+        </i>
+
+    </button>
+
+</header>
 
 
 <!-- ======================================================
-     SETTINGS PIN MODAL
+     CONTENT
+====================================================== -->
+
+<main id="appContent">
+
+    <div class="guardian-loading">
+
+        <div class="guardian-spinner"></div>
+
+    </div>
+
+</main>
+
+
+<!-- ======================================================
+     PIN MODAL
 ====================================================== -->
 
 <div
     class="modal fade"
-    id="settingsPinModal"
-    tabindex="-1"
-    aria-hidden="true">
+    id="guardianPinModal"
+    tabindex="-1">
 
-
-    <div
-        class="modal-dialog modal-dialog-centered">
-
+    <div class="modal-dialog modal-dialog-centered">
 
         <div class="modal-content guardian-pin-modal">
 
-
-            <!-- HEADER -->
-
             <div class="modal-header">
-
 
                 <div>
 
-                    <div class="pin-icon">
+                    <div class="guardian-pin-icon">
 
                         <i class="bi bi-shield-lock-fill"></i>
 
                     </div>
 
-
                     <h5
-                        id="settingsPinTitle"
+                        id="guardianPinTitle"
                         class="modal-title mt-3">
 
                         Settings Terkunci
@@ -234,123 +722,84 @@
 
                 </div>
 
-
                 <button
                     type="button"
-                    class="btn-close guardian-close"
-                    data-bs-dismiss="modal"
-                    aria-label="Close">
+                    class="btn-close"
+                    data-bs-dismiss="modal">
                 </button>
-
 
             </div>
 
 
-            <!-- BODY -->
-
             <div class="modal-body">
 
-
                 <p
-                    id="settingsPinMessage"
-                    class="pin-message">
+                    id="guardianPinMessage"
+                    class="text-secondary">
 
                     Masukkan PIN untuk membuka Settings.
 
                 </p>
 
 
-                <!-- CREATE PIN -->
-
                 <div
-                    id="settingsCreatePinGroup"
+                    id="guardianCreatePin"
                     class="d-none">
 
-
-                    <label
-                        for="settingsNewPin"
-                        class="guardian-label">
-
+                    <label class="form-label">
                         Buat PIN
-
                     </label>
 
-
                     <input
-                        id="settingsNewPin"
+                        id="guardianNewPin"
                         type="password"
-                        class="guardian-input"
-                        inputmode="numeric"
-                        autocomplete="new-password"
+                        class="form-control guardian-input"
                         maxlength="12"
+                        inputmode="numeric"
                         placeholder="4–12 digit">
 
 
-                    <label
-                        for="settingsConfirmPin"
-                        class="guardian-label mt-3">
-
+                    <label class="form-label mt-3">
                         Konfirmasi PIN
-
                     </label>
 
-
                     <input
-                        id="settingsConfirmPin"
+                        id="guardianConfirmPin"
                         type="password"
-                        class="guardian-input"
-                        inputmode="numeric"
-                        autocomplete="new-password"
+                        class="form-control guardian-input"
                         maxlength="12"
+                        inputmode="numeric"
                         placeholder="Ulangi PIN">
 
-
                 </div>
 
 
-                <!-- ENTER PIN -->
+                <div id="guardianEnterPin">
 
-                <div
-                    id="settingsEnterPinGroup">
-
-
-                    <label
-                        for="settingsPinInput"
-                        class="guardian-label">
-
+                    <label class="form-label">
                         PIN Settings
-
                     </label>
 
-
                     <input
-                        id="settingsPinInput"
+                        id="guardianPinInput"
                         type="password"
-                        class="guardian-input"
-                        inputmode="numeric"
-                        autocomplete="current-password"
+                        class="form-control guardian-input"
                         maxlength="12"
+                        inputmode="numeric"
                         placeholder="Masukkan PIN">
 
-
                 </div>
 
-
-                <!-- ERROR -->
 
                 <div
-                    id="settingsPinError"
-                    class="pin-error d-none">
+                    id="guardianPinError"
+                    class="alert alert-danger mt-3 d-none">
                 </div>
-
 
             </div>
 
 
-            <!-- FOOTER -->
-
             <div class="modal-footer">
-
 
                 <button
                     type="button"
@@ -361,9 +810,8 @@
 
                 </button>
 
-
                 <button
-                    id="settingsPinSubmit"
+                    id="guardianPinSubmit"
                     type="button"
                     class="guardian-primary-button">
 
@@ -371,15 +819,11 @@
 
                 </button>
 
-
             </div>
-
 
         </div>
 
-
     </div>
-
 
 </div>
 
@@ -392,33 +836,1102 @@
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
 </script>
 
-
 <script
     src="https://cdn.jsdelivr.net/npm/chart.js">
 </script>
 
 
 <!-- ======================================================
-     PROJECT JAVASCRIPT
+     EXISTING PROJECT FILES
 ====================================================== -->
 
 <script src="js/config.js"></script>
-
 <script src="js/api.js"></script>
-
 <script src="js/dashboard.js"></script>
-
 <script src="js/anggota.js"></script>
-
 <script src="js/group.js"></script>
-
 <script src="js/masterkpi.js"></script>
-
 <script src="js/penilaian.js"></script>
 
-<script src="js/app.js"></script>
+
+<!-- ======================================================
+     UI CONTROLLER
+====================================================== -->
+
+<script>
+
+"use strict";
+
+
+/* ======================================================
+   CONSTANTS
+====================================================== */
+
+const GUARDIAN_THEME_KEY =
+    "guardianKPI.theme";
+
+const GUARDIAN_PIN_KEY =
+    "guardianKPI.settingsPinHash";
+
+const GUARDIAN_SESSION_KEY =
+    "guardianKPI.settingsUnlocked";
+
+
+/* ======================================================
+   THEME
+====================================================== */
+
+function guardianApplyTheme(theme) {
+
+    theme =
+        theme === "light"
+            ? "light"
+            : "dark";
+
+
+    document.documentElement
+        .setAttribute(
+            "data-theme",
+            theme
+        );
+
+
+    localStorage.setItem(
+        GUARDIAN_THEME_KEY,
+        theme
+    );
+
+
+    const icon =
+        document.getElementById(
+            "guardianThemeIcon"
+        );
+
+
+    if (!icon) {
+        return;
+    }
+
+
+    /*
+     * Dark mode:
+     * tampilkan SUN
+     *
+     * Light mode:
+     * tampilkan MOON
+     */
+
+    icon.className =
+        theme === "dark"
+            ? "bi bi-sun-fill"
+            : "bi bi-moon-stars-fill";
+
+}
+
+
+function guardianInitTheme() {
+
+    const saved =
+        localStorage.getItem(
+            GUARDIAN_THEME_KEY
+        );
+
+
+    guardianApplyTheme(
+        saved === "light"
+            ? "light"
+            : "dark"
+    );
+
+}
+
+
+function guardianToggleTheme() {
+
+    const current =
+        document.documentElement
+            .getAttribute(
+                "data-theme"
+            ) ||
+        "dark";
+
+
+    guardianApplyTheme(
+        current === "dark"
+            ? "light"
+            : "dark"
+    );
+
+}
+
+
+/* ======================================================
+   MENU
+====================================================== */
+
+function guardianCloseMenu() {
+
+    const menu =
+        document.getElementById(
+            "guardianMenu"
+        );
+
+    const button =
+        document.getElementById(
+            "guardianMenuButton"
+        );
+
+
+    if (!menu || !button) {
+        return;
+    }
+
+
+    menu.classList.remove(
+        "open"
+    );
+
+
+    button.classList.remove(
+        "open"
+    );
+
+
+    button.setAttribute(
+        "aria-expanded",
+        "false"
+    );
+
+}
+
+
+function guardianToggleMenu() {
+
+    const menu =
+        document.getElementById(
+            "guardianMenu"
+        );
+
+    const button =
+        document.getElementById(
+            "guardianMenuButton"
+        );
+
+
+    if (!menu || !button) {
+        return;
+    }
+
+
+    const open =
+        menu.classList.contains(
+            "open"
+        );
+
+
+    if (open) {
+
+        guardianCloseMenu();
+
+    } else {
+
+        menu.classList.add(
+            "open"
+        );
+
+        button.classList.add(
+            "open"
+        );
+
+        button.setAttribute(
+            "aria-expanded",
+            "true"
+        );
+
+    }
+
+}
+
+
+/* ======================================================
+   LOAD PAGE
+====================================================== */
+
+async function guardianLoadPage(
+    page
+) {
+
+    if (
+        page === "setting" &&
+        !guardianSettingsUnlocked()
+    ) {
+
+        guardianRequestSettings();
+
+        return;
+
+    }
+
+
+    const container =
+        document.getElementById(
+            "appContent"
+        );
+
+
+    if (!container) {
+        return;
+    }
+
+
+    container.innerHTML = `
+        <div class="guardian-loading">
+            <div class="guardian-spinner"></div>
+        </div>
+    `;
+
+
+    try {
+
+        const response =
+            await fetch(
+                "pages/" +
+                page +
+                ".html",
+                {
+                    cache: "no-store"
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Gagal memuat pages/" +
+                page +
+                ".html"
+            );
+
+        }
+
+
+        container.innerHTML =
+            await response.text();
+
+
+        document
+            .querySelectorAll(
+                ".guardian-menu-item"
+            )
+            .forEach(
+                function(item) {
+
+                    item.classList.remove(
+                        "active"
+                    );
+
+                }
+            );
+
+
+        const active =
+            document.querySelector(
+                `.guardian-menu-item[data-page="${page}"]`
+            );
+
+
+        if (active) {
+
+            active.classList.add(
+                "active"
+            );
+
+        }
+
+
+        /*
+         * Jalankan initializer dashboard
+         */
+
+        if (
+            page === "dashboard" &&
+            typeof init ===
+            "function"
+        ) {
+
+            init();
+
+        }
+
+
+        if (
+            page === "anggota" &&
+            typeof initAnggota ===
+            "function"
+        ) {
+
+            initAnggota();
+
+        }
+
+
+        if (
+            page === "group" &&
+            typeof initGroup ===
+            "function"
+        ) {
+
+            initGroup();
+
+        }
+
+
+        if (
+            page === "masterkpi" &&
+            typeof initMasterKPI ===
+            "function"
+        ) {
+
+            initMasterKPI();
+
+        }
+
+
+        if (
+            page === "penilaian" &&
+            typeof initPenilaian ===
+            "function"
+        ) {
+
+            initPenilaian();
+
+        }
+
+
+        if (
+            page === "setting"
+        ) {
+
+            guardianInitSettingsPage();
+
+        }
+
+    }
+
+
+    catch(error) {
+
+        console.error(
+            "Guardian UI:",
+            error
+        );
+
+
+        container.innerHTML = `
+            <div style="
+                max-width:600px;
+                margin:50px auto;
+                padding:20px;
+                border:1px solid rgba(255,80,100,.25);
+                border-radius:12px;
+                background:rgba(255,80,100,.08);
+                color:#ff6b7a;
+            ">
+                <strong>
+                    Halaman gagal dimuat
+                </strong>
+                <div style="
+                    margin-top:6px;
+                    color:#8995a5;
+                ">
+                    ${guardianEscape(
+                        error.message
+                    )}
+                </div>
+            </div>
+        `;
+
+    }
+
+}
+
+
+/* ======================================================
+   PIN
+====================================================== */
+
+function guardianValidPin(
+    pin
+) {
+
+    return /^\d{4,12}$/
+        .test(
+            String(pin || "")
+        );
+
+}
+
+
+async function guardianHash(
+    text
+) {
+
+    const data =
+        new TextEncoder()
+            .encode(
+                text
+            );
+
+
+    const buffer =
+        await crypto.subtle.digest(
+            "SHA-256",
+            data
+        );
+
+
+    return Array
+        .from(
+            new Uint8Array(
+                buffer
+            )
+        )
+        .map(
+            b =>
+                b.toString(16)
+                    .padStart(
+                        2,
+                        "0"
+                    )
+        )
+        .join("");
+
+}
+
+
+function guardianSettingsUnlocked() {
+
+    return (
+        sessionStorage.getItem(
+            GUARDIAN_SESSION_KEY
+        ) === "1"
+    );
+
+}
+
+
+/* ======================================================
+   SETTINGS ACCESS
+====================================================== */
+
+function guardianRequestSettings() {
+
+    const modalElement =
+        document.getElementById(
+            "guardianPinModal"
+        );
+
+
+    if (!modalElement) {
+        return;
+    }
+
+
+    const hasPin =
+        Boolean(
+            localStorage.getItem(
+                GUARDIAN_PIN_KEY
+            )
+        );
+
+
+    const title =
+        document.getElementById(
+            "guardianPinTitle"
+        );
+
+    const message =
+        document.getElementById(
+            "guardianPinMessage"
+        );
+
+    const create =
+        document.getElementById(
+            "guardianCreatePin"
+        );
+
+    const enter =
+        document.getElementById(
+            "guardianEnterPin"
+        );
+
+    const submit =
+        document.getElementById(
+            "guardianPinSubmit"
+        );
+
+    const error =
+        document.getElementById(
+            "guardianPinError"
+        );
+
+
+    error.classList.add(
+        "d-none"
+    );
+
+    error.textContent =
+        "";
+
+
+    [
+        "guardianNewPin",
+        "guardianConfirmPin",
+        "guardianPinInput"
+    ]
+    .forEach(
+        id => {
+
+            const input =
+                document.getElementById(
+                    id
+                );
+
+            if (input) {
+                input.value = "";
+            }
+
+        }
+    );
+
+
+    if (!hasPin) {
+
+        title.textContent =
+            "Buat PIN Settings";
+
+        message.textContent =
+            "Buat PIN 4–12 digit untuk melindungi Settings.";
+
+        create.classList.remove(
+            "d-none"
+        );
+
+        enter.classList.add(
+            "d-none"
+        );
+
+        submit.textContent =
+            "Simpan PIN & Buka";
+
+    } else {
+
+        title.textContent =
+            "Settings Terkunci";
+
+        message.textContent =
+            "Masukkan PIN untuk membuka Settings.";
+
+        create.classList.add(
+            "d-none"
+        );
+
+        enter.classList.remove(
+            "d-none"
+        );
+
+        submit.textContent =
+            "Buka Settings";
+
+    }
+
+
+    const modal =
+        bootstrap.Modal.getOrCreateInstance(
+            modalElement
+        );
+
+
+    modal.show();
+
+
+    setTimeout(
+        function() {
+
+            document
+                .getElementById(
+                    hasPin
+                        ? "guardianPinInput"
+                        : "guardianNewPin"
+                )
+                ?.focus();
+
+        },
+        300
+    );
+
+}
+
+
+/* ======================================================
+   SUBMIT PIN
+====================================================== */
+
+async function guardianSubmitPin() {
+
+    const error =
+        document.getElementById(
+            "guardianPinError"
+        );
+
+
+    function showError(
+        message
+    ) {
+
+        error.textContent =
+            message;
+
+        error.classList.remove(
+            "d-none"
+        );
+
+    }
+
+
+    const stored =
+        localStorage.getItem(
+            GUARDIAN_PIN_KEY
+        );
+
+
+    /* FIRST TIME */
+
+    if (!stored) {
+
+        const pin =
+            document.getElementById(
+                "guardianNewPin"
+            )
+            ?.value
+            .trim();
+
+
+        const confirm =
+            document.getElementById(
+                "guardianConfirmPin"
+            )
+            ?.value
+            .trim();
+
+
+        if (
+            !guardianValidPin(
+                pin
+            )
+        ) {
+
+            showError(
+                "PIN harus 4–12 digit."
+            );
+
+            return;
+
+        }
+
+
+        if (
+            pin !==
+            confirm
+        ) {
+
+            showError(
+                "Konfirmasi PIN tidak sama."
+            );
+
+            return;
+
+        }
+
+
+        const hash =
+            await guardianHash(
+                pin
+            );
+
+
+        localStorage.setItem(
+            GUARDIAN_PIN_KEY,
+            hash
+        );
+
+
+        sessionStorage.setItem(
+            GUARDIAN_SESSION_KEY,
+            "1"
+        );
+
+
+        guardianClosePinModal();
+
+
+        guardianLoadPage(
+            "setting"
+        );
+
+
+        return;
+
+    }
+
+
+    /* EXISTING PIN */
+
+    const pin =
+        document.getElementById(
+            "guardianPinInput"
+        )
+        ?.value
+        .trim();
+
+
+    if (
+        !guardianValidPin(
+            pin
+        )
+    ) {
+
+        showError(
+            "Masukkan PIN 4–12 digit."
+        );
+
+        return;
+
+    }
+
+
+    const hash =
+        await guardianHash(
+            pin
+        );
+
+
+    if (
+        hash !==
+        stored
+    ) {
+
+        showError(
+            "PIN salah."
+        );
+
+        return;
+
+    }
+
+
+    sessionStorage.setItem(
+        GUARDIAN_SESSION_KEY,
+        "1"
+    );
+
+
+    guardianClosePinModal();
+
+
+    guardianLoadPage(
+        "setting"
+    );
+
+}
+
+
+function guardianClosePinModal() {
+
+    const element =
+        document.getElementById(
+            "guardianPinModal"
+        );
+
+
+    if (!element) {
+        return;
+    }
+
+
+    const modal =
+        bootstrap.Modal.getInstance(
+            element
+        );
+
+
+    if (modal) {
+        modal.hide();
+    }
+
+}
+
+
+/* ======================================================
+   SETTINGS LOCK
+====================================================== */
+
+function guardianLockSettings() {
+
+    sessionStorage.removeItem(
+        GUARDIAN_SESSION_KEY
+    );
+
+
+    guardianLoadPage(
+        "dashboard"
+    );
+
+}
+
+
+/* ======================================================
+   SETTINGS PAGE
+====================================================== */
+
+function guardianInitSettingsPage() {
+
+    /*
+     * Settings page tetap dapat menggunakan
+     * tombol/module lama.
+     */
+
+}
+
+
+/* ======================================================
+   ESCAPE
+====================================================== */
+
+function guardianEscape(
+    value
+) {
+
+    return String(
+        value ?? ""
+    )
+    .replace(
+        /&/g,
+        "&amp;"
+    )
+    .replace(
+        /</g,
+        "&lt;"
+    )
+    .replace(
+        />/g,
+        "&gt;"
+    )
+    .replace(
+        /"/g,
+        "&quot;"
+    )
+    .replace(
+        /'/g,
+        "&#039;"
+    );
+
+}
+
+
+/* ======================================================
+   EVENTS
+====================================================== */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+
+        guardianInitTheme();
+
+
+        /* THEME */
+
+        document
+            .getElementById(
+                "guardianThemeButton"
+            )
+            ?.addEventListener(
+                "click",
+                guardianToggleTheme
+            );
+
+
+        /* MENU */
+
+        document
+            .getElementById(
+                "guardianMenuButton"
+            )
+            ?.addEventListener(
+                "click",
+                function(event) {
+
+                    event.stopPropagation();
+
+                    guardianToggleMenu();
+
+                }
+            );
+
+
+        /* MENU ITEMS */
+
+        document
+            .querySelectorAll(
+                ".guardian-menu-item"
+            )
+            .forEach(
+                function(item) {
+
+                    item.addEventListener(
+                        "click",
+                        function() {
+
+                            const page =
+                                item.dataset.page;
+
+
+                            guardianCloseMenu();
+
+
+                            if (
+                                page ===
+                                "setting"
+                            ) {
+
+                                guardianRequestSettings();
+
+                            } else {
+
+                                guardianLoadPage(
+                                    page
+                                );
+
+                            }
+
+                        }
+                    );
+
+                }
+            );
+
+
+        /* CLICK OUTSIDE MENU */
+
+        document.addEventListener(
+            "click",
+            function(event) {
+
+                const menu =
+                    document.getElementById(
+                        "guardianMenu"
+                    );
+
+                const button =
+                    document.getElementById(
+                        "guardianMenuButton"
+                    );
+
+
+                if (
+                    menu &&
+                    button &&
+                    !menu.contains(
+                        event.target
+                    ) &&
+                    !button.contains(
+                        event.target
+                    )
+                ) {
+
+                    guardianCloseMenu();
+
+                }
+
+            }
+        );
+
+
+        /* PIN SUBMIT */
+
+        document
+            .getElementById(
+                "guardianPinSubmit"
+            )
+            ?.addEventListener(
+                "click",
+                guardianSubmitPin
+            );
+
+
+        /* ENTER PIN */
+
+        [
+            "guardianPinInput",
+            "guardianNewPin",
+            "guardianConfirmPin"
+        ]
+        .forEach(
+            function(id) {
+
+                document
+                    .getElementById(
+                        id
+                    )
+                    ?.addEventListener(
+                        "keydown",
+                        function(event) {
+
+                            if (
+                                event.key ===
+                                "Enter"
+                            ) {
+
+                                guardianSubmitPin();
+
+                            }
+
+                        }
+                    );
+
+            }
+        );
+
+
+        /* INITIAL PAGE */
+
+        guardianLoadPage(
+            "dashboard"
+        );
+
+    }
+);
+
+
+/* ======================================================
+   GLOBAL
+====================================================== */
+
+window.guardianLoadPage =
+    guardianLoadPage;
+
+window.guardianRequestSettings =
+    guardianRequestSettings;
+
+window.guardianLockSettings =
+    guardianLockSettings;
+
+window.guardianToggleTheme =
+    guardianToggleTheme;
+
+</script>
 
 
 </body>
-
 </html>
