@@ -1,14 +1,40 @@
 /**
  * ==========================================================
- * Guardian KPI Web3
- * File    : js/app.js
- * Version : Enterprise Shell FINAL
+ * GUARDIAN KPI
+ * UI CONTROLLER
+ * ==========================================================
+ *
+ * Fungsi:
+ *
+ * 1. Hamburger dropdown
+ * 2. Dashboard navigation
+ * 3. Settings navigation
+ * 4. PIN Settings
+ * 5. Dark / Light mode
+ * 6. Dynamic page loader
+ *
+ * PENTING:
+ *
+ * File ini TIDAK mengolah data KPI.
+ *
+ * Data tetap diproses oleh:
+ *
+ * dashboard.js
+ * api.js
+ * backend Google Apps Script
+ *
  * ==========================================================
  */
 
 "use strict";
 
-let currentPage = "dashboard";
+
+/* ==========================================================
+   STORAGE KEYS
+========================================================== */
+
+const THEME_KEY =
+    "guardianKPI.theme";
 
 const SETTINGS_PIN_KEY =
     "guardianKPI.settingsPinHash";
@@ -16,86 +42,423 @@ const SETTINGS_PIN_KEY =
 const SETTINGS_SESSION_KEY =
     "guardianKPI.settingsUnlocked";
 
-const THEME_KEY =
-    "guardianKPI.theme";
+
+/* ==========================================================
+   GLOBAL
+========================================================== */
+
+let currentPage =
+    "dashboard";
 
 
 /* ==========================================================
- * PAGE META
- * ==========================================================
- */
+   PAGE INFORMATION
+========================================================== */
 
-function pageTitle(page) {
+const PAGE_INFO = {
 
-    const titles = {
+    dashboard: {
 
-        dashboard: {
-            title: "Dashboard",
-            subtitle: "Guardian KPI Web3"
-        },
+        title: "Dashboard"
 
-        setting: {
-            title: "Settings",
-            subtitle: "Konfigurasi Guardian KPI"
-        },
+    },
 
-        anggota: {
-            title: "Anggota",
-            subtitle: "Data anggota security"
-        },
+    setting: {
 
-        group: {
-            title: "Group",
-            subtitle: "Manajemen group"
-        },
+        title: "Settings"
 
-        masterkpi: {
-            title: "Master KPI",
-            subtitle: "Indikator dan bobot KPI"
-        },
+    },
 
-        penilaian: {
-            title: "Penilaian",
-            subtitle: "Penilaian kinerja anggota"
+    anggota: {
+
+        title: "Anggota"
+
+    },
+
+    group: {
+
+        title: "Group"
+
+    },
+
+    masterkpi: {
+
+        title: "Master KPI"
+
+    },
+
+    penilaian: {
+
+        title: "Penilaian"
+
+    }
+
+};
+
+
+/* ==========================================================
+   DOM READY
+========================================================== */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        initTheme();
+
+        initMenu();
+
+        initSettings();
+
+        loadPage("dashboard");
+
+    }
+);
+
+
+/* ==========================================================
+   MENU
+========================================================== */
+
+function initMenu() {
+
+    const menuButton =
+        document.getElementById(
+            "menuButton"
+        );
+
+
+    const mainMenu =
+        document.getElementById(
+            "mainMenu"
+        );
+
+
+    if (!menuButton || !mainMenu) {
+
+        return;
+
+    }
+
+
+    /* OPEN / CLOSE */
+
+    menuButton.addEventListener(
+        "click",
+        function (event) {
+
+            event.stopPropagation();
+
+            toggleMenu();
+
         }
+    );
 
-    };
 
-    return titles[page] || {
-        title: "Guardian KPI",
-        subtitle: "Enterprise Security"
-    };
+    /* MENU ITEMS */
+
+    mainMenu
+        .querySelectorAll(
+            ".main-menu-item"
+        )
+        .forEach(
+            function (item) {
+
+                item.addEventListener(
+                    "click",
+                    function () {
+
+                        const page =
+                            item.dataset.page;
+
+
+                        closeMenu();
+
+
+                        if (
+                            page ===
+                            "setting"
+                        ) {
+
+                            requestSettingsAccess();
+
+                            return;
+
+                        }
+
+
+                        loadPage(page);
+
+                    }
+                );
+
+            }
+        );
+
+
+    /* CLICK OUTSIDE */
+
+    document.addEventListener(
+        "click",
+        function (event) {
+
+            if (
+                !mainMenu.contains(
+                    event.target
+                ) &&
+                !menuButton.contains(
+                    event.target
+                )
+            ) {
+
+                closeMenu();
+
+            }
+
+        }
+    );
+
 }
 
 
 /* ==========================================================
- * LOAD PAGE
- * ==========================================================
- */
+   TOGGLE MENU
+========================================================== */
 
-async function loadPage(page) {
+function toggleMenu() {
 
-    if (
-        page === "setting" &&
-        !isSettingsUnlocked()
-    ) {
-        requestSettingsAccess();
+    const menu =
+        document.getElementById(
+            "mainMenu"
+        );
+
+
+    const button =
+        document.getElementById(
+            "menuButton"
+        );
+
+
+    if (!menu || !button) {
+
         return;
+
     }
 
-    currentPage = page;
+
+    const isOpen =
+        menu.classList.contains(
+            "show"
+        );
+
+
+    if (isOpen) {
+
+        closeMenu();
+
+    } else {
+
+        openMenu();
+
+    }
+
+}
+
+
+/* ==========================================================
+   OPEN MENU
+========================================================== */
+
+function openMenu() {
+
+    const menu =
+        document.getElementById(
+            "mainMenu"
+        );
+
+
+    const button =
+        document.getElementById(
+            "menuButton"
+        );
+
+
+    if (!menu || !button) {
+
+        return;
+
+    }
+
+
+    menu.classList.add(
+        "show"
+    );
+
+
+    menu.setAttribute(
+        "aria-hidden",
+        "false"
+    );
+
+
+    button.classList.add(
+        "active"
+    );
+
+
+    button.setAttribute(
+        "aria-expanded",
+        "true"
+    );
+
+}
+
+
+/* ==========================================================
+   CLOSE MENU
+========================================================== */
+
+function closeMenu() {
+
+    const menu =
+        document.getElementById(
+            "mainMenu"
+        );
+
+
+    const button =
+        document.getElementById(
+            "menuButton"
+        );
+
+
+    if (!menu || !button) {
+
+        return;
+
+    }
+
+
+    menu.classList.remove(
+        "show"
+    );
+
+
+    menu.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+
+
+    button.classList.remove(
+        "active"
+    );
+
+
+    button.setAttribute(
+        "aria-expanded",
+        "false"
+    );
+
+}
+
+
+/* ==========================================================
+   ACTIVE MENU
+========================================================== */
+
+function setActiveMenu(
+    page
+) {
+
+    document
+        .querySelectorAll(
+            ".main-menu-item"
+        )
+        .forEach(
+            function (item) {
+
+                item.classList.remove(
+                    "active"
+                );
+
+            }
+        );
+
+
+    const item =
+        document.querySelector(
+            `.main-menu-item[data-page="${page}"]`
+        );
+
+
+    if (item) {
+
+        item.classList.add(
+            "active"
+        );
+
+    }
+
+}
+
+
+/* ==========================================================
+   PAGE LOADER
+========================================================== */
+
+async function loadPage(
+    page
+) {
+
+    /* ------------------------------------------
+       SETTINGS PROTECTION
+    ------------------------------------------ */
+
+    if (
+        page ===
+        "setting" &&
+        !isSettingsUnlocked()
+    ) {
+
+        requestSettingsAccess();
+
+        return;
+
+    }
+
+
+    currentPage =
+        page;
+
 
     const app =
-        document.getElementById("appContent");
+        document.getElementById(
+            "appContent"
+        );
 
-    if (!app) return;
+
+    if (!app) {
+
+        return;
+
+    }
+
+
+    /* ------------------------------------------
+       LOADING
+    ------------------------------------------ */
 
     app.innerHTML = `
+
         <div class="page-loading">
-            <div class="spinner-border text-info"></div>
-            <p>Loading...</p>
+
+            <div class="loading-ring"></div>
+
         </div>
+
     `;
+
 
     try {
 
@@ -103,90 +466,111 @@ async function loadPage(page) {
             await fetch(
                 `pages/${page}.html`,
                 {
-                    cache: "no-store"
+                    cache:
+                        "no-store"
                 }
             );
 
+
         if (!response.ok) {
+
             throw new Error(
-                `Halaman "${page}" tidak ditemukan.`
+                `Halaman ${page}.html tidak ditemukan.`
             );
+
         }
+
 
         const html =
             await response.text();
 
-        app.innerHTML = html;
 
-        updatePageHeader(page);
+        app.innerHTML =
+            html;
 
-        activeMenu(page);
 
-        initPage(page);
+        setActiveMenu(
+            page
+        );
 
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth"
-        });
 
-    } catch (error) {
+        initializePage(
+            page
+        );
+
+
+        window.scrollTo(
+            0,
+            0
+        );
+
+    }
+
+
+    catch (error) {
 
         console.error(
-            "Guardian KPI loadPage:",
+            "Guardian KPI page error:",
             error
         );
 
+
         app.innerHTML = `
-            <div class="alert alert-danger">
-                <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                ${escapeHtml(error.message)}
+
+            <div class="ui-error">
+
+                <i class="bi bi-exclamation-triangle"></i>
+
+                <div>
+
+                    <strong>
+                        Halaman gagal dimuat
+                    </strong>
+
+                    <p>
+                        ${escapeHtml(
+                            error.message
+                        )}
+                    </p>
+
+                </div>
+
             </div>
+
         `;
+
     }
+
 }
 
 
 /* ==========================================================
- * HEADER
- * ==========================================================
- */
+   PAGE INITIALIZER
+========================================================== */
 
-function updatePageHeader(page) {
+function initializePage(
+    page
+) {
 
-    const meta = pageTitle(page);
+    switch (
+        page
+    ) {
 
-    const title =
-        document.getElementById("pageTitle");
-
-    const subtitle =
-        document.getElementById("pageSubtitle");
-
-    if (title) {
-        title.textContent = meta.title;
-    }
-
-    if (subtitle) {
-        subtitle.textContent = meta.subtitle;
-    }
-}
-
-
-/* ==========================================================
- * PAGE INIT
- * ==========================================================
- */
-
-function initPage(page) {
-
-    switch (page) {
 
         case "dashboard":
+
+            /*
+             * dashboard.js
+             * sudah memiliki init()
+             */
 
             if (
                 typeof init ===
                 "function"
             ) {
+
                 init();
+
             }
 
             break;
@@ -198,7 +582,9 @@ function initPage(page) {
                 typeof initAnggota ===
                 "function"
             ) {
+
                 initAnggota();
+
             }
 
             break;
@@ -210,7 +596,9 @@ function initPage(page) {
                 typeof initGroup ===
                 "function"
             ) {
+
                 initGroup();
+
             }
 
             break;
@@ -222,7 +610,9 @@ function initPage(page) {
                 typeof initMasterKPI ===
                 "function"
             ) {
+
                 initMasterKPI();
+
             }
 
             break;
@@ -234,7 +624,9 @@ function initPage(page) {
                 typeof initPenilaian ===
                 "function"
             ) {
+
                 initPenilaian();
+
             }
 
             break;
@@ -242,54 +634,87 @@ function initPage(page) {
 
         case "setting":
 
-            initSettingsPage();
+            initializeSettingsPage();
 
             break;
+
     }
+
 }
 
 
 /* ==========================================================
- * SETTINGS
- * ==========================================================
- */
+   SETTINGS
+========================================================== */
 
-function initSettingsPage() {
+function initSettings() {
 
-    const status =
+    const submitButton =
         document.getElementById(
-            "settingsPinStatus"
+            "settingsPinSubmit"
         );
 
-    if (status) {
 
-        status.textContent =
-            "Settings terbuka";
-
-        status.className =
-            "settings-access-badge";
-
-    }
-}
-
-
-function openSettingsModule(page) {
-
-    if (!isSettingsUnlocked()) {
-
-        requestSettingsAccess();
+    if (!submitButton) {
 
         return;
+
     }
 
-    loadPage(page);
+
+    submitButton.addEventListener(
+        "click",
+        submitSettingsAccess
+    );
+
+
+    [
+        "settingsPinInput",
+        "settingsNewPin",
+        "settingsConfirmPin"
+
+    ]
+    .forEach(
+        function (id) {
+
+            const input =
+                document.getElementById(
+                    id
+                );
+
+
+            if (!input) {
+
+                return;
+
+            }
+
+
+            input.addEventListener(
+                "keydown",
+                function (event) {
+
+                    if (
+                        event.key ===
+                        "Enter"
+                    ) {
+
+                        submitSettingsAccess();
+
+                    }
+
+                }
+            );
+
+        }
+    );
+
 }
 
 
 /* ==========================================================
- * SETTINGS PIN MODAL
- * ==========================================================
- */
+   REQUEST SETTINGS
+========================================================== */
 
 function requestSettingsAccess() {
 
@@ -298,23 +723,25 @@ function requestSettingsAccess() {
             "settingsPinModal"
         );
 
+
     if (!modalElement) {
 
-        alert(
-            "Modal Settings tidak ditemukan."
-        );
-
         return;
+
     }
 
-    prepareSettingsPinModal();
+
+    prepareSettingsModal();
+
 
     const modal =
         bootstrap.Modal.getOrCreateInstance(
             modalElement
         );
 
+
     modal.show();
+
 
     setTimeout(
         function () {
@@ -326,22 +753,31 @@ function requestSettingsAccess() {
                     )
                 );
 
-            const targetId =
+
+            const inputId =
                 hasPin
                     ? "settingsPinInput"
                     : "settingsNewPin";
 
+
             document
-                .getElementById(targetId)
+                .getElementById(
+                    inputId
+                )
                 ?.focus();
 
         },
-        300
+        350
     );
+
 }
 
 
-function prepareSettingsPinModal() {
+/* ==========================================================
+   PREPARE SETTINGS MODAL
+========================================================== */
+
+function prepareSettingsModal() {
 
     const hasPin =
         Boolean(
@@ -350,41 +786,52 @@ function prepareSettingsPinModal() {
             )
         );
 
+
     const title =
         document.getElementById(
             "settingsPinTitle"
         );
+
 
     const message =
         document.getElementById(
             "settingsPinMessage"
         );
 
+
     const createGroup =
         document.getElementById(
             "settingsCreatePinGroup"
         );
+
 
     const enterGroup =
         document.getElementById(
             "settingsEnterPinGroup"
         );
 
-    const submit =
+
+    const submitButton =
         document.getElementById(
             "settingsPinSubmit"
         );
+
 
     const error =
         document.getElementById(
             "settingsPinError"
         );
 
+
     if (error) {
 
-        error.classList.add("d-none");
+        error.textContent =
+            "";
 
-        error.textContent = "";
+        error.classList.add(
+            "d-none"
+        );
+
     }
 
 
@@ -392,14 +839,22 @@ function prepareSettingsPinModal() {
         "settingsPinInput",
         "settingsNewPin",
         "settingsConfirmPin"
-    ].forEach(
-        function(id) {
+
+    ]
+    .forEach(
+        function (id) {
 
             const input =
-                document.getElementById(id);
+                document.getElementById(
+                    id
+                );
+
 
             if (input) {
-                input.value = "";
+
+                input.value =
+                    "";
+
             }
 
         }
@@ -408,63 +863,87 @@ function prepareSettingsPinModal() {
 
     if (!hasPin) {
 
-        if (title) {
-            title.textContent =
-                "Buat PIN Settings";
-        }
+        title.textContent =
+            "Buat PIN Settings";
 
-        if (message) {
-            message.textContent =
-                "Buat PIN 4–12 digit untuk melindungi Settings.";
-        }
 
-        if (createGroup) {
-            createGroup.classList.remove("d-none");
-        }
+        message.textContent =
+            "Buat PIN 4–12 digit untuk melindungi Settings.";
 
-        if (enterGroup) {
-            enterGroup.classList.add("d-none");
-        }
 
-        if (submit) {
-            submit.textContent =
-                "Simpan PIN & Buka";
-        }
+        createGroup
+            .classList.remove(
+                "d-none"
+            );
 
-    } else {
 
-        if (title) {
-            title.textContent =
-                "Settings Terkunci";
-        }
+        enterGroup
+            .classList.add(
+                "d-none"
+            );
 
-        if (message) {
-            message.textContent =
-                "Masukkan PIN untuk membuka Settings.";
-        }
 
-        if (createGroup) {
-            createGroup.classList.add("d-none");
-        }
+        submitButton.textContent =
+            "Simpan PIN & Buka";
 
-        if (enterGroup) {
-            enterGroup.classList.remove("d-none");
-        }
-
-        if (submit) {
-            submit.textContent =
-                "Buka Settings";
-        }
     }
+
+
+    else {
+
+        title.textContent =
+            "Settings Terkunci";
+
+
+        message.textContent =
+            "Masukkan PIN untuk membuka Settings.";
+
+
+        createGroup
+            .classList.add(
+                "d-none"
+            );
+
+
+        enterGroup
+            .classList.remove(
+                "d-none"
+            );
+
+
+        submitButton.textContent =
+            "Buka Settings";
+
+    }
+
 }
 
 
 /* ==========================================================
- * PIN HASH
- * ==========================================================
- */
+   PIN FORMAT
+========================================================== */
 
-async function hashText(text) {
+function validPin(
+    pin
+) {
+
+    return /^\d{4,12}$/
+        .test(
+            String(
+                pin || ""
+            )
+        );
+
+}
+
+
+/* ==========================================================
+   HASH
+========================================================== */
+
+async function hashText(
+    text
+) {
 
     if (
         window.crypto &&
@@ -473,7 +952,10 @@ async function hashText(text) {
 
         const data =
             new TextEncoder()
-                .encode(text);
+                .encode(
+                    text
+                );
+
 
         const buffer =
             await crypto.subtle.digest(
@@ -481,23 +963,35 @@ async function hashText(text) {
                 data
             );
 
-        return Array.from(
-            new Uint8Array(buffer)
-        )
-        .map(
-            function(byte) {
 
-                return byte
-                    .toString(16)
-                    .padStart(2, "0");
+        return Array
+            .from(
+                new Uint8Array(
+                    buffer
+                )
+            )
+            .map(
+                function (byte) {
 
-            }
-        )
-        .join("");
+                    return byte
+                        .toString(16)
+                        .padStart(
+                            2,
+                            "0"
+                        );
+
+                }
+            )
+            .join("");
+
     }
 
 
-    let hash = 0;
+    /* Fallback */
+
+    let hash =
+        0;
+
 
     for (
         let i = 0;
@@ -512,27 +1006,27 @@ async function hashText(text) {
                 ) -
                 hash
             ) +
-            text.charCodeAt(i);
+            text.charCodeAt(
+                i
+            );
 
-        hash |= 0;
+
+        hash |=
+            0;
+
     }
 
-    return String(hash);
-}
 
-
-function validPinFormat(pin) {
-
-    return /^\d{4,12}$/.test(
-        String(pin || "")
+    return String(
+        hash
     );
+
 }
 
 
 /* ==========================================================
- * SUBMIT PIN
- * ==========================================================
- */
+   SUBMIT SETTINGS PIN
+========================================================== */
 
 async function submitSettingsAccess() {
 
@@ -541,144 +1035,199 @@ async function submitSettingsAccess() {
             "settingsPinError"
         );
 
-    function showError(message) {
 
-        if (!error) return;
+    function showError(
+        message
+    ) {
+
+        if (!error) {
+
+            return;
+
+        }
+
 
         error.textContent =
             message;
 
+
         error.classList.remove(
             "d-none"
         );
+
     }
 
 
-    const storedPin =
+    const storedHash =
         localStorage.getItem(
             SETTINGS_PIN_KEY
         );
 
 
-    /* FIRST USE */
+    /* ======================================================
+       FIRST TIME
+    ====================================================== */
 
-    if (!storedPin) {
+    if (!storedHash) {
 
         const pin =
             document.getElementById(
                 "settingsNewPin"
-            )?.value
+            )
+            ?.value
             .trim();
 
-        const confirm =
+
+        const confirmPin =
             document.getElementById(
                 "settingsConfirmPin"
-            )?.value
+            )
+            ?.value
             .trim();
 
-        if (!validPinFormat(pin)) {
+
+        if (
+            !validPin(
+                pin
+            )
+        ) {
 
             showError(
                 "PIN harus terdiri dari 4–12 digit."
             );
 
             return;
+
         }
 
-        if (pin !== confirm) {
+
+        if (
+            pin !==
+            confirmPin
+        ) {
 
             showError(
                 "Konfirmasi PIN tidak sama."
             );
 
             return;
+
         }
 
+
         const hash =
-            await hashText(pin);
+            await hashText(
+                pin
+            );
+
 
         localStorage.setItem(
             SETTINGS_PIN_KEY,
             hash
         );
 
+
         sessionStorage.setItem(
             SETTINGS_SESSION_KEY,
             "1"
         );
 
+
         closeSettingsModal();
 
-        await loadPage("setting");
+
+        loadPage(
+            "setting"
+        );
+
 
         return;
+
     }
 
 
-    /* EXISTING PIN */
+    /* ======================================================
+       EXISTING PIN
+    ====================================================== */
 
     const pin =
         document.getElementById(
             "settingsPinInput"
-        )?.value
+        )
+        ?.value
         .trim();
 
-    if (!validPinFormat(pin)) {
+
+    if (
+        !validPin(
+            pin
+        )
+    ) {
 
         showError(
             "Masukkan PIN 4–12 digit."
         );
 
         return;
+
     }
 
-    const hash =
-        await hashText(pin);
 
-    if (hash !== storedPin) {
+    const hash =
+        await hashText(
+            pin
+        );
+
+
+    if (
+        hash !==
+        storedHash
+    ) {
 
         showError(
             "PIN salah."
         );
 
         return;
+
     }
+
 
     sessionStorage.setItem(
         SETTINGS_SESSION_KEY,
         "1"
     );
 
+
     closeSettingsModal();
 
-    await loadPage("setting");
+
+    loadPage(
+        "setting"
+    );
+
 }
 
 
 /* ==========================================================
- * SETTINGS LOCK
- * ==========================================================
- */
+   SETTINGS SESSION
+========================================================== */
 
 function isSettingsUnlocked() {
 
     return (
         sessionStorage.getItem(
             SETTINGS_SESSION_KEY
-        ) === "1"
+        ) ===
+        "1"
     );
+
 }
 
 
-function lockSettings() {
-
-    sessionStorage.removeItem(
-        SETTINGS_SESSION_KEY
-    );
-
-    loadPage("dashboard");
-}
-
+/* ==========================================================
+   CLOSE MODAL
+========================================================== */
 
 function closeSettingsModal() {
 
@@ -687,194 +1236,228 @@ function closeSettingsModal() {
             "settingsPinModal"
         );
 
-    if (!element) return;
+
+    if (!element) {
+
+        return;
+
+    }
+
 
     const modal =
         bootstrap.Modal.getInstance(
             element
         );
 
+
     if (modal) {
+
         modal.hide();
+
     }
+
 }
 
 
 /* ==========================================================
- * GLOBAL THEME
- * ==========================================================
- */
+   LOCK SETTINGS
+========================================================== */
 
-function applyTheme(theme) {
+function lockSettings() {
 
-    theme =
-        theme === "light"
+    sessionStorage.removeItem(
+        SETTINGS_SESSION_KEY
+    );
+
+
+    loadPage(
+        "dashboard"
+    );
+
+}
+
+
+/* ==========================================================
+   SETTINGS PAGE
+========================================================== */
+
+function initializeSettingsPage() {
+
+    /*
+     * Tidak ada header tambahan.
+     * Halaman Settings menggunakan
+     * layout miliknya sendiri.
+     */
+
+}
+
+
+/* ==========================================================
+   THEME
+========================================================== */
+
+function initTheme() {
+
+    const savedTheme =
+        localStorage.getItem(
+            THEME_KEY
+        );
+
+
+    const theme =
+        savedTheme ===
+        "light"
             ? "light"
             : "dark";
 
-    document.documentElement
-        .setAttribute(
-            "data-theme",
-            theme
-        );
 
-    localStorage.setItem(
-        THEME_KEY,
+    applyTheme(
         theme
     );
 
-    const label =
-        document.getElementById(
-            "themeLabel"
-        );
-
-    if (label) {
-
-        label.textContent =
-            theme === "light"
-                ? "Light"
-                : "Dark";
-    }
-
-    const knob =
-        document.getElementById(
-            "themeSwitchKnob"
-        );
-
-    if (knob) {
-
-        knob.classList.toggle(
-            "light",
-            theme === "light"
-        );
-    }
 
     const toggle =
         document.getElementById(
             "themeToggle"
         );
 
+
     if (toggle) {
 
-        toggle.setAttribute(
-            "aria-pressed",
-            theme === "light"
-                ? "true"
-                : "false"
-        );
-    }
-}
+        toggle.addEventListener(
+            "click",
+            function () {
+
+                const current =
+                    document.documentElement
+                        .getAttribute(
+                            "data-theme"
+                        ) ||
+                    "dark";
 
 
-function toggleTheme() {
-
-    const current =
-        document.documentElement
-            .getAttribute(
-                "data-theme"
-            ) ||
-        "dark";
-
-    applyTheme(
-        current === "dark"
-            ? "light"
-            : "dark"
-    );
-}
-
-
-function initTheme() {
-
-    const stored =
-        localStorage.getItem(
-            THEME_KEY
-        );
-
-    applyTheme(
-        stored === "light"
-            ? "light"
-            : "dark"
-    );
-}
-
-
-/* ==========================================================
- * SIDEBAR
- * ==========================================================
- */
-
-function toggleSidebar() {
-
-    document
-        .getElementById(
-            "mainSidebar"
-        )
-        ?.classList.toggle(
-            "mobile-open"
-        );
-}
-
-
-function activeMenu(page) {
-
-    document
-        .querySelectorAll(
-            ".menu-item"
-        )
-        .forEach(
-            function(item) {
-
-                item.classList.remove(
-                    "active"
+                applyTheme(
+                    current ===
+                    "dark"
+                        ? "light"
+                        : "dark"
                 );
 
             }
         );
 
-    const item =
-        document.querySelector(
-            `.menu-item[data-page="${page}"]`
-        );
-
-    if (item) {
-
-        item.classList.add(
-            "active"
-        );
     }
 
-    document
-        .getElementById(
-            "mainSidebar"
-        )
-        ?.classList.remove(
-            "mobile-open"
-        );
 }
 
 
 /* ==========================================================
- * SAFE HTML
- * ==========================================================
- */
+   APPLY THEME
+========================================================== */
 
-function escapeHtml(value) {
+function applyTheme(
+    theme
+) {
+
+    const normalized =
+        theme ===
+        "light"
+            ? "light"
+            : "dark";
+
+
+    document.documentElement
+        .setAttribute(
+            "data-theme",
+            normalized
+        );
+
+
+    localStorage.setItem(
+        THEME_KEY,
+        normalized
+    );
+
+
+    const icon =
+        document.getElementById(
+            "themeIcon"
+        );
+
+
+    if (!icon) {
+
+        return;
+
+    }
+
+
+    /*
+     * Dark mode:
+     * icon SUN
+     *
+     * Light mode:
+     * icon MOON
+     */
+
+    if (
+        normalized ===
+        "dark"
+    ) {
+
+        icon.className =
+            "bi bi-sun-fill";
+
+    }
+
+    else {
+
+        icon.className =
+            "bi bi-moon-stars-fill";
+
+    }
+
+}
+
+
+/* ==========================================================
+   ESCAPE HTML
+========================================================== */
+
+function escapeHtml(
+    value
+) {
 
     return String(
         value ?? ""
     )
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+    .replace(
+        /&/g,
+        "&amp;"
+    )
+    .replace(
+        /</g,
+        "&lt;"
+    )
+    .replace(
+        />/g,
+        "&gt;"
+    )
+    .replace(
+        /"/g,
+        "&quot;"
+    )
+    .replace(
+        /'/g,
+        "&#039;"
+    );
+
 }
 
 
 /* ==========================================================
- * GLOBAL EXPORT
- * ==========================================================
- */
+   GLOBAL FUNCTIONS
+========================================================== */
 
 window.loadPage =
     loadPage;
@@ -885,34 +1468,17 @@ window.requestSettingsAccess =
 window.submitSettingsAccess =
     submitSettingsAccess;
 
-window.openSettingsModule =
-    openSettingsModule;
-
 window.lockSettings =
     lockSettings;
 
-window.toggleTheme =
-    toggleTheme;
+window.toggleMenu =
+    toggleMenu;
+
+window.closeMenu =
+    closeMenu;
 
 window.applyTheme =
     applyTheme;
 
-window.toggleSidebar =
-    toggleSidebar;
-
-
-/* ==========================================================
- * START
- * ==========================================================
- */
-
-document.addEventListener(
-    "DOMContentLoaded",
-    function() {
-
-        initTheme();
-
-        loadPage("dashboard");
-
-    }
-);
+window.isSettingsUnlocked =
+    isSettingsUnlocked;
