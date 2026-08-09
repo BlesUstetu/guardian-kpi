@@ -1870,7 +1870,7 @@ function validatePenilaianForm() {
 
 
 /* ==========================================================
- * BUILD PAYLOAD
+ * BUILD PAYLOAD PENILAIAN
  * ==========================================================
  */
 
@@ -1916,64 +1916,246 @@ function buildPenilaianPayload() {
         );
 
 
-    const indikator =
-        [];
+    /*
+     * ======================================================
+     * DETAIL KPI
+     * ======================================================
+     *
+     * Setiap input .nilaiKPI berasal dari Master KPI.
+     *
+     * data-id    = ID Master KPI
+     * data-bobot = Bobot KPI
+     * value      = Nilai KPI
+     *
+     * Struktur detail dibuat eksplisit:
+     *
+     * {
+     *     kpi_id: "...",
+     *     nilai: 90,
+     *     bobot: 15
+     * }
+     *
+     */
+
+    const detailKPI = [];
 
 
-    document
-        .querySelectorAll(
+    const inputs =
+        document.querySelectorAll(
             "#listIndikator .nilaiKPI"
-        )
-        .forEach(
-            function(input) {
+        );
 
-                indikator.push({
 
-                    id:
-                        input.dataset.id,
+    inputs.forEach(
+        function(input) {
 
-                    bobot:
-                        toPenilaianNumber(
-                            input.dataset.bobot
-                        ),
+            const kpiId =
+                String(
+                    input.dataset.id ||
+                    ""
+                ).trim();
 
-                    nilai:
-                        toPenilaianNumber(
-                            input.value
-                        )
 
-                });
+            const nilai =
+                toPenilaianNumber(
+                    input.value
+                );
+
+
+            const bobot =
+                toPenilaianNumber(
+                    input.dataset.bobot
+                );
+
+
+            /*
+             * Jangan kirim KPI tanpa ID.
+             */
+
+            if (
+                !kpiId
+            ) {
+
+                console.warn(
+                    "KPI dilewati karena ID kosong:",
+                    input
+                );
+
+                return;
 
             }
-        );
+
+
+            detailKPI.push({
+
+                kpi_id:
+                    kpiId,
+
+                nilai:
+                    nilai,
+
+                bobot:
+                    bobot
+
+            });
+
+        }
+    );
+
+
+    console.log(
+        "DETAIL KPI:",
+        detailKPI
+    );
 
 
     return {
 
         id:
-            penilaianEditId,
+            penilaianEditId || "",
 
-        anggotaId:
-            anggotaId,
+        anggota_id:
+            String(
+                anggotaId
+            ).trim(),
 
         bulan:
-            Number(bulan),
+            Number(
+                bulan
+            ),
 
         tahun:
-            Number(tahun),
+            Number(
+                tahun
+            ),
 
-        totalNilai:
+        total_nilai:
             totalNilai,
 
-        nilaiAkhir:
+        nilai_akhir:
             nilaiAkhir,
 
         status:
             status,
 
-        indikator:
-            indikator
+        detail:
+            detailKPI
 
+    };
+
+}
+
+
+/* ==========================================================
+ * VALIDASI DETAIL KPI
+ * ==========================================================
+ */
+
+function validateDetailKPI(
+    detailKPI
+) {
+
+    if (
+        !Array.isArray(
+            detailKPI
+        )
+    ) {
+
+        return {
+            valid: false,
+            message:
+                "Detail KPI harus berupa array."
+        };
+
+    }
+
+
+    if (
+        detailKPI.length === 0
+    ) {
+
+        return {
+            valid: false,
+            message:
+                "Detail KPI tidak boleh kosong."
+        };
+
+    }
+
+
+    for (
+        let i = 0;
+        i < detailKPI.length;
+        i++
+    ) {
+
+        const item =
+            detailKPI[i];
+
+
+        if (
+            !item ||
+            !item.kpi_id
+        ) {
+
+            return {
+                valid: false,
+
+                message:
+                    "KPI #" +
+                    (i + 1) +
+                    " tidak memiliki kpi_id."
+            };
+
+        }
+
+
+        const nilai =
+            Number(
+                item.nilai
+            );
+
+
+        if (
+            !Number.isFinite(
+                nilai
+            )
+        ) {
+
+            return {
+                valid: false,
+
+                message:
+                    "Nilai KPI #" +
+                    (i + 1) +
+                    " tidak valid."
+            };
+
+        }
+
+
+        if (
+            nilai < 0 ||
+            nilai > 100
+        ) {
+
+            return {
+                valid: false,
+
+                message:
+                    "Nilai KPI #" +
+                    (i + 1) +
+                    " harus antara 0 sampai 100."
+            };
+
+        }
+
+    }
+
+
+    return {
+        valid: true,
+        message: ""
     };
 
 }
@@ -2028,14 +2210,70 @@ async function savePenilaian() {
 
     try {
 
+        /*
+         * ==================================================
+         * BUILD PAYLOAD
+         * ==================================================
+         */
+
         const payload =
             buildPenilaianPayload();
 
 
         console.log(
-            "Penilaian payload:",
+            "=========================================="
+        );
+
+
+        console.log(
+            "GUARDIAN KPI - SAVE PENILAIAN"
+        );
+
+
+        console.log(
+            "Payload Penilaian:",
             payload
         );
+
+
+        console.log(
+            "Detail KPI:",
+            payload.detail
+        );
+
+
+        console.log(
+            "Jumlah Detail KPI:",
+            payload.detail.length
+        );
+
+
+        console.log(
+            "=========================================="
+        );
+
+
+        /*
+         * ==================================================
+         * VALIDASI DETAIL
+         * ==================================================
+         */
+
+        const validation =
+            validateDetailKPI(
+                payload.detail
+            );
+
+
+        if (
+            !validation.valid
+        ) {
+
+            throw new Error(
+                validation.message
+            );
+
+        }
 
 
         /*
@@ -2045,7 +2283,8 @@ async function savePenilaian() {
          */
 
         if (
-            typeof API === "undefined"
+            typeof API ===
+            "undefined"
         ) {
 
             throw new Error(
@@ -2057,7 +2296,7 @@ async function savePenilaian() {
 
         /*
          * ==================================================
-         * MODE UPDATE
+         * CREATE / UPDATE
          * ==================================================
          */
 
@@ -2088,13 +2327,6 @@ async function savePenilaian() {
 
         }
 
-
-        /*
-         * ==================================================
-         * MODE CREATE
-         * ==================================================
-         */
-
         else {
 
             if (
@@ -2103,7 +2335,7 @@ async function savePenilaian() {
             ) {
 
                 throw new Error(
-                    "API.savePenilaian belum tersedia di api.js."
+                    "API.savePenilaian tidak tersedia."
                 );
 
             }
@@ -2118,15 +2350,23 @@ async function savePenilaian() {
 
 
         console.log(
-            "Penilaian save response:",
+            "Response Save Penilaian:",
             result
         );
 
 
-        if (!result) {
+        /*
+         * ==================================================
+         * VALIDASI RESPONSE
+         * ==================================================
+         */
+
+        if (
+            !result
+        ) {
 
             throw new Error(
-                "Response penyimpanan kosong."
+                "Response server kosong."
             );
 
         }
@@ -2138,14 +2378,16 @@ async function savePenilaian() {
 
             throw new Error(
                 result.message ||
-                "Gagal menyimpan penilaian."
+                "Gagal menyimpan Penilaian."
             );
 
         }
 
 
         /*
-         * Berhasil.
+         * ==================================================
+         * BERHASIL
+         * ==================================================
          */
 
         closePenilaianModal();
@@ -2164,17 +2406,19 @@ async function savePenilaian() {
 
     }
 
-    catch (error) {
+    catch (
+        error
+    ) {
 
         console.error(
-            "savePenilaian ERROR:",
+            "SAVE PENILAIAN ERROR:",
             error
         );
 
 
         alert(
             error.message ||
-            "Gagal menyimpan penilaian."
+            "Gagal menyimpan Penilaian."
         );
 
     }
