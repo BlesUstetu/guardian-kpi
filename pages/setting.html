@@ -1,5 +1,208 @@
-<div class="container-fluid">
+<div class="settings-page">
 
-<h3>Halaman Dalam Pengembangan</h3>
+    <div class="settings-hero">
+
+        <div>
+
+            <div class="settings-kicker">
+                <i class="bi bi-shield-lock-fill"></i>
+                PROTECTED SETTINGS
+            </div>
+
+            <h2>
+                Pengaturan Guardian KPI
+            </h2>
+
+            <p>
+                Modul administrasi aplikasi ditempatkan
+                di dalam Settings. Dashboard tetap menjadi
+                halaman utama.
+            </p>
+
+        </div>
+
+
+        <div
+            id="settingsPinStatus"
+            class="settings-access-badge">
+
+            <i class="bi bi-unlock-fill"></i>
+
+            Settings terbuka
+
+        </div>
+
+    </div>
+
+
+    <div class="settings-section-title">
+        Modul Administrasi
+    </div>
+
+
+    <div class="settings-grid">
+
+
+        <button
+            type="button"
+            class="settings-card"
+            onclick="openSettingsModule('anggota')">
+
+            <span class="settings-card-icon blue">
+                <i class="bi bi-people-fill"></i>
+            </span>
+
+            <span class="settings-card-content">
+
+                <strong>
+                    Anggota
+                </strong>
+
+                <small>
+                    Kelola data anggota,
+                    jabatan, group, dan status.
+                </small>
+
+            </span>
+
+            <i class="bi bi-chevron-right settings-arrow"></i>
+
+        </button>
+
+
+        <button
+            type="button"
+            class="settings-card"
+            onclick="openSettingsModule('group')">
+
+            <span class="settings-card-icon cyan">
+                <i class="bi bi-diagram-3-fill"></i>
+            </span>
+
+            <span class="settings-card-content">
+
+                <strong>
+                    Group
+                </strong>
+
+                <small>
+                    Kelola struktur dan
+                    group anggota.
+                </small>
+
+            </span>
+
+            <i class="bi bi-chevron-right settings-arrow"></i>
+
+        </button>
+
+
+        <button
+            type="button"
+            class="settings-card"
+            onclick="openSettingsModule('masterkpi')">
+
+            <span class="settings-card-icon purple">
+                <i class="bi bi-bar-chart-fill"></i>
+            </span>
+
+            <span class="settings-card-content">
+
+                <strong>
+                    Master KPI
+                </strong>
+
+                <small>
+                    Kelola indikator, kategori,
+                    bobot, target, dan status.
+                </small>
+
+            </span>
+
+            <i class="bi bi-chevron-right settings-arrow"></i>
+
+        </button>
+
+
+        <button
+            type="button"
+            class="settings-card"
+            onclick="openSettingsModule('penilaian')">
+
+            <span class="settings-card-icon green">
+                <i class="bi bi-clipboard2-check-fill"></i>
+            </span>
+
+            <span class="settings-card-content">
+
+                <strong>
+                    Penilaian
+                </strong>
+
+                <small>
+                    Input dan kelola
+                    penilaian KPI anggota.
+                </small>
+
+            </span>
+
+            <i class="bi bi-chevron-right settings-arrow"></i>
+
+        </button>
+
+
+        <button
+            type="button"
+            class="settings-card settings-card-danger"
+            onclick="lockSettings()">
+
+            <span class="settings-card-icon red">
+                <i class="bi bi-lock-fill"></i>
+            </span>
+
+            <span class="settings-card-content">
+
+                <strong>
+                    Kunci Settings
+                </strong>
+
+                <small>
+                    Tutup akses Settings
+                    pada sesi browser ini.
+                </small>
+
+            </span>
+
+            <i class="bi bi-chevron-right settings-arrow"></i>
+
+        </button>
+
+    </div>
+
+
+    <div class="settings-section-title">
+        Informasi Keamanan
+    </div>
+
+
+    <div class="settings-security-note">
+
+        <i class="bi bi-info-circle-fill"></i>
+
+        <div>
+
+            <strong>
+                PIN Settings aktif
+            </strong>
+
+            <p>
+                PIN disimpan sebagai hash SHA-256
+                pada browser. Akses Settings dikunci
+                kembali ketika sesi browser berakhir.
+            </p>
+
+        </div>
+
+    </div>
 
 </div>
