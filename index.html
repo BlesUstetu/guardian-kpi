@@ -2,199 +2,192 @@
 <html lang="id" data-theme="dark">
 
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Guardian KPI Web3</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
 
-    <link rel="stylesheet" href="css/style.css">
+    <title>Guardian KPI</title>
+
+
+    <!-- Bootstrap -->
 
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
         rel="stylesheet">
 
+
+    <!-- Bootstrap Icons -->
+
     <link
         rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+
+    <!-- Guardian KPI UI -->
+
+    <link
+        rel="stylesheet"
+        href="css/style.css">
+
 </head>
+
 
 <body>
 
-<div class="app-shell">
 
-    <!-- ==================================================
-         SIDEBAR
-    ================================================== -->
-    <aside class="sidebar" id="mainSidebar">
+<!-- ======================================================
+     APPLICATION
+====================================================== -->
 
-        <div class="sidebar-brand">
-
-            <div class="brand-mark">
-                <i class="bi bi-shield-check"></i>
-            </div>
-
-            <div>
-                <div class="brand-title">
-                    Guardian <span>KPI</span>
-                </div>
-
-                <div class="brand-subtitle">
-                    Enterprise Security
-                </div>
-            </div>
-
-        </div>
-
-        <nav class="menu" aria-label="Menu utama">
-
-            <a
-                href="#"
-                class="menu-item active"
-                data-page="dashboard"
-                onclick="event.preventDefault(); loadPage('dashboard');">
-
-                <span class="menu-icon">
-                    <i class="bi bi-speedometer2"></i>
-                </span>
-
-                <span class="menu-label">
-                    Dashboard
-                </span>
-
-            </a>
-
-            <a
-                href="#"
-                class="menu-item"
-                data-page="setting"
-                onclick="event.preventDefault(); requestSettingsAccess();">
-
-                <span class="menu-icon">
-                    <i class="bi bi-gear-fill"></i>
-                </span>
-
-                <span class="menu-label">
-                    Settings
-                </span>
-
-                <span class="menu-lock">
-                    <i class="bi bi-lock-fill"></i>
-                </span>
-
-            </a>
-
-        </nav>
-
-        <div class="sidebar-footer">
-
-            <div class="sidebar-status">
-                <span class="status-dot"></span>
-                System Online
-            </div>
-
-            <small>
-                Guardian KPI Web3
-            </small>
-
-        </div>
-
-    </aside>
+<div id="guardianApp">
 
 
     <!-- ==================================================
-         MAIN
+         TOP BAR
     ================================================== -->
-    <main class="main-shell">
 
-        <header class="topbar">
+    <header class="guardian-topbar">
 
-            <div class="topbar-title">
+
+        <!-- ================================
+             LEFT MENU
+        ================================= -->
+
+        <div class="topbar-left">
+
+
+            <!-- HAMBURGER -->
+
+            <div class="menu-wrapper">
+
 
                 <button
+                    id="menuButton"
                     type="button"
-                    class="mobile-menu-button"
-                    onclick="toggleSidebar()"
-                    aria-label="Buka menu">
+                    class="icon-button menu-button"
+                    aria-label="Menu"
+                    aria-expanded="false"
+                    title="Menu">
 
                     <i class="bi bi-list"></i>
 
                 </button>
 
-                <div>
 
-                    <h3 id="pageTitle">
-                        Dashboard
-                    </h3>
+                <!-- ==========================
+                     DROPDOWN MENU
+                =========================== -->
 
-                    <small id="pageSubtitle">
-                        Guardian KPI Web3
-                    </small>
+                <div
+                    id="mainMenu"
+                    class="main-menu"
+                    aria-hidden="true">
+
+
+                    <!-- DASHBOARD -->
+
+                    <button
+                        type="button"
+                        class="main-menu-item active"
+                        data-page="dashboard">
+
+                        <span class="main-menu-icon">
+
+                            <i class="bi bi-speedometer2"></i>
+
+                        </span>
+
+                        <span>
+                            Dashboard
+                        </span>
+
+                    </button>
+
+
+                    <!-- SETTINGS -->
+
+                    <button
+                        type="button"
+                        class="main-menu-item"
+                        data-page="setting">
+
+                        <span class="main-menu-icon">
+
+                            <i class="bi bi-gear"></i>
+
+                        </span>
+
+                        <span>
+                            Settings
+                        </span>
+
+                        <span class="main-menu-lock">
+
+                            <i class="bi bi-lock-fill"></i>
+
+                        </span>
+
+                    </button>
+
 
                 </div>
 
             </div>
 
 
-            <!-- GLOBAL DARK / LIGHT TOGGLE -->
-
-            <div class="topbar-actions">
-
-                <span
-                    id="themeLabel"
-                    class="theme-label">
-                    Dark
-                </span>
-
-                <button
-                    id="themeToggle"
-                    type="button"
-                    class="theme-toggle"
-                    aria-label="Ubah Dark / Light Mode"
-                    aria-pressed="false"
-                    title="Ubah Dark / Light Mode"
-                    onclick="toggleTheme()">
-
-                    <span class="theme-icon theme-icon-sun">
-                        <i class="bi bi-sun-fill"></i>
-                    </span>
-
-                    <span class="theme-switch-track">
-
-                        <span
-                            id="themeSwitchKnob"
-                            class="theme-switch-knob">
-                        </span>
-
-                    </span>
-
-                    <span class="theme-icon theme-icon-moon">
-                        <i class="bi bi-moon-stars-fill"></i>
-                    </span>
-
-                </button>
-
-            </div>
-
-        </header>
+        </div>
 
 
-        <section
-            id="appContent"
-            class="app-content">
+        <!-- ==================================================
+             RIGHT SIDE
+             SINGLE THEME ICON
+        ================================================== -->
 
-            <div class="page-loading">
+        <div class="topbar-right">
 
-                <div class="spinner-border text-info"></div>
 
-                <p>
-                    Loading...
-                </p>
+            <button
+                id="themeToggle"
+                type="button"
+                class="theme-icon-button"
+                aria-label="Ubah tema"
+                title="Ubah tema">
 
-            </div>
+                <i
+                    id="themeIcon"
+                    class="bi bi-moon-stars-fill">
+                </i>
 
-        </section>
+            </button>
+
+
+        </div>
+
+
+    </header>
+
+
+    <!-- ==================================================
+         MAIN CONTENT
+    ================================================== -->
+
+    <main
+        id="appContent"
+        class="guardian-content">
+
+
+        <div class="initial-loading">
+
+            <div class="spinner-border"></div>
+
+        </div>
+
 
     </main>
+
 
 </div>
 
@@ -209,42 +202,61 @@
     tabindex="-1"
     aria-hidden="true">
 
-    <div class="modal-dialog modal-dialog-centered">
 
-        <div class="modal-content settings-pin-modal">
+    <div
+        class="modal-dialog modal-dialog-centered">
+
+
+        <div class="modal-content guardian-pin-modal">
+
+
+            <!-- HEADER -->
 
             <div class="modal-header">
 
+
                 <div>
 
-                    <div class="settings-lock-icon">
+                    <div class="pin-icon">
+
                         <i class="bi bi-shield-lock-fill"></i>
+
                     </div>
+
 
                     <h5
                         id="settingsPinTitle"
                         class="modal-title mt-3">
+
                         Settings Terkunci
+
                     </h5>
 
                 </div>
 
+
                 <button
                     type="button"
-                    class="btn-close"
+                    class="btn-close guardian-close"
                     data-bs-dismiss="modal"
                     aria-label="Close">
                 </button>
 
+
             </div>
 
 
+            <!-- BODY -->
+
             <div class="modal-body">
+
 
                 <p
                     id="settingsPinMessage"
-                    class="text-secondary">
+                    class="pin-message">
+
                     Masukkan PIN untuk membuka Settings.
+
                 </p>
 
 
@@ -254,16 +266,20 @@
                     id="settingsCreatePinGroup"
                     class="d-none">
 
+
                     <label
                         for="settingsNewPin"
-                        class="form-label">
+                        class="guardian-label">
+
                         Buat PIN
+
                     </label>
+
 
                     <input
                         id="settingsNewPin"
                         type="password"
-                        class="form-control"
+                        class="guardian-input"
                         inputmode="numeric"
                         autocomplete="new-password"
                         maxlength="12"
@@ -272,95 +288,137 @@
 
                     <label
                         for="settingsConfirmPin"
-                        class="form-label mt-3">
+                        class="guardian-label mt-3">
+
                         Konfirmasi PIN
+
                     </label>
+
 
                     <input
                         id="settingsConfirmPin"
                         type="password"
-                        class="form-control"
+                        class="guardian-input"
                         inputmode="numeric"
                         autocomplete="new-password"
                         maxlength="12"
                         placeholder="Ulangi PIN">
+
 
                 </div>
 
 
                 <!-- ENTER PIN -->
 
-                <div id="settingsEnterPinGroup">
+                <div
+                    id="settingsEnterPinGroup">
+
 
                     <label
                         for="settingsPinInput"
-                        class="form-label">
+                        class="guardian-label">
+
                         PIN Settings
+
                     </label>
+
 
                     <input
                         id="settingsPinInput"
                         type="password"
-                        class="form-control"
+                        class="guardian-input"
                         inputmode="numeric"
                         autocomplete="current-password"
                         maxlength="12"
                         placeholder="Masukkan PIN">
 
+
                 </div>
 
+
+                <!-- ERROR -->
 
                 <div
                     id="settingsPinError"
-                    class="settings-pin-error d-none">
+                    class="pin-error d-none">
                 </div>
+
 
             </div>
 
 
+            <!-- FOOTER -->
+
             <div class="modal-footer">
+
 
                 <button
                     type="button"
-                    class="btn btn-secondary"
+                    class="guardian-secondary-button"
                     data-bs-dismiss="modal">
+
                     Batal
+
                 </button>
+
 
                 <button
                     id="settingsPinSubmit"
                     type="button"
-                    class="btn btn-info"
-                    onclick="submitSettingsAccess()">
+                    class="guardian-primary-button">
+
                     Buka Settings
+
                 </button>
+
 
             </div>
 
+
         </div>
+
 
     </div>
 
+
 </div>
 
+
+<!-- ======================================================
+     LIBRARIES
+====================================================== -->
 
 <script
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
 </script>
 
-<script src="js/config.js"></script>
-<script src="js/api.js"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script
+    src="https://cdn.jsdelivr.net/npm/chart.js">
+</script>
+
+
+<!-- ======================================================
+     PROJECT JAVASCRIPT
+====================================================== -->
+
+<script src="js/config.js"></script>
+
+<script src="js/api.js"></script>
 
 <script src="js/dashboard.js"></script>
 
 <script src="js/anggota.js"></script>
+
 <script src="js/group.js"></script>
+
 <script src="js/masterkpi.js"></script>
+
 <script src="js/penilaian.js"></script>
 
 <script src="js/app.js"></script>
 
+
 </body>
+
 </html>
