@@ -1,12 +1,22 @@
 /**
- * ==========================================================
  * Guardian KPI Web3
- * File    : dashboard.js
- * Version : 7.0.1 Enterprise FINAL
- * ==========================================================
+ * dashboard.js
+ * Version 7.0.2 Enterprise FINAL
+ *
+ * FINAL:
+ * - Compatible dengan API.getDashboard()
+ * - Compatible dengan window.API.getDashboard()
+ * - Statistik KPI BAR
+ * - Distribusi Anggota DOUGHNUT
+ * - Kategori Master KPI PIE/DOUGHNUT
+ * - Indikator Master KPI BAR
+ * - Warna batang berbeda
+ * - Gradient visual
+ * - Auto refresh 5 menit
  */
 
 "use strict";
+
 
 /* ==========================================================
  * GLOBAL
@@ -21,7 +31,13 @@ let dashboardLoading = false;
 
 let dashboardInitialized = false;
 
-let dashboardRefreshTimer = null;
+let dashboardAutoRefreshTimer = null;
+
+const DASHBOARD_VERSION =
+    "7.0.2 Enterprise FINAL";
+
+const AUTO_REFRESH_MS =
+    5 * 60 * 1000;
 
 
 /* ==========================================================
@@ -31,21 +47,39 @@ let dashboardRefreshTimer = null;
 
 function initDashboard() {
 
-    if (dashboardInitialized) {
+    if (
+        dashboardInitialized
+    ) {
+
         return;
+
     }
 
-    dashboardInitialized = true;
+
+    dashboardInitialized =
+        true;
+
 
     console.log(
-        "Guardian KPI Dashboard v7.0.1"
+        "=========================================="
     );
 
-    bindRefreshButton();
+    console.log(
+        "Guardian KPI Dashboard " +
+        DASHBOARD_VERSION
+    );
+
+    console.log(
+        "Dashboard initialized."
+    );
+
+
+    bindRefreshButtons();
 
     loadDashboard();
 
     startAutoRefresh();
+
 }
 
 
@@ -54,7 +88,10 @@ function initDashboard() {
  * ==========================================================
  */
 
-if (document.readyState === "loading") {
+if (
+    document.readyState ===
+    "loading"
+) {
 
     document.addEventListener(
         "DOMContentLoaded",
@@ -72,157 +109,77 @@ if (document.readyState === "loading") {
 
 
 /* ==========================================================
- * LOAD DASHBOARD
+ * GET API
+ *
+ * PENTING:
+ *
+ * Project Guardian KPI terbukti dapat menjalankan:
+ *
+ * API.getDashboard()
+ *
+ * tetapi API tidak selalu berada di:
+ *
+ * window.API
+ *
  * ==========================================================
  */
 
-async function loadDashboard() {
+function getDashboardAPI() {
 
-    if (dashboardLoading) {
-        return;
-    }
-
-    dashboardLoading = true;
-
-    setLoading(true);
+    /*
+     * Prioritas pertama:
+     *
+     * API.getDashboard()
+     */
 
     try {
 
-        /*
-         * Tunggu API.
-         */
-
-        const api = await waitForAPI();
-
         if (
-            !api ||
-            typeof api.getDashboard !== "function"
+            typeof API !==
+            "undefined" &&
+            API &&
+            typeof API.getDashboard ===
+            "function"
         ) {
 
-            throw new Error(
-                "API.getDashboard tidak tersedia."
-            );
+            return API;
 
         }
-
-        /*
-         * Ambil data.
-         */
-
-        const result =
-            await api.getDashboard();
-
-        console.log(
-            "Dashboard API Response:",
-            result
-        );
-
-        /*
-         * Validasi.
-         */
-
-        if (!result) {
-
-            throw new Error(
-                "Response Dashboard kosong."
-            );
-
-        }
-
-        if (
-            result.success === false
-        ) {
-
-            throw new Error(
-                result.message ||
-                "Dashboard API gagal."
-            );
-
-        }
-
-        /*
-         * Dashboard.gs menggunakan:
-         *
-         * {
-         *   success: true,
-         *   message: "...",
-         *   data: {...}
-         * }
-         */
-
-        let data =
-            result.data;
-
-        /*
-         * Antisipasi wrapper tambahan.
-         */
-
-        if (
-            data &&
-            data.data &&
-            typeof data.data === "object"
-        ) {
-
-            data =
-                data.data;
-
-        }
-
-        if (
-            !data ||
-            typeof data !== "object"
-        ) {
-
-            throw new Error(
-                "Data Dashboard tidak valid."
-            );
-
-        }
-
-        dashboardData =
-            normalizeDashboardData(data);
-
-        console.log(
-            "Dashboard Data:",
-            dashboardData
-        );
-
-        console.log(
-            "Kategori Master KPI:",
-            dashboardData.masterKPIKategori
-        );
-
-        console.log(
-            "Indikator Master KPI:",
-            dashboardData.masterKPIIndikator
-        );
-
-        renderDashboard(
-            dashboardData
-        );
 
     }
 
-    catch (error) {
+    catch (
+        error
+    ) {
 
-        console.error(
-            "Dashboard Error:",
+        console.warn(
+            "Pemeriksaan API:",
             error
         );
 
-        showError(
-            error.message
-        );
+    }
+
+
+    /*
+     * Fallback:
+     *
+     * window.API.getDashboard()
+     */
+
+    if (
+        typeof window !==
+        "undefined" &&
+        window.API &&
+        typeof window.API.getDashboard ===
+        "function"
+    ) {
+
+        return window.API;
 
     }
 
-    finally {
 
-        dashboardLoading = false;
-
-        setLoading(false);
-
-    }
+    return null;
 
 }
 
@@ -232,7 +189,7 @@ async function loadDashboard() {
  * ==========================================================
  */
 
-function waitForAPI(
+function waitForDashboardAPI(
     timeout = 15000
 ) {
 
@@ -242,28 +199,38 @@ function waitForAPI(
             reject
         ) {
 
-            const start =
+            const started =
                 Date.now();
+
 
             function check() {
 
+                const api =
+                    getDashboardAPI();
+
+
                 if (
-                    window.API &&
-                    typeof window.API.getDashboard ===
-                    "function"
+                    api
                 ) {
 
-                    resolve(
-                        window.API
+                    console.log(
+                        "Guardian KPI API ditemukan."
                     );
+
+
+                    resolve(
+                        api
+                    );
+
 
                     return;
 
                 }
 
+
                 if (
                     Date.now() -
-                    start >=
+                    started >=
                     timeout
                 ) {
 
@@ -273,9 +240,11 @@ function waitForAPI(
                         )
                     );
 
+
                     return;
 
                 }
+
 
                 setTimeout(
                     check,
@@ -283,6 +252,7 @@ function waitForAPI(
                 );
 
             }
+
 
             check();
 
@@ -293,112 +263,599 @@ function waitForAPI(
 
 
 /* ==========================================================
- * NORMALIZE DATA
+ * LOAD DASHBOARD
  * ==========================================================
  */
 
-function normalizeDashboardData(
-    data
+async function loadDashboard() {
+
+    if (
+        dashboardLoading
+    ) {
+
+        return;
+
+    }
+
+
+    dashboardLoading =
+        true;
+
+
+    try {
+
+        console.log(
+            "Dashboard: requesting data..."
+        );
+
+
+        /*
+         * Cari API.
+         */
+
+        const api =
+            await waitForDashboardAPI();
+
+
+        /*
+         * Panggil API.
+         */
+
+        const response =
+            await api.getDashboard();
+
+
+        console.log(
+            "Dashboard API Response:",
+            response
+        );
+
+
+        /*
+         * Validasi response.
+         */
+
+        if (
+            !response
+        ) {
+
+            throw new Error(
+                "Response Dashboard kosong."
+            );
+
+        }
+
+
+        if (
+            response.success ===
+            false
+        ) {
+
+            throw new Error(
+                response.message ||
+                "Dashboard API gagal."
+            );
+
+        }
+
+
+        /*
+         * Normal response:
+         *
+         * response.data
+         *
+         * Beberapa versi:
+         *
+         * response.data.data
+         */
+
+        let data =
+            response.data;
+
+
+        if (
+            data &&
+            data.data &&
+            typeof data.data ===
+            "object"
+        ) {
+
+            data =
+                data.data;
+
+        }
+
+
+        if (
+            !data ||
+            typeof data !==
+            "object"
+        ) {
+
+            throw new Error(
+                "Data Dashboard tidak valid."
+            );
+
+        }
+
+
+        /*
+         * Normalize.
+         */
+
+        dashboardData =
+            normalizeDashboardData(
+                data
+            );
+
+
+        console.log(
+            "Dashboard Data:",
+            dashboardData
+        );
+
+
+        console.log(
+            "Master KPI kategori:",
+            dashboardData.masterKPIKategori
+        );
+
+
+        console.log(
+            "Master KPI indikator:",
+            dashboardData.masterKPIIndikator
+        );
+
+
+        /*
+         * Render.
+         */
+
+        renderDashboard(
+            dashboardData
+        );
+
+
+        console.log(
+            "Dashboard render selesai."
+        );
+
+    }
+
+    catch (
+        error
+    ) {
+
+        console.error(
+            "Dashboard Error:",
+            error
+        );
+
+
+        showDashboardError(
+            error.message ||
+            "Gagal memuat dashboard."
+        );
+
+    }
+
+    finally {
+
+        dashboardLoading =
+            false;
+
+    }
+
+}
+
+
+/* ==========================================================
+ * NUMBER
+ * ==========================================================
+ */
+
+function toNumber(
+    value
 ) {
 
-    const d =
-        data || {};
+    if (
+        value ===
+        null ||
+        value ===
+        undefined ||
+        value ===
+        ""
+    ) {
 
-    d.totalAnggota =
-        number(
-            d.totalAnggota
-        );
+        return 0;
 
-    d.totalGroup =
-        number(
-            d.totalGroup
-        );
-
-    d.totalMasterKPI =
-        number(
-            d.totalMasterKPI
-        );
-
-    d.totalPenilaian =
-        number(
-            d.totalPenilaian
-        );
-
-    d.anggotaAktif =
-        number(
-            d.anggotaAktif
-        );
-
-    d.anggotaNonAktif =
-        number(
-            d.anggotaNonAktif
-        );
-
-    d.masterKPIAktif =
-        number(
-            d.masterKPIAktif
-        );
-
-    d.masterKPINonAktif =
-        number(
-            d.masterKPINonAktif
-        );
-
-    d.averageKPI =
-        number(
-            d.averageKPI
-        );
+    }
 
 
-    /*
-     * Statistik.
-     */
+    if (
+        typeof value ===
+        "number"
+    ) {
 
-    d.statistikKPI =
-        normalizeArray(
-            d.statistikKPI
+        return Number.isFinite(
+            value
+        )
+            ? value
+            : 0;
+
+    }
+
+
+    let text =
+        String(
+            value
+        )
+        .trim();
+
+
+    text =
+        text.replace(
+            /%/g,
+            ""
         );
 
 
     if (
-        d.statistikKPI.length === 0
+        text.includes(",") &&
+        !text.includes(".")
     ) {
 
-        d.statistikKPI = [
+        text =
+            text.replace(
+                ",",
+                "."
+            );
+
+    }
+
+
+    const number =
+        Number(
+            text
+        );
+
+
+    return Number.isFinite(
+        number
+    )
+        ? number
+        : 0;
+
+}
+
+
+/* ==========================================================
+ * FORMAT NUMBER
+ * ==========================================================
+ */
+
+function formatNumber(
+    value
+) {
+
+    return toNumber(
+        value
+    )
+    .toLocaleString(
+        "id-ID"
+    );
+
+}
+
+
+/* ==========================================================
+ * FORMAT DECIMAL
+ * ==========================================================
+ */
+
+function formatDecimal(
+    value
+) {
+
+    return toNumber(
+        value
+    )
+    .toLocaleString(
+        "id-ID",
+        {
+
+            minimumFractionDigits:
+                2,
+
+            maximumFractionDigits:
+                2
+
+        }
+    );
+
+}
+
+
+/* ==========================================================
+ * NORMALIZE LIST
+ * ==========================================================
+ */
+
+function normalizeList(
+    source
+) {
+
+    if (
+        !Array.isArray(
+            source
+        )
+    ) {
+
+        return [];
+
+    }
+
+
+    return source
+        .map(
+            function (
+                item
+            ) {
+
+                return {
+
+                    label:
+                        String(
+                            item?.label ??
+                            item?.nama ??
+                            item?.status ??
+                            item?.kategori ??
+                            item?.category ??
+                            ""
+                        ),
+
+                    value:
+                        toNumber(
+                            item?.value ??
+                            item?.jumlah ??
+                            item?.count
+                        ),
+
+                    color:
+                        item?.color ||
+                        null
+
+                };
+
+            }
+        )
+        .filter(
+            function (
+                item
+            ) {
+
+                return (
+                    item.label !==
+                    ""
+                );
+
+            }
+        );
+
+}
+
+
+/* ==========================================================
+ * NORMALIZE INDICATOR
+ * ==========================================================
+ */
+
+function normalizeIndicators(
+    source
+) {
+
+    if (
+        !Array.isArray(
+            source
+        )
+    ) {
+
+        return [];
+
+    }
+
+
+    return source
+        .map(
+            function (
+                item
+            ) {
+
+                return {
+
+                    id:
+                        String(
+                            item?.id ??
+                            ""
+                        ),
+
+                    label:
+                        String(
+                            item?.label ??
+                            item?.indicator ??
+                            item?.indikator ??
+                            item?.nama ??
+                            item?.id ??
+                            ""
+                        ),
+
+                    kategori:
+                        String(
+                            item?.kategori ??
+                            item?.category ??
+                            ""
+                        ),
+
+                    bobot:
+                        toNumber(
+                            item?.bobot
+                        ),
+
+                    target:
+                        toNumber(
+                            item?.target
+                        ),
+
+                    status:
+                        String(
+                            item?.status ??
+                            ""
+                        )
+
+                };
+
+            }
+        )
+        .filter(
+            function (
+                item
+            ) {
+
+                return (
+                    item.label !==
+                    ""
+                );
+
+            }
+        );
+
+}
+
+
+/* ==========================================================
+ * NORMALIZE DASHBOARD
+ * ==========================================================
+ */
+
+function normalizeDashboardData(
+    raw
+) {
+
+    const data =
+        raw || {};
+
+
+    /*
+     * CORE
+     */
+
+    data.totalAnggota =
+        toNumber(
+            data.totalAnggota
+        );
+
+
+    data.totalGroup =
+        toNumber(
+            data.totalGroup
+        );
+
+
+    data.totalMasterKPI =
+        toNumber(
+            data.totalMasterKPI
+        );
+
+
+    data.totalPenilaian =
+        toNumber(
+            data.totalPenilaian
+        );
+
+
+    /*
+     * ANGGOTA
+     */
+
+    data.anggotaAktif =
+        toNumber(
+            data.anggotaAktif
+        );
+
+
+    data.anggotaNonAktif =
+        toNumber(
+            data.anggotaNonAktif
+        );
+
+
+    /*
+     * MASTER KPI
+     */
+
+    data.masterKPIAktif =
+        toNumber(
+            data.masterKPIAktif
+        );
+
+
+    data.masterKPINonAktif =
+        toNumber(
+            data.masterKPINonAktif
+        );
+
+
+    /*
+     * AVERAGE
+     */
+
+    data.averageKPI =
+        toNumber(
+            data.averageKPI
+        );
+
+
+    /*
+     * DISTRIBUSI ANGGOTA
+     */
+
+    data.distribusiAnggota =
+        normalizeList(
+            data.distribusiAnggota ||
+            data.anggotaDistribution ||
+            data.anggotaDistribusi ||
+            []
+        );
+
+
+    /*
+     * Jika backend tidak mengirim
+     * distribusi, buat dari card.
+     */
+
+    if (
+        !data.distribusiAnggota.length
+    ) {
+
+        data.distribusiAnggota = [
 
             {
+
                 label:
-                    "Anggota",
+                    "Aktif",
 
                 value:
-                    d.totalAnggota
+                    data.anggotaAktif
 
             },
 
             {
+
                 label:
-                    "Group",
+                    "Non Aktif",
 
                 value:
-                    d.totalGroup
-
-            },
-
-            {
-                label:
-                    "Master KPI",
-
-                value:
-                    d.totalMasterKPI
-
-            },
-
-            {
-                label:
-                    "Penilaian",
-
-                value:
-                    d.totalPenilaian
+                    data.anggotaNonAktif
 
             }
 
@@ -408,223 +865,96 @@ function normalizeDashboardData(
 
 
     /*
-     * Distribusi anggota.
+     * MASTER KPI KATEGORI
      */
 
-    d.distribusiAnggota =
-        normalizeArray(
-            d.distribusiAnggota ||
-            d.anggotaDistribution ||
+    data.masterKPIKategori =
+        normalizeList(
+            data.masterKPIKategori ||
+            data.kategoriMasterKPI ||
             []
         );
 
 
     /*
-     * Kategori Master KPI.
+     * MASTER KPI INDIKATOR
      */
 
-    d.masterKPIKategori =
-        normalizeCategory(
-            d.masterKPIKategori ||
-            d.kategoriMasterKPI ||
-            []
-        );
-
-
-    /*
-     * Indikator Master KPI.
-     */
-
-    d.masterKPIIndikator =
+    data.masterKPIIndikator =
         normalizeIndicators(
-            d.masterKPIIndikator ||
-            d.indikatorMasterKPI ||
+            data.masterKPIIndikator ||
+            data.indikatorMasterKPI ||
             []
         );
 
 
-    return d;
+    /*
+     * STATISTIK KPI
+     */
 
-}
+    data.statistikKPI =
+        normalizeList(
+            data.statistikKPI ||
+            []
+        );
 
 
-/* ==========================================================
- * NORMALIZE ARRAY
- * ==========================================================
- */
-
-function normalizeArray(
-    source
-) {
+    /*
+     * FALLBACK STATISTIK
+     */
 
     if (
-        !Array.isArray(source)
+        !data.statistikKPI.length
     ) {
 
-        return [];
+        data.statistikKPI = [
 
-    }
-
-    return source.map(
-        function (item) {
-
-            return {
+            {
 
                 label:
-                    String(
-                        item.label ||
-                        item.nama ||
-                        item.status ||
-                        ""
-                    ),
+                    "Anggota",
 
                 value:
-                    number(
-                        item.value ??
-                        item.jumlah ??
-                        item.count
-                    )
+                    data.totalAnggota
 
-            };
+            },
 
-        }
-    );
-
-}
-
-
-/* ==========================================================
- * NORMALIZE CATEGORY
- * ==========================================================
- */
-
-function normalizeCategory(
-    source
-) {
-
-    if (
-        !Array.isArray(source)
-    ) {
-
-        return [];
-
-    }
-
-    return source.map(
-        function (item) {
-
-            return {
+            {
 
                 label:
-                    String(
-                        item.label ||
-                        item.kategori ||
-                        item.category ||
-                        ""
-                    ),
+                    "Group",
 
                 value:
-                    number(
-                        item.value ??
-                        item.jumlah ??
-                        item.count
-                    )
+                    data.totalGroup
 
-            };
+            },
 
-        }
-    )
-    .filter(
-        function (item) {
+            {
 
-            return item.label !== "";
+                label:
+                    "Master KPI",
 
-        }
-    );
+                value:
+                    data.totalMasterKPI
 
-}
+            },
 
+            {
 
-/* ==========================================================
- * NORMALIZE INDICATORS
- * ==========================================================
- */
+                label:
+                    "Penilaian",
 
-function normalizeIndicators(
-    source
-) {
+                value:
+                    data.totalPenilaian
 
-    if (
-        !Array.isArray(source)
-    ) {
+            }
 
-        return [];
+        ];
 
     }
 
-    return source.map(
-        function (item) {
 
-            const label =
-                item.indicator ||
-                item.indikator ||
-                item.nama ||
-                item.label ||
-                item.id ||
-                "";
-
-            return {
-
-                id:
-                    String(
-                        item.id ||
-                        ""
-                    ),
-
-                label:
-                    String(
-                        label
-                    ),
-
-                indicator:
-                    String(
-                        label
-                    ),
-
-                kategori:
-                    String(
-                        item.kategori ||
-                        item.category ||
-                        ""
-                    ),
-
-                bobot:
-                    number(
-                        item.bobot
-                    ),
-
-                target:
-                    number(
-                        item.target
-                    ),
-
-                status:
-                    String(
-                        item.status ||
-                        ""
-                    )
-
-            };
-
-        }
-    )
-    .filter(
-        function (item) {
-
-            return item.label !== "";
-
-        }
-    );
+    return data;
 
 }
 
@@ -638,35 +968,95 @@ function renderDashboard(
     data
 ) {
 
-    if (!data) {
+    if (
+        !data
+    ) {
+
         return;
+
     }
 
-    renderCards(data);
 
-    renderSummary(data);
+    renderCards(
+        data
+    );
 
-    renderStatistikChart(
+
+    renderSummary(
+        data
+    );
+
+
+    renderStatistikKPIChart(
         data.statistikKPI
     );
 
-    renderAnggotaChart(
+
+    renderDistribusiAnggotaChart(
         data.distribusiAnggota
     );
 
-    renderKategoriChart(
+
+    renderKategoriMasterKPIChart(
         data.masterKPIKategori
     );
 
-    renderIndikatorChart(
+
+    renderIndikatorMasterKPIChart(
         data.masterKPIIndikator
     );
 
-    renderSystem(data);
 
-    console.log(
-        "Dashboard render selesai."
+    renderGeneratedAt(
+        data.generatedAt
     );
+
+}
+
+
+/* ==========================================================
+ * SET TEXT
+ * ==========================================================
+ */
+
+function setText(
+    ids,
+    value
+) {
+
+    const list =
+        Array.isArray(
+            ids
+        )
+            ? ids
+            : [ids];
+
+
+    for (
+        const id of list
+    ) {
+
+        const element =
+            document.getElementById(
+                id
+            );
+
+
+        if (
+            element
+        ) {
+
+            element.textContent =
+                value;
+
+            return element;
+
+        }
+
+    }
+
+
+    return null;
 
 }
 
@@ -691,6 +1081,7 @@ function renderCards(
         )
     );
 
+
     setText(
         [
             "anggotaAktif",
@@ -701,6 +1092,7 @@ function renderCards(
             data.anggotaAktif
         )
     );
+
 
     setText(
         [
@@ -713,6 +1105,7 @@ function renderCards(
         )
     );
 
+
     setText(
         [
             "totalGroup",
@@ -723,6 +1116,7 @@ function renderCards(
             data.totalGroup
         )
     );
+
 
     setText(
         [
@@ -735,6 +1129,7 @@ function renderCards(
         )
     );
 
+
     setText(
         [
             "totalPenilaian",
@@ -745,6 +1140,7 @@ function renderCards(
             data.totalPenilaian
         )
     );
+
 
     setText(
         [
@@ -772,108 +1168,329 @@ function renderSummary(
     setText(
         [
             "summaryTotalAnggota",
-            "summary-totalAnggota"
+            "summary-totalAnggota",
+            "totalAnggotaSummary"
         ],
         formatNumber(
             data.totalAnggota
         )
     );
 
+
     setText(
         [
             "summaryAnggotaAktif",
-            "summary-anggotaAktif"
+            "summary-anggotaAktif",
+            "anggotaAktifSummary"
         ],
         formatNumber(
             data.anggotaAktif
         )
     );
 
+
     setText(
         [
             "summaryAnggotaNonAktif",
-            "summary-anggotaNonAktif"
+            "summary-anggotaNonAktif",
+            "anggotaNonAktifSummary"
         ],
         formatNumber(
             data.anggotaNonAktif
         )
     );
 
+
     setText(
         [
             "summaryTotalGroup",
-            "summary-totalGroup"
+            "summary-totalGroup",
+            "totalGroupSummary"
         ],
         formatNumber(
             data.totalGroup
         )
     );
 
+
     setText(
         [
             "summaryTotalMasterKPI",
-            "summary-totalMasterKPI"
+            "summary-totalMasterKPI",
+            "masterKPISummary"
         ],
         formatNumber(
             data.totalMasterKPI
         )
     );
 
+
     setText(
         [
             "summaryTotalPenilaian",
-            "summary-totalPenilaian"
+            "summary-totalPenilaian",
+            "totalPenilaianSummary"
         ],
         formatNumber(
             data.totalPenilaian
         )
     );
 
+
     setText(
         [
             "summaryAverageKPI",
-            "summary-averageKPI"
+            "summary-averageKPI",
+            "averageKPISummary"
         ],
         formatDecimal(
             data.averageKPI
         )
     );
 
+
+    /*
+     * Summary container.
+     */
+
+    const box =
+        document.getElementById(
+            "dashboardSummary"
+        );
+
+
+    if (
+        box &&
+        !box.dataset.rendered
+    ) {
+
+        box.innerHTML = `
+
+            <div class="dashboard-summary-row">
+
+                <span>
+                    Total Anggota
+                </span>
+
+                <strong>
+                    ${formatNumber(
+                        data.totalAnggota
+                    )}
+                </strong>
+
+            </div>
+
+
+            <div class="dashboard-summary-row">
+
+                <span>
+                    Anggota Aktif
+                </span>
+
+                <strong class="text-success">
+
+                    ${formatNumber(
+                        data.anggotaAktif
+                    )}
+
+                </strong>
+
+            </div>
+
+
+            <div class="dashboard-summary-row">
+
+                <span>
+                    Non Aktif
+                </span>
+
+                <strong class="text-danger">
+
+                    ${formatNumber(
+                        data.anggotaNonAktif
+                    )}
+
+                </strong>
+
+            </div>
+
+
+            <div class="dashboard-summary-row">
+
+                <span>
+                    Total Group
+                </span>
+
+                <strong>
+
+                    ${formatNumber(
+                        data.totalGroup
+                    )}
+
+                </strong>
+
+            </div>
+
+
+            <div class="dashboard-summary-row">
+
+                <span>
+                    Master KPI
+                </span>
+
+                <strong>
+
+                    ${formatNumber(
+                        data.totalMasterKPI
+                    )}
+
+                </strong>
+
+            </div>
+
+
+            <div class="dashboard-summary-row">
+
+                <span>
+                    Total Penilaian
+                </span>
+
+                <strong>
+
+                    ${formatNumber(
+                        data.totalPenilaian
+                    )}
+
+                </strong>
+
+            </div>
+
+
+            <div class="dashboard-summary-row">
+
+                <span>
+                    Average KPI
+                </span>
+
+                <strong>
+
+                    ${formatDecimal(
+                        data.averageKPI
+                    )}
+
+                </strong>
+
+            </div>
+
+        `;
+
+
+        box.dataset.rendered =
+            "true";
+
+    }
+
 }
 
 
 /* ==========================================================
- * FIND CANVAS
+ * GENERATED AT
+ * ==========================================================
+ */
+
+function renderGeneratedAt(
+    value
+) {
+
+    if (
+        !value
+    ) {
+
+        return;
+
+    }
+
+
+    let text =
+        String(
+            value
+        );
+
+
+    const date =
+        new Date(
+            value
+        );
+
+
+    if (
+        !Number.isNaN(
+            date.getTime()
+        )
+    ) {
+
+        text =
+            date.toLocaleString(
+                "id-ID"
+            );
+
+    }
+
+
+    setText(
+        [
+            "lastRefresh",
+            "dashboardLastRefresh",
+            "lastUpdated",
+            "generatedAt"
+        ],
+        text
+    );
+
+}
+
+
+/* ==========================================================
+ * FIND / CREATE CANVAS
  * ==========================================================
  */
 
 function findCanvas(
-    ids,
-    containerIds
+    primary,
+    alternatives,
+    containers
 ) {
+
+    const ids = [
+
+        primary,
+
+        ...(alternatives || [])
+
+    ];
+
 
     /*
      * Cari canvas berdasarkan ID.
      */
 
     for (
-        let i = 0;
-        i < ids.length;
-        i++
+        const id of ids
     ) {
 
-        const canvas =
+        const element =
             document.getElementById(
-                ids[i]
+                id
             );
 
+
         if (
-            canvas &&
-            canvas.tagName ===
+            element &&
+            element.tagName ===
             "CANVAS"
         ) {
 
-            return canvas;
+            return element;
 
         }
 
@@ -885,34 +1502,116 @@ function findCanvas(
      */
 
     for (
-        let i = 0;
-        i < containerIds.length;
-        i++
+        const id of containers || []
     ) {
 
         const container =
             document.getElementById(
-                containerIds[i]
+                id
             );
+
 
         if (
             container
         ) {
 
-            const canvas =
+            const existing =
                 container.querySelector(
                     "canvas"
                 );
 
+
             if (
-                canvas
+                existing
             ) {
 
-                return canvas;
+                return existing;
 
             }
 
         }
+
+    }
+
+
+    /*
+     * Buat canvas jika container ada.
+     */
+
+    for (
+        const id of containers || []
+    ) {
+
+        const container =
+            document.getElementById(
+                id
+            );
+
+
+        if (
+            !container
+        ) {
+
+            continue;
+
+        }
+
+
+        const wrapper =
+            document.createElement(
+                "div"
+            );
+
+
+        wrapper.className =
+            "dashboard-chart-wrapper";
+
+
+        wrapper.style.position =
+            "relative";
+
+
+        wrapper.style.width =
+            "100%";
+
+
+        wrapper.style.height =
+            "360px";
+
+
+        wrapper.style.minHeight =
+            "300px";
+
+
+        const canvas =
+            document.createElement(
+                "canvas"
+            );
+
+
+        canvas.id =
+            primary;
+
+
+        canvas.style.width =
+            "100%";
+
+
+        canvas.style.height =
+            "100%";
+
+
+        wrapper.appendChild(
+            canvas
+        );
+
+
+        container.appendChild(
+            wrapper
+        );
+
+
+        return canvas;
 
     }
 
@@ -923,18 +1622,301 @@ function findCanvas(
 
 
 /* ==========================================================
- * STATISTIK KPI CHART
+ * CHART READY
  * ==========================================================
  */
 
-function renderStatistikChart(
-    items
+function chartReady() {
+
+    if (
+        typeof Chart ===
+        "undefined"
+    ) {
+
+        console.warn(
+            "Chart.js tidak tersedia."
+        );
+
+
+        return false;
+
+    }
+
+
+    return true;
+
+}
+
+
+/* ==========================================================
+ * DESTROY CHART
+ * ==========================================================
+ */
+
+function destroyChart(
+    canvas
+) {
+
+    if (
+        !canvas
+    ) {
+
+        return;
+
+    }
+
+
+    const key =
+        canvas.id;
+
+
+    if (
+        dashboardCharts[key]
+    ) {
+
+        try {
+
+            dashboardCharts[key]
+                .destroy();
+
+        }
+
+        catch (
+            error
+        ) {
+
+            console.warn(
+                error
+            );
+
+        }
+
+
+        delete dashboardCharts[key];
+
+    }
+
+
+    /*
+     * Chart.js global lookup.
+     */
+
+    if (
+        typeof Chart !==
+        "undefined" &&
+        typeof Chart.getChart ===
+        "function"
+    ) {
+
+        const existing =
+            Chart.getChart(
+                canvas
+            );
+
+
+        if (
+            existing
+        ) {
+
+            try {
+
+                existing.destroy();
+
+            }
+
+            catch (
+                error
+            ) {
+
+                console.warn(
+                    error
+                );
+
+            }
+
+        }
+
+    }
+
+}
+
+
+/* ==========================================================
+ * HEX -> RGB
+ * ==========================================================
+ */
+
+function hexToRgb(
+    hex
+) {
+
+    const value =
+        String(
+            hex || ""
+        )
+        .replace(
+            "#",
+            ""
+        );
+
+
+    if (
+        value.length !==
+        6
+    ) {
+
+        return null;
+
+    }
+
+
+    const number =
+        parseInt(
+            value,
+            16
+        );
+
+
+    if (
+        !Number.isFinite(
+            number
+        )
+    ) {
+
+        return null;
+
+    }
+
+
+    return {
+
+        r:
+            (number >> 16) &
+            255,
+
+        g:
+            (number >> 8) &
+            255,
+
+        b:
+            number &
+            255
+
+    };
+
+}
+
+
+/* ==========================================================
+ * BAR GRADIENT
+ * ==========================================================
+ */
+
+function makeGradient(
+    ctx,
+    color
+) {
+
+    if (
+        !ctx
+    ) {
+
+        return color;
+
+    }
+
+
+    const rgb =
+        hexToRgb(
+            color
+        );
+
+
+    if (
+        !rgb
+    ) {
+
+        return color;
+
+    }
+
+
+    const gradient =
+        ctx.createLinearGradient(
+            0,
+            0,
+            0,
+            360
+        );
+
+
+    gradient.addColorStop(
+        0,
+        "rgba(" +
+        rgb.r +
+        "," +
+        rgb.g +
+        "," +
+        rgb.b +
+        ",0.98)"
+    );
+
+
+    gradient.addColorStop(
+        0.55,
+        "rgba(" +
+        rgb.r +
+        "," +
+        rgb.g +
+        "," +
+        rgb.b +
+        ",0.78)"
+    );
+
+
+    gradient.addColorStop(
+        1,
+        "rgba(" +
+        Math.max(
+            rgb.r - 60,
+            0
+        ) +
+        "," +
+        Math.max(
+            rgb.g - 60,
+            0
+        ) +
+        "," +
+        Math.max(
+            rgb.b - 60,
+            0
+        ) +
+        ",0.98)"
+    );
+
+
+    return gradient;
+
+}
+
+
+/* ==========================================================
+ * CHART 1
+ *
+ * STATISTIK KPI
+ *
+ * BAR
+ * ==========================================================
+ */
+
+function renderStatistikKPIChart(
+    data
 ) {
 
     const canvas =
         findCanvas(
+            "dashboardChart",
             [
-                "dashboardChart",
                 "statistikKPIChart",
                 "chartStatistikKPI"
             ],
@@ -946,20 +1928,8 @@ function renderStatistikChart(
 
 
     if (
-        !canvas
-    ) {
-
-        console.warn(
-            "Canvas Statistik KPI tidak ditemukan."
-        );
-
-        return;
-
-    }
-
-
-    if (
-        !chartAvailable()
+        !canvas ||
+        !chartReady()
     ) {
 
         return;
@@ -972,9 +1942,19 @@ function renderStatistikChart(
     );
 
 
+    const items =
+        Array.isArray(
+            data
+        )
+            ? data
+            : [];
+
+
     const labels =
         items.map(
-            function (item) {
+            function (
+                item
+            ) {
 
                 return item.label;
 
@@ -984,15 +1964,21 @@ function renderStatistikChart(
 
     const values =
         items.map(
-            function (item) {
+            function (
+                item
+            ) {
 
-                return number(
+                return toNumber(
                     item.value
                 );
 
             }
         );
 
+
+    /*
+     * Warna setiap batang berbeda.
+     */
 
     const colors = [
 
@@ -1002,7 +1988,7 @@ function renderStatistikChart(
 
         "#00c878",
 
-        "#ffb300",
+        "#ffc400",
 
         "#9b59ff",
 
@@ -1078,13 +2064,13 @@ function renderStatistikChart(
                                 1.5,
 
                             borderRadius:
-                                8,
+                                9,
 
                             borderSkipped:
                                 false,
 
                             maxBarThickness:
-                                100
+                                110
 
                         }
 
@@ -1092,8 +2078,92 @@ function renderStatistikChart(
 
                 },
 
-                options:
-                    barOptions()
+                options: {
+
+                    responsive:
+                        true,
+
+                    maintainAspectRatio:
+                        false,
+
+                    animation: {
+
+                        duration:
+                            1000,
+
+                        easing:
+                            "easeOutQuart"
+
+                    },
+
+                    plugins: {
+
+                        legend: {
+
+                            display:
+                                false
+
+                        },
+
+                        tooltip: {
+
+                            backgroundColor:
+                                "rgba(10,16,28,.96)",
+
+                            padding:
+                                12
+
+                        }
+
+                    },
+
+                    scales: {
+
+                        x: {
+
+                            grid: {
+
+                                display:
+                                    false
+
+                            },
+
+                            ticks: {
+
+                                color:
+                                    "#9aabba"
+
+                            }
+
+                        },
+
+                        y: {
+
+                            beginAtZero:
+                                true,
+
+                            grid: {
+
+                                color:
+                                    "rgba(255,255,255,.07)"
+
+                            },
+
+                            ticks: {
+
+                                color:
+                                    "#9aabba",
+
+                                precision:
+                                    0
+
+                            }
+
+                        }
+
+                    }
+
+                }
 
             }
         );
@@ -1102,18 +2172,22 @@ function renderStatistikChart(
 
 
 /* ==========================================================
+ * CHART 2
+ *
  * DISTRIBUSI ANGGOTA
+ *
+ * DOUGHNUT
  * ==========================================================
  */
 
-function renderAnggotaChart(
-    items
+function renderDistribusiAnggotaChart(
+    data
 ) {
 
     const canvas =
         findCanvas(
+            "dashboardPieChart",
             [
-                "dashboardPieChart",
                 "distribusiAnggotaChart",
                 "anggotaPieChart"
             ],
@@ -1126,20 +2200,8 @@ function renderAnggotaChart(
 
 
     if (
-        !canvas
-    ) {
-
-        console.warn(
-            "Canvas Distribusi Anggota tidak ditemukan."
-        );
-
-        return;
-
-    }
-
-
-    if (
-        !chartAvailable()
+        !canvas ||
+        !chartReady()
     ) {
 
         return;
@@ -1152,18 +2214,19 @@ function renderAnggotaChart(
     );
 
 
-    if (
-        !items.length
-    ) {
-
-        return;
-
-    }
+    const items =
+        Array.isArray(
+            data
+        )
+            ? data
+            : [];
 
 
     const labels =
         items.map(
-            function (item) {
+            function (
+                item
+            ) {
 
                 return item.label;
 
@@ -1173,9 +2236,11 @@ function renderAnggotaChart(
 
     const values =
         items.map(
-            function (item) {
+            function (
+                item
+            ) {
 
-                return number(
+                return toNumber(
                     item.value
                 );
 
@@ -1193,7 +2258,9 @@ function renderAnggotaChart(
 
         "#ffc400",
 
-        "#9b59ff"
+        "#9b59ff",
+
+        "#ff8a00"
 
     ];
 
@@ -1223,10 +2290,13 @@ function renderAnggotaChart(
                                 values,
 
                             backgroundColor:
-                                colors,
+                                colors.slice(
+                                    0,
+                                    values.length
+                                ),
 
                             borderColor:
-                                "#101722",
+                                "#111821",
 
                             borderWidth:
                                 4,
@@ -1243,8 +2313,49 @@ function renderAnggotaChart(
 
                 },
 
-                options:
-                    doughnutOptions()
+                options: {
+
+                    responsive:
+                        true,
+
+                    maintainAspectRatio:
+                        false,
+
+                    cutout:
+                        "60%",
+
+                    animation: {
+
+                        duration:
+                            1000
+
+                    },
+
+                    plugins: {
+
+                        legend: {
+
+                            position:
+                                "bottom",
+
+                            labels: {
+
+                                color:
+                                    "#b9c8d8",
+
+                                usePointStyle:
+                                    true,
+
+                                padding:
+                                    14
+
+                            }
+
+                        }
+
+                    }
+
+                }
 
             }
         );
@@ -1253,18 +2364,22 @@ function renderAnggotaChart(
 
 
 /* ==========================================================
+ * CHART 3
+ *
  * KATEGORI MASTER KPI
+ *
+ * PIE / DOUGHNUT
  * ==========================================================
  */
 
-function renderKategoriChart(
-    items
+function renderKategoriMasterKPIChart(
+    data
 ) {
 
     const canvas =
         findCanvas(
+            "distributionChart",
             [
-                "distributionChart",
                 "kategoriMasterKPIChart",
                 "masterKPIKategoriChart",
                 "categoryChart"
@@ -1278,20 +2393,8 @@ function renderKategoriChart(
 
 
     if (
-        !canvas
-    ) {
-
-        console.warn(
-            "Canvas Kategori Master KPI tidak ditemukan."
-        );
-
-        return;
-
-    }
-
-
-    if (
-        !chartAvailable()
+        !canvas ||
+        !chartReady()
     ) {
 
         return;
@@ -1304,17 +2407,12 @@ function renderKategoriChart(
     );
 
 
-    if (
-        !items.length
-    ) {
-
-        console.warn(
-            "Data kategori Master KPI kosong."
-        );
-
-        return;
-
-    }
+    const items =
+        Array.isArray(
+            data
+        )
+            ? data
+            : [];
 
 
     console.log(
@@ -1325,7 +2423,9 @@ function renderKategoriChart(
 
     const labels =
         items.map(
-            function (item) {
+            function (
+                item
+            ) {
 
                 return item.label;
 
@@ -1335,9 +2435,11 @@ function renderKategoriChart(
 
     const values =
         items.map(
-            function (item) {
+            function (
+                item
+            ) {
 
-                return number(
+                return toNumber(
                     item.value
                 );
 
@@ -1391,9 +2493,18 @@ function renderKategoriChart(
                                 values,
 
                             backgroundColor:
-                                colors.slice(
-                                    0,
-                                    values.length
+                                values.map(
+                                    function (
+                                        value,
+                                        index
+                                    ) {
+
+                                        return colors[
+                                            index %
+                                            colors.length
+                                        ];
+
+                                    }
                                 ),
 
                             borderColor:
@@ -1414,8 +2525,62 @@ function renderKategoriChart(
 
                 },
 
-                options:
-                    doughnutOptions()
+                options: {
+
+                    responsive:
+                        true,
+
+                    maintainAspectRatio:
+                        false,
+
+                    cutout:
+                        "58%",
+
+                    animation: {
+
+                        duration:
+                            1200,
+
+                        animateRotate:
+                            true,
+
+                        animateScale:
+                            true
+
+                    },
+
+                    plugins: {
+
+                        legend: {
+
+                            position:
+                                "bottom",
+
+                            labels: {
+
+                                color:
+                                    "#b9c8d8",
+
+                                usePointStyle:
+                                    true,
+
+                                padding:
+                                    14
+
+                            }
+
+                        },
+
+                        tooltip: {
+
+                            padding:
+                                12
+
+                        }
+
+                    }
+
+                }
 
             }
         );
@@ -1424,18 +2589,22 @@ function renderKategoriChart(
 
 
 /* ==========================================================
+ * CHART 4
+ *
  * INDIKATOR MASTER KPI
+ *
+ * BAR
  * ==========================================================
  */
 
-function renderIndikatorChart(
-    items
+function renderIndikatorMasterKPIChart(
+    data
 ) {
 
     const canvas =
         findCanvas(
+            "kpiChart",
             [
-                "kpiChart",
                 "indikatorMasterKPIChart",
                 "masterKPIIndikatorChart",
                 "indicatorChart"
@@ -1449,20 +2618,8 @@ function renderIndikatorChart(
 
 
     if (
-        !canvas
-    ) {
-
-        console.warn(
-            "Canvas Indikator Master KPI tidak ditemukan."
-        );
-
-        return;
-
-    }
-
-
-    if (
-        !chartAvailable()
+        !canvas ||
+        !chartReady()
     ) {
 
         return;
@@ -1475,17 +2632,12 @@ function renderIndikatorChart(
     );
 
 
-    if (
-        !items.length
-    ) {
-
-        console.warn(
-            "Data indikator Master KPI kosong."
-        );
-
-        return;
-
-    }
+    const items =
+        Array.isArray(
+            data
+        )
+            ? data
+            : [];
 
 
     console.log(
@@ -1496,7 +2648,9 @@ function renderIndikatorChart(
 
     const labels =
         items.map(
-            function (item) {
+            function (
+                item
+            ) {
 
                 if (
                     item.id
@@ -1510,6 +2664,7 @@ function renderIndikatorChart(
 
                 }
 
+
                 return item.label;
 
             }
@@ -1518,9 +2673,11 @@ function renderIndikatorChart(
 
     const values =
         items.map(
-            function (item) {
+            function (
+                item
+            ) {
 
-                return number(
+                return toNumber(
                     item.bobot
                 );
 
@@ -1628,979 +2785,134 @@ function renderIndikatorChart(
 
                 },
 
-                options:
-                    indicatorOptions()
+                options: {
 
-            }
-        );
+                    responsive:
+                        true,
 
-}
+                    maintainAspectRatio:
+                        false,
 
+                    animation: {
 
-/* ==========================================================
- * CHART AVAILABLE
- * ==========================================================
- */
+                        duration:
+                            1000,
 
-function chartAvailable() {
+                        easing:
+                            "easeOutQuart"
 
-    if (
-        typeof Chart ===
-        "undefined"
-    ) {
+                    },
 
-        console.error(
-            "Chart.js belum dimuat."
-        );
+                    plugins: {
 
-        return false;
+                        legend: {
 
-    }
+                            display:
+                                false
 
-    return true;
+                        },
 
-}
+                        tooltip: {
 
+                            padding:
+                                12,
 
-/* ==========================================================
- * DESTROY CHART
- * ==========================================================
- */
+                            callbacks: {
 
-function destroyChart(
-    canvas
-) {
+                                label:
+                                    function (
+                                        context
+                                    ) {
 
-    if (
-        !canvas
-    ) {
+                                        return (
+                                            " Bobot: " +
+                                            context.parsed.y +
+                                            "%"
+                                        );
 
-        return;
+                                    }
 
-    }
-
-
-    const id =
-        canvas.id;
-
-
-    if (
-        dashboardCharts[id]
-    ) {
-
-        try {
-
-            dashboardCharts[id]
-                .destroy();
-
-        }
-
-        catch (error) {
-
-            console.warn(
-                error
-            );
-
-        }
-
-        delete dashboardCharts[id];
-
-    }
-
-
-    /*
-     * Chart.js 3/4.
-     */
-
-    if (
-        typeof Chart !==
-        "undefined" &&
-        typeof Chart.getChart ===
-        "function"
-    ) {
-
-        const chart =
-            Chart.getChart(
-                canvas
-            );
-
-        if (
-            chart
-        ) {
-
-            chart.destroy();
-
-        }
-
-    }
-
-}
-
-
-/* ==========================================================
- * BAR OPTIONS
- * ==========================================================
- */
-
-function barOptions() {
-
-    return {
-
-        responsive:
-            true,
-
-        maintainAspectRatio:
-            false,
-
-        animation: {
-
-            duration:
-                1000,
-
-            easing:
-                "easeOutQuart"
-
-        },
-
-        plugins: {
-
-            legend: {
-
-                display:
-                    false
-
-            },
-
-            tooltip: {
-
-                backgroundColor:
-                    "rgba(10,16,28,.96)",
-
-                titleColor:
-                    "#ffffff",
-
-                bodyColor:
-                    "#d7e5ef",
-
-                padding:
-                    12,
-
-                callbacks: {
-
-                    label:
-                        function (
-                            context
-                        ) {
-
-                            return (
-                                " " +
-                                context.parsed.y
-                            );
+                            }
 
                         }
 
-                }
+                    },
 
-            }
+                    scales: {
 
-        },
+                        x: {
 
-        scales: {
+                            grid: {
 
-            x: {
+                                display:
+                                    false
 
-                grid: {
+                            },
 
-                    display:
-                        false
+                            ticks: {
 
-                },
+                                color:
+                                    "#9aabba",
 
-                ticks: {
+                                maxRotation:
+                                    45,
 
-                    color:
-                        "#8fa1b5"
+                                minRotation:
+                                    0,
 
-                }
+                                font: {
 
-            },
+                                    size:
+                                        9
 
-            y: {
+                                }
 
-                beginAtZero:
-                    true,
+                            }
 
-                grid: {
+                        },
 
-                    color:
-                        "rgba(255,255,255,.07)"
+                        y: {
 
-                },
+                            beginAtZero:
+                                true,
 
-                ticks: {
+                            suggestedMax:
+                                20,
 
-                    color:
-                        "#8fa1b5",
+                            grid: {
 
-                    precision:
-                        0
+                                color:
+                                    "rgba(255,255,255,.07)"
 
-                }
+                            },
 
-            }
+                            ticks: {
 
-        }
+                                color:
+                                    "#9aabba",
 
-    };
+                                callback:
+                                    function (
+                                        value
+                                    ) {
 
-}
+                                        return (
+                                            value +
+                                            "%"
+                                        );
 
+                                    }
 
-/* ==========================================================
- * INDICATOR OPTIONS
- * ==========================================================
- */
-
-function indicatorOptions() {
-
-    return {
-
-        responsive:
-            true,
-
-        maintainAspectRatio:
-            false,
-
-        animation: {
-
-            duration:
-                1000,
-
-            easing:
-                "easeOutQuart"
-
-        },
-
-        plugins: {
-
-            legend: {
-
-                display:
-                    false
-
-            },
-
-            tooltip: {
-
-                backgroundColor:
-                    "rgba(10,16,28,.96)",
-
-                titleColor:
-                    "#ffffff",
-
-                bodyColor:
-                    "#d7e5ef",
-
-                padding:
-                    12,
-
-                callbacks: {
-
-                    label:
-                        function (
-                            context
-                        ) {
-
-                            return (
-                                " Bobot: " +
-                                context.parsed.y +
-                                "%"
-                            );
+                            }
 
                         }
-
-                }
-
-            }
-
-        },
-
-        scales: {
-
-            x: {
-
-                grid: {
-
-                    display:
-                        false
-
-                },
-
-                ticks: {
-
-                    color:
-                        "#8fa1b5",
-
-                    maxRotation:
-                        45,
-
-                    minRotation:
-                        0,
-
-                    font: {
-
-                        size:
-                            9
 
                     }
 
                 }
 
-            },
-
-            y: {
-
-                beginAtZero:
-                    true,
-
-                suggestedMax:
-                    20,
-
-                grid: {
-
-                    color:
-                        "rgba(255,255,255,.07)"
-
-                },
-
-                ticks: {
-
-                    color:
-                        "#8fa1b5",
-
-                    callback:
-                        function (
-                            value
-                        ) {
-
-                            return (
-                                value +
-                                "%"
-                            );
-
-                        }
-
-                }
-
             }
-
-        }
-
-    };
-
-}
-
-
-/* ==========================================================
- * DOUGHNUT OPTIONS
- * ==========================================================
- */
-
-function doughnutOptions() {
-
-    return {
-
-        responsive:
-            true,
-
-        maintainAspectRatio:
-            false,
-
-        cutout:
-            "60%",
-
-        animation: {
-
-            animateRotate:
-                true,
-
-            animateScale:
-                true,
-
-            duration:
-                1200,
-
-            easing:
-                "easeOutQuart"
-
-        },
-
-        plugins: {
-
-            legend: {
-
-                position:
-                    "bottom",
-
-                labels: {
-
-                    color:
-                        "#b9c8d8",
-
-                    padding:
-                        14,
-
-                    usePointStyle:
-                        true,
-
-                    pointStyle:
-                        "circle"
-
-                }
-
-            },
-
-            tooltip: {
-
-                backgroundColor:
-                    "rgba(10,16,28,.96)",
-
-                titleColor:
-                    "#ffffff",
-
-                bodyColor:
-                    "#d7e5ef",
-
-                padding:
-                    12,
-
-                callbacks: {
-
-                    label:
-                        function (
-                            context
-                        ) {
-
-                            const value =
-                                Number(
-                                    context.parsed ||
-                                    0
-                                );
-
-
-                            const data =
-                                context.dataset.data;
-
-
-                            const total =
-                                data.reduce(
-                                    function (
-                                        a,
-                                        b
-                                    ) {
-
-                                        return (
-                                            a +
-                                            Number(
-                                                b ||
-                                                0
-                                            )
-                                        );
-
-                                    },
-                                    0
-                                );
-
-
-                            const percentage =
-                                total
-                                    ? (
-                                        value /
-                                        total *
-                                        100
-                                    )
-                                    : 0;
-
-
-                            return (
-                                " " +
-                                context.label +
-                                ": " +
-                                value +
-                                " (" +
-                                percentage.toFixed(
-                                    1
-                                ) +
-                                "%)"
-                            );
-
-                        }
-
-                }
-
-            }
-
-        }
-
-    };
-
-}
-
-
-/* ==========================================================
- * GRADIENT
- * ==========================================================
- */
-
-function makeGradient(
-    ctx,
-    color
-) {
-
-    if (
-        !ctx
-    ) {
-
-        return color;
-
-    }
-
-
-    const gradient =
-        ctx.createLinearGradient(
-            0,
-            0,
-            0,
-            400
         );
-
-
-    const rgb =
-        hexToRgb(
-            color
-        );
-
-
-    if (
-        !rgb
-    ) {
-
-        return color;
-
-    }
-
-
-    gradient.addColorStop(
-        0,
-        "rgba(" +
-        rgb.r +
-        "," +
-        rgb.g +
-        "," +
-        rgb.b +
-        ",0.98)"
-    );
-
-
-    gradient.addColorStop(
-        0.55,
-        "rgba(" +
-        rgb.r +
-        "," +
-        rgb.g +
-        "," +
-        rgb.b +
-        ",0.78)"
-    );
-
-
-    gradient.addColorStop(
-        1,
-        "rgba(" +
-        Math.max(
-            rgb.r - 55,
-            0
-        ) +
-        "," +
-        Math.max(
-            rgb.g - 55,
-            0
-        ) +
-        "," +
-        Math.max(
-            rgb.b - 55,
-            0
-        ) +
-        ",0.98)"
-    );
-
-
-    return gradient;
-
-}
-
-
-/* ==========================================================
- * HEX TO RGB
- * ==========================================================
- */
-
-function hexToRgb(
-    hex
-) {
-
-    const value =
-        String(
-            hex || ""
-        )
-        .replace(
-            "#",
-            ""
-        );
-
-
-    if (
-        value.length !== 6
-    ) {
-
-        return null;
-
-    }
-
-
-    const n =
-        parseInt(
-            value,
-            16
-        );
-
-
-    if (
-        Number.isNaN(n)
-    ) {
-
-        return null;
-
-    }
-
-
-    return {
-
-        r:
-            (n >> 16) &
-            255,
-
-        g:
-            (n >> 8) &
-            255,
-
-        b:
-            n &
-            255
-
-    };
-
-}
-
-
-/* ==========================================================
- * SYSTEM INFO
- * ==========================================================
- */
-
-function renderSystem(
-    data
-) {
-
-    const system =
-        data.system ||
-        {};
-
-
-    setText(
-        [
-            "systemStatus",
-            "dashboardSystemStatus"
-        ],
-        system.status ||
-        "Online"
-    );
-
-
-    setText(
-        [
-            "systemDatabase",
-            "dashboardSystemDatabase"
-        ],
-        system.database ||
-        "Connected"
-    );
-
-
-    setText(
-        [
-            "systemAPI",
-            "dashboardSystemAPI"
-        ],
-        system.api ||
-        "Connected"
-    );
-
-
-    setText(
-        [
-            "systemVersion",
-            "dashboardSystemVersion"
-        ],
-        system.version ||
-        "7.0.1"
-    );
-
-
-    setText(
-        [
-            "lastRefresh",
-            "dashboardLastRefresh",
-            "lastUpdated"
-        ],
-        formatDate(
-            data.generatedAt ||
-            system.generatedAt
-        )
-    );
-
-}
-
-
-/* ==========================================================
- * SET TEXT
- * ==========================================================
- */
-
-function setText(
-    ids,
-    value
-) {
-
-    if (
-        !Array.isArray(ids)
-    ) {
-
-        ids = [
-            ids
-        ];
-
-    }
-
-
-    for (
-        let i = 0;
-        i < ids.length;
-        i++
-    ) {
-
-        const element =
-            document.getElementById(
-                ids[i]
-            );
-
-
-        if (
-            element
-        ) {
-
-            element.textContent =
-                value;
-
-            return;
-
-        }
-
-    }
-
-}
-
-
-/* ==========================================================
- * NUMBER
- * ==========================================================
- */
-
-function number(
-    value
-) {
-
-    if (
-        value === null ||
-        value === undefined ||
-        value === ""
-    ) {
-
-        return 0;
-
-    }
-
-
-    if (
-        typeof value ===
-        "number"
-    ) {
-
-        return isFinite(
-            value
-        )
-            ? value
-            : 0;
-
-    }
-
-
-    let text =
-        String(
-            value
-        )
-        .trim();
-
-
-    text =
-        text.replace(
-            "%",
-            ""
-        );
-
-
-    if (
-        text.includes(",") &&
-        !text.includes(".")
-    ) {
-
-        text =
-            text.replace(
-                ",",
-                "."
-            );
-
-    }
-
-
-    const n =
-        Number(
-            text
-        );
-
-
-    return isFinite(n)
-        ? n
-        : 0;
-
-}
-
-
-/* ==========================================================
- * FORMAT NUMBER
- * ==========================================================
- */
-
-function formatNumber(
-    value
-) {
-
-    return number(
-        value
-    )
-    .toLocaleString(
-        "id-ID"
-    );
-
-}
-
-
-/* ==========================================================
- * FORMAT DECIMAL
- * ==========================================================
- */
-
-function formatDecimal(
-    value
-) {
-
-    return number(
-        value
-    )
-    .toLocaleString(
-        "id-ID",
-        {
-
-            minimumFractionDigits:
-                2,
-
-            maximumFractionDigits:
-                2
-
-        }
-    );
-
-}
-
-
-/* ==========================================================
- * FORMAT DATE
- * ==========================================================
- */
-
-function formatDate(
-    value
-) {
-
-    if (
-        !value
-    ) {
-
-        return "-";
-
-    }
-
-
-    const date =
-        new Date(
-            value
-        );
-
-
-    if (
-        Number.isNaN(
-            date.getTime()
-        )
-    ) {
-
-        return String(
-            value
-        );
-
-    }
-
-
-    return date.toLocaleString(
-        "id-ID",
-        {
-
-            day:
-                "2-digit",
-
-            month:
-                "2-digit",
-
-            year:
-                "numeric",
-
-            hour:
-                "2-digit",
-
-            minute:
-                "2-digit"
-
-        }
-    );
 
 }
 
@@ -2610,7 +2922,7 @@ function formatDate(
  * ==========================================================
  */
 
-function bindRefreshButton() {
+function bindRefreshButtons() {
 
     const buttons =
         document.querySelectorAll(
@@ -2641,37 +2953,6 @@ function bindRefreshButton() {
 
 
 /* ==========================================================
- * LOADING
- * ==========================================================
- */
-
-function setLoading(
-    loading
-) {
-
-    const buttons =
-        document.querySelectorAll(
-            "#btnRefreshDashboard, " +
-            "#refreshDashboard, " +
-            "[data-dashboard-refresh]"
-        );
-
-
-    buttons.forEach(
-        function (
-            button
-        ) {
-
-            button.disabled =
-                loading;
-
-        }
-    );
-
-}
-
-
-/* ==========================================================
  * AUTO REFRESH
  * ==========================================================
  */
@@ -2679,27 +2960,30 @@ function setLoading(
 function startAutoRefresh() {
 
     if (
-        dashboardRefreshTimer
+        dashboardAutoRefreshTimer
     ) {
 
         clearInterval(
-            dashboardRefreshTimer
+            dashboardAutoRefreshTimer
         );
 
     }
 
 
-    dashboardRefreshTimer =
+    dashboardAutoRefreshTimer =
         setInterval(
             function () {
 
                 loadDashboard();
 
             },
-            5 *
-            60 *
-            1000
+            AUTO_REFRESH_MS
         );
+
+
+    console.log(
+        "Dashboard auto-refresh: 5 menit"
+    );
 
 }
 
@@ -2709,7 +2993,7 @@ function startAutoRefresh() {
  * ==========================================================
  */
 
-function showError(
+function showDashboardError(
     message
 ) {
 
@@ -2742,51 +3026,116 @@ function showError(
 /* ==========================================================
  * DEBUG
  * ==========================================================
+ *
+ * Setelah halaman terbuka, bisa jalankan:
+ *
+ * dashboardDebug()
+ *
+ * ==========================================================
  */
 
 function dashboardDebug() {
 
-    console.log(
-        "========== GUARDIAN KPI DEBUG =========="
+    console.group(
+        "Guardian KPI Dashboard " +
+        DASHBOARD_VERSION
     );
+
+
+    console.log(
+        "API lexical:",
+        typeof API !==
+        "undefined"
+            ? API
+            : "undefined"
+    );
+
+
+    console.log(
+        "window.API:",
+        window.API
+    );
+
 
     console.log(
         "Data:",
         dashboardData
     );
 
-    console.log(
-        "Statistik:",
-        dashboardData &&
-        dashboardData.statistikKPI
-    );
 
-    console.log(
-        "Distribusi:",
-        dashboardData &&
-        dashboardData.distribusiAnggota
-    );
+    if (
+        dashboardData
+    ) {
 
-    console.log(
-        "Kategori:",
-        dashboardData &&
-        dashboardData.masterKPIKategori
-    );
+        console.log(
+            "Total Anggota:",
+            dashboardData.totalAnggota
+        );
 
-    console.log(
-        "Indikator:",
-        dashboardData &&
-        dashboardData.masterKPIIndikator
-    );
+
+        console.log(
+            "Total Group:",
+            dashboardData.totalGroup
+        );
+
+
+        console.log(
+            "Total Master KPI:",
+            dashboardData.totalMasterKPI
+        );
+
+
+        console.log(
+            "Total Penilaian:",
+            dashboardData.totalPenilaian
+        );
+
+
+        console.log(
+            "Anggota Aktif:",
+            dashboardData.anggotaAktif
+        );
+
+
+        console.log(
+            "Anggota Non Aktif:",
+            dashboardData.anggotaNonAktif
+        );
+
+
+        console.log(
+            "Average KPI:",
+            dashboardData.averageKPI
+        );
+
+
+        console.log(
+            "Distribusi:",
+            dashboardData.distribusiAnggota
+        );
+
+
+        console.log(
+            "Kategori Master KPI:",
+            dashboardData.masterKPIKategori
+        );
+
+
+        console.log(
+            "Indikator Master KPI:",
+            dashboardData.masterKPIIndikator
+        );
+
+    }
+
 
     console.log(
         "Charts:",
         dashboardCharts
     );
 
-    console.log(
-        "========================================="
-    );
+
+    console.groupEnd();
 
 }
 
@@ -2810,17 +3159,23 @@ function dashboardRefresh() {
 
 window.GuardianDashboard = {
 
+    version:
+        DASHBOARD_VERSION,
+
+    init:
+        initDashboard,
+
     load:
         loadDashboard,
 
     refresh:
         dashboardRefresh,
 
-    debug:
-        dashboardDebug,
-
     render:
         renderDashboard,
+
+    debug:
+        dashboardDebug,
 
     getData:
         function () {
@@ -2837,3 +3192,9 @@ window.GuardianDashboard = {
         }
 
 };
+
+
+/* ==========================================================
+ * END
+ * ==========================================================
+ */
