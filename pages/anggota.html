@@ -1,242 +1,1741 @@
-<div class="container-fluid">
+<!-- ==========================================================
+     GUARDIAN KPI
+     PAGE : ANGGOTA
+     ========================================================== -->
 
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<style>
 
-        <div>
+    /* ======================================================
+       PAGE
+    ====================================================== */
 
-            <h2 class="fw-bold text-info">
+    .anggota-page {
+        width: 100%;
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 28px 24px 60px;
+    }
+
+
+    /* ======================================================
+       HEADER
+    ====================================================== */
+
+    .anggota-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+
+        gap: 20px;
+
+        margin-bottom: 24px;
+    }
+
+
+    .anggota-header-left {
+        min-width: 0;
+    }
+
+
+    .anggota-eyebrow {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+
+        margin-bottom: 6px;
+
+        color: var(--g-primary);
+
+        font-size: 11px;
+        font-weight: 800;
+
+        text-transform: uppercase;
+        letter-spacing: .08em;
+    }
+
+
+    .anggota-title {
+        margin: 0;
+
+        color: var(--g-text);
+
+        font-size: clamp(25px, 3vw, 32px);
+        font-weight: 800;
+
+        line-height: 1.15;
+    }
+
+
+    .anggota-subtitle {
+        margin: 7px 0 0;
+
+        color: var(--g-muted);
+
+        font-size: 12px;
+        line-height: 1.6;
+    }
+
+
+    /* ======================================================
+       HEADER ACTION
+    ====================================================== */
+
+    .anggota-header-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        flex-shrink: 0;
+    }
+
+
+    .anggota-btn {
+
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        gap: 7px;
+
+        min-height: 38px;
+
+        padding: 8px 14px;
+
+        border-radius: 8px;
+
+        font-size: 11px;
+        font-weight: 700;
+
+        cursor: pointer;
+
+        transition:
+            .18s ease;
+    }
+
+
+    .anggota-btn-primary {
+
+        border:
+            1px solid var(--g-primary);
+
+        background:
+            var(--g-primary);
+
+        color:
+            #061018;
+    }
+
+
+    .anggota-btn-primary:hover {
+
+        box-shadow:
+            0 0 18px
+            rgba(0,200,255,.20);
+
+        transform:
+            translateY(-1px);
+    }
+
+
+    .anggota-btn-secondary {
+
+        border:
+            1px solid var(--g-border);
+
+        background:
+            var(--g-surface);
+
+        color:
+            var(--g-text);
+    }
+
+
+    .anggota-btn-secondary:hover {
+
+        border-color:
+            var(--g-primary);
+
+        color:
+            var(--g-primary);
+    }
+
+
+    /* ======================================================
+       SUMMARY
+    ====================================================== */
+
+    .anggota-summary {
+
+        display: grid;
+
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+
+        gap: 12px;
+
+        margin-bottom: 18px;
+    }
+
+
+    .anggota-summary-card {
+
+        display: flex;
+        align-items: center;
+
+        gap: 12px;
+
+        padding: 14px 16px;
+
+        border:
+            1px solid var(--g-border);
+
+        border-radius: 11px;
+
+        background:
+            var(--g-surface);
+
+        box-shadow:
+            var(--g-shadow);
+    }
+
+
+    .anggota-summary-icon {
+
+        width: 38px;
+        height: 38px;
+
+        flex:
+            0 0 38px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 9px;
+
+        background:
+            var(--g-primary-soft);
+
+        color:
+            var(--g-primary);
+
+        font-size: 17px;
+    }
+
+
+    .anggota-summary-label {
+
+        margin: 0 0 3px;
+
+        color:
+            var(--g-muted);
+
+        font-size: 10px;
+    }
+
+
+    .anggota-summary-value {
+
+        margin: 0;
+
+        color:
+            var(--g-text);
+
+        font-size: 18px;
+        font-weight: 800;
+    }
+
+
+    /* ======================================================
+       MAIN CARD
+    ====================================================== */
+
+    .anggota-card {
+
+        border:
+            1px solid var(--g-border);
+
+        border-radius: 13px;
+
+        background:
+            var(--g-surface);
+
+        box-shadow:
+            var(--g-shadow);
+
+        overflow: hidden;
+    }
+
+
+    /* ======================================================
+       CARD HEADER
+    ====================================================== */
+
+    .anggota-card-header {
+
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        gap: 15px;
+
+        padding: 15px 18px;
+
+        border-bottom:
+            1px solid var(--g-border);
+    }
+
+
+    .anggota-card-title {
+
+        display: flex;
+        align-items: center;
+
+        gap: 8px;
+
+        margin: 0;
+
+        color:
+            var(--g-text);
+
+        font-size: 13px;
+        font-weight: 750;
+    }
+
+
+    .anggota-card-title i {
+
+        color:
+            var(--g-primary);
+    }
+
+
+    .anggota-card-subtitle {
+
+        margin: 3px 0 0;
+
+        color:
+            var(--g-muted);
+
+        font-size: 10px;
+    }
+
+
+    /* ======================================================
+       TOOLBAR
+    ====================================================== */
+
+    .anggota-toolbar {
+
+        display: grid;
+
+        grid-template-columns:
+            minmax(0, 1fr)
+            180px
+            auto;
+
+        gap: 9px;
+
+        padding: 14px 18px;
+
+        border-bottom:
+            1px solid var(--g-border);
+    }
+
+
+    .anggota-input,
+    .anggota-select {
+
+        width: 100%;
+
+        height: 38px;
+
+        padding:
+            7px 11px;
+
+        border:
+            1px solid var(--g-border);
+
+        border-radius: 8px;
+
+        background:
+            var(--g-bg);
+
+        color:
+            var(--g-text);
+
+        outline: none;
+
+        font-size: 11px;
+
+        transition:
+            border-color .18s ease,
+            box-shadow .18s ease;
+    }
+
+
+    .anggota-input::placeholder {
+
+        color:
+            var(--g-muted);
+    }
+
+
+    .anggota-input:focus,
+    .anggota-select:focus {
+
+        border-color:
+            var(--g-primary);
+
+        box-shadow:
+            0 0 0 3px
+            var(--g-primary-soft);
+    }
+
+
+    .anggota-toolbar-refresh {
+
+        height: 38px;
+
+        padding:
+            7px 13px;
+
+        border:
+            1px solid var(--g-border);
+
+        border-radius: 8px;
+
+        background:
+            transparent;
+
+        color:
+            var(--g-text);
+
+        font-size: 11px;
+        font-weight: 700;
+
+        cursor: pointer;
+
+        white-space: nowrap;
+    }
+
+
+    .anggota-toolbar-refresh:hover {
+
+        border-color:
+            var(--g-primary);
+
+        color:
+            var(--g-primary);
+    }
+
+
+    /* ======================================================
+       TABLE
+    ====================================================== */
+
+    .anggota-table-wrap {
+
+        width: 100%;
+
+        overflow-x: auto;
+    }
+
+
+    .anggota-table {
+
+        width: 100%;
+
+        margin: 0;
+
+        border-collapse:
+            collapse;
+
+        color:
+            var(--g-text);
+
+        font-size: 11px;
+    }
+
+
+    .anggota-table thead th {
+
+        padding:
+            12px 14px;
+
+        border-bottom:
+            1px solid var(--g-border);
+
+        background:
+            var(--g-surface-2);
+
+        color:
+            var(--g-muted);
+
+        font-size: 10px;
+
+        font-weight: 750;
+
+        text-transform:
+            uppercase;
+
+        letter-spacing:
+            .04em;
+
+        white-space:
+            nowrap;
+    }
+
+
+    .anggota-table tbody td {
+
+        padding:
+            12px 14px;
+
+        border-bottom:
+            1px solid var(--g-border);
+
+        color:
+            var(--g-text);
+
+        vertical-align:
+            middle;
+    }
+
+
+    .anggota-table tbody tr {
+
+        transition:
+            background .15s ease;
+    }
+
+
+    .anggota-table tbody tr:hover {
+
+        background:
+            var(--g-primary-soft);
+    }
+
+
+    .anggota-id {
+
+        color:
+            var(--g-primary);
+
+        font-weight:
+            750;
+
+        white-space:
+            nowrap;
+    }
+
+
+    .anggota-name {
+
+        font-weight:
+            700;
+    }
+
+
+    .anggota-muted {
+
+        color:
+            var(--g-muted);
+    }
+
+
+    /* ======================================================
+       STATUS
+    ====================================================== */
+
+    .anggota-status {
+
+        display: inline-flex;
+        align-items: center;
+
+        gap: 6px;
+
+        padding:
+            4px 8px;
+
+        border-radius:
+            999px;
+
+        font-size:
+            10px;
+
+        font-weight:
+            750;
+    }
+
+
+    .anggota-status::before {
+
+        content: "";
+
+        width: 6px;
+        height: 6px;
+
+        border-radius:
+            50%;
+    }
+
+
+    .anggota-status-active {
+
+        background:
+            rgba(0,200,120,.10);
+
+        color:
+            #00c878;
+    }
+
+
+    .anggota-status-active::before {
+
+        background:
+            #00c878;
+
+        box-shadow:
+            0 0 7px
+            rgba(0,200,120,.6);
+    }
+
+
+    .anggota-status-inactive {
+
+        background:
+            rgba(255,80,100,.10);
+
+        color:
+            #ff6478;
+    }
+
+
+    .anggota-status-inactive::before {
+
+        background:
+            #ff6478;
+    }
+
+
+    /* ======================================================
+       ACTION
+    ====================================================== */
+
+    .anggota-actions {
+
+        display: flex;
+
+        align-items:
+            center;
+
+        gap: 6px;
+    }
+
+
+    .anggota-action {
+
+        width: 30px;
+        height: 30px;
+
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 7px;
+
+        font-size: 12px;
+
+        cursor: pointer;
+
+        transition:
+            .18s ease;
+    }
+
+
+    .anggota-action-edit {
+
+        border:
+            1px solid
+            rgba(245,158,11,.28);
+
+        background:
+            rgba(245,158,11,.08);
+
+        color:
+            #f59e0b;
+    }
+
+
+    .anggota-action-delete {
+
+        border:
+            1px solid
+            rgba(255,80,100,.28);
+
+        background:
+            rgba(255,80,100,.08);
+
+        color:
+            #ff6478;
+    }
+
+
+    .anggota-action:hover {
+
+        transform:
+            translateY(-1px);
+    }
+
+
+    /* ======================================================
+       EMPTY / LOADING
+    ====================================================== */
+
+    .anggota-state {
+
+        padding:
+            50px 20px !important;
+
+        text-align:
+            center;
+
+        color:
+            var(--g-muted) !important;
+    }
+
+
+    .anggota-loading-spinner {
+
+        width: 20px;
+        height: 20px;
+
+        margin:
+            0 auto 10px;
+
+        border:
+            2px solid
+            var(--g-border);
+
+        border-top-color:
+            var(--g-primary);
+
+        border-radius:
+            50%;
+
+        animation:
+            anggotaSpin .7s linear infinite;
+    }
+
+
+    @keyframes anggotaSpin {
+
+        to {
+            transform:
+                rotate(360deg);
+        }
+
+    }
+
+
+    /* ======================================================
+       MODAL
+    ====================================================== */
+
+    .anggota-modal {
+
+        background:
+            var(--g-surface) !important;
+
+        color:
+            var(--g-text) !important;
+
+        border:
+            1px solid var(--g-border) !important;
+
+        border-radius:
+            13px !important;
+
+        box-shadow:
+            var(--g-shadow);
+    }
+
+
+    .anggota-modal-header {
+
+        padding:
+            16px 18px;
+
+        border-bottom:
+            1px solid var(--g-border);
+    }
+
+
+    .anggota-modal-title {
+
+        display: flex;
+
+        align-items:
+            center;
+
+        gap: 8px;
+
+        margin: 0;
+
+        color:
+            var(--g-text);
+
+        font-size:
+            15px;
+
+        font-weight:
+            800;
+    }
+
+
+    .anggota-modal-title i {
+
+        color:
+            var(--g-primary);
+    }
+
+
+    .anggota-modal-body {
+
+        padding:
+            18px;
+    }
+
+
+    .anggota-form-label {
+
+        display: block;
+
+        margin:
+            0 0 6px;
+
+        color:
+            var(--g-muted);
+
+        font-size:
+            10px;
+
+        font-weight:
+            700;
+    }
+
+
+    .anggota-form-group {
+
+        margin-bottom:
+            14px;
+    }
+
+
+    .anggota-form-control {
+
+        width: 100%;
+
+        height: 40px;
+
+        padding:
+            8px 11px;
+
+        border:
+            1px solid var(--g-border);
+
+        border-radius:
+            8px;
+
+        background:
+            var(--g-bg);
+
+        color:
+            var(--g-text);
+
+        outline: none;
+
+        font-size:
+            11px;
+    }
+
+
+    .anggota-form-control:focus {
+
+        border-color:
+            var(--g-primary);
+
+        box-shadow:
+            0 0 0 3px
+            var(--g-primary-soft);
+    }
+
+
+    .anggota-modal-footer {
+
+        display: flex;
+
+        justify-content:
+            flex-end;
+
+        gap: 8px;
+
+        padding:
+            13px 18px;
+
+        border-top:
+            1px solid var(--g-border);
+    }
+
+
+    /* ======================================================
+       MOBILE
+    ====================================================== */
+
+    @media (max-width: 800px) {
+
+        .anggota-page {
+
+            padding:
+                22px 14px 50px;
+        }
+
+
+        .anggota-header {
+
+            flex-direction:
+                column;
+        }
+
+
+        .anggota-header-actions {
+
+            width: 100%;
+        }
+
+
+        .anggota-header-actions
+        .anggota-btn {
+
+            flex: 1;
+        }
+
+
+        .anggota-summary {
+
+            grid-template-columns:
+                1fr;
+        }
+
+
+        .anggota-toolbar {
+
+            grid-template-columns:
+                1fr;
+        }
+
+
+        .anggota-toolbar-refresh {
+
+            width: 100%;
+        }
+
+    }
+
+</style>
+
+
+<!-- ==========================================================
+     PAGE
+========================================================== -->
+
+<div
+    class="anggota-page"
+    id="guardianAnggotaPage">
+
+
+    <!-- ======================================================
+         HEADER
+    ====================================================== -->
+
+    <header
+        class="anggota-header">
+
+
+        <div
+            class="anggota-header-left">
+
+
+            <div
+                class="anggota-eyebrow">
+
+                <i class="bi bi-people-fill"></i>
+
+                Settings / Administrasi
+
+            </div>
+
+
+            <h1
+                class="anggota-title">
 
                 Data Anggota
 
-            </h2>
+            </h1>
 
-            <small class="text-secondary">
 
-                Kelola seluruh data anggota security.
+            <p
+                class="anggota-subtitle">
 
-            </small>
+                Kelola data anggota security,
+                jabatan, group, dan status anggota.
 
-        </div>
+            </p>
 
-        <button
-            class="btn btn-info"
-            onclick="openAnggotaModal()">
-
-            <i class="bi bi-plus-circle"></i>
-
-            Tambah Anggota
-
-        </button>
-
-    </div>
-
-    <!-- Card -->
-
-    <div class="card-glass">
-
-        <!-- Toolbar -->
-
-        <div class="row mb-3">
-
-            <div class="col-md-6">
-
-                <input
-                    id="searchAnggota"
-                    class="form-control"
-                    type="text"
-                    placeholder="Cari Nama..."
-                    onkeyup="filterAnggota()">
-
-            </div>
-
-            <div class="col-md-3">
-
-                <select
-                    id="filterStatus"
-                    class="form-select"
-                    onchange="filterAnggota()">
-
-                    <option value="">Semua Status</option>
-                    <option value="Aktif">Aktif</option>
-                    <option value="Nonaktif">Nonaktif</option>
-
-                </select>
-
-            </div>
-
-            <div class="col-md-3 text-end">
-
-                <button
-                    class="btn btn-outline-info"
-                   onclick="refreshAnggota()">
-
-                    <i class="bi bi-arrow-clockwise"></i>
-
-                    Refresh
-
-                </button>
-
-            </div>
 
         </div>
 
-        <!-- Table -->
 
-        <div class="table-responsive">
+        <div
+            class="anggota-header-actions">
 
-            <table class="table table-dark table-hover align-middle">
+
+            <button
+                type="button"
+                class="anggota-btn anggota-btn-secondary"
+                onclick="window.guardianLoadPage('setting')">
+
+                <i class="bi bi-arrow-left"></i>
+
+                Settings
+
+            </button>
+
+
+            <button
+                type="button"
+                class="anggota-btn anggota-btn-primary"
+                onclick="openAnggotaModal()">
+
+                <i class="bi bi-plus-circle"></i>
+
+                Tambah Anggota
+
+            </button>
+
+
+        </div>
+
+
+    </header>
+
+
+    <!-- ======================================================
+         SUMMARY
+    ====================================================== -->
+
+    <section
+        class="anggota-summary">
+
+
+        <div
+            class="anggota-summary-card">
+
+
+            <div
+                class="anggota-summary-icon">
+
+                <i class="bi bi-people-fill"></i>
+
+            </div>
+
+
+            <div>
+
+                <p
+                    class="anggota-summary-label">
+
+                    Total Anggota
+
+                </p>
+
+
+                <p
+                    class="anggota-summary-value"
+                    id="anggotaTotalCount">
+
+                    —
+
+                </p>
+
+            </div>
+
+
+        </div>
+
+
+        <div
+            class="anggota-summary-card">
+
+
+            <div
+                class="anggota-summary-icon">
+
+                <i class="bi bi-person-check-fill"></i>
+
+            </div>
+
+
+            <div>
+
+                <p
+                    class="anggota-summary-label">
+
+                    Anggota Aktif
+
+                </p>
+
+
+                <p
+                    class="anggota-summary-value"
+                    id="anggotaActiveCount">
+
+                    —
+
+                </p>
+
+            </div>
+
+
+        </div>
+
+
+        <div
+            class="anggota-summary-card">
+
+
+            <div
+                class="anggota-summary-icon">
+
+                <i class="bi bi-person-x-fill"></i>
+
+            </div>
+
+
+            <div>
+
+                <p
+                    class="anggota-summary-label">
+
+                    Nonaktif
+
+                </p>
+
+
+                <p
+                    class="anggota-summary-value"
+                    id="anggotaInactiveCount">
+
+                    —
+
+                </p>
+
+            </div>
+
+
+        </div>
+
+
+    </section>
+
+
+    <!-- ======================================================
+         DATA CARD
+    ====================================================== -->
+
+    <section
+        class="anggota-card">
+
+
+        <!-- CARD HEADER -->
+
+        <div
+            class="anggota-card-header">
+
+
+            <div>
+
+                <h2
+                    class="anggota-card-title">
+
+                    <i class="bi bi-table"></i>
+
+                    Daftar Anggota
+
+                </h2>
+
+
+                <p
+                    class="anggota-card-subtitle">
+
+                    Data anggota yang tersimpan pada database.
+
+                </p>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- ==================================================
+             TOOLBAR
+        ================================================== -->
+
+        <div
+            class="anggota-toolbar">
+
+
+            <input
+                id="searchAnggota"
+                type="text"
+                class="anggota-input"
+                placeholder="Cari nama anggota..."
+                autocomplete="off"
+                oninput="filterAnggota()">
+
+
+            <select
+                id="filterStatus"
+                class="anggota-select"
+                onchange="filterAnggota()">
+
+                <option value="">
+                    Semua Status
+                </option>
+
+                <option value="Aktif">
+                    Aktif
+                </option>
+
+                <option value="Nonaktif">
+                    Nonaktif
+                </option>
+
+            </select>
+
+
+            <button
+                type="button"
+                class="anggota-toolbar-refresh"
+                onclick="refreshAnggota()">
+
+                <i class="bi bi-arrow-clockwise"></i>
+
+                Refresh
+
+            </button>
+
+
+        </div>
+
+
+        <!-- ==================================================
+             TABLE
+        ================================================== -->
+
+        <div
+            class="anggota-table-wrap">
+
+
+            <table
+                class="anggota-table">
+
 
                 <thead>
 
                     <tr>
 
-                        <th width="90">ID</th>
+                        <th>
+                            ID
+                        </th>
 
-                        <th>Nama</th>
+                        <th>
+                            Nama
+                        </th>
 
-                        <th>Jabatan</th>
+                        <th>
+                            Jabatan
+                        </th>
 
-                        <th>Group</th>
+                        <th>
+                            Group
+                        </th>
 
-                        <th width="120">Status</th>
+                        <th>
+                            Status
+                        </th>
 
-                        <th width="180">Aksi</th>
+                        <th>
+                            Aksi
+                        </th>
 
                     </tr>
 
                 </thead>
 
-                <tbody id="tblAnggota">
+
+                <tbody
+                    id="tblAnggota">
+
 
                     <tr>
 
-                        <td colspan="6" class="text-center">
+                        <td
+                            colspan="6"
+                            class="anggota-state">
 
-                            Memuat data...
+                            <div
+                                class="anggota-loading-spinner">
+                            </div>
+
+                            Memuat data anggota...
 
                         </td>
 
                     </tr>
 
+
                 </tbody>
+
 
             </table>
 
+
         </div>
+
+
+    </section>
+
+
+</div>
+
+
+<!-- ==========================================================
+     MODAL ANGGOTA
+========================================================== -->
+
+<div
+    class="modal fade"
+    id="anggotaModal"
+    tabindex="-1"
+    aria-hidden="true"
+    data-bs-backdrop="static">
+
+
+    <div
+        class="modal-dialog modal-dialog-centered">
+
+
+        <div
+            class="modal-content anggota-modal">
+
+
+            <!-- HEADER -->
+
+            <div
+                class="anggota-modal-header">
+
+
+                <div
+                    class="d-flex align-items-center justify-content-between">
+
+
+                    <h5
+                        class="anggota-modal-title">
+
+                        <i class="bi bi-person-plus-fill"></i>
+
+                        Data Anggota
+
+                    </h5>
+
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close">
+
+                    </button>
+
+
+                </div>
+
+
+            </div>
+
+
+            <!-- BODY -->
+
+            <div
+                class="anggota-modal-body">
+
+
+                <!-- NAMA -->
+
+                <div
+                    class="anggota-form-group">
+
+
+                    <label
+                        for="nama"
+                        class="anggota-form-label">
+
+                        Nama Lengkap
+
+                    </label>
+
+
+                    <input
+                        id="nama"
+                        type="text"
+                        class="anggota-form-control"
+                        maxlength="100"
+                        autocomplete="off"
+                        placeholder="Masukkan nama lengkap">
+
+
+                </div>
+
+
+                <!-- JABATAN -->
+
+                <div
+                    class="anggota-form-group">
+
+
+                    <label
+                        for="jabatan"
+                        class="anggota-form-label">
+
+                        Jabatan
+
+                    </label>
+
+
+                    <select
+                        id="jabatan"
+                        class="anggota-form-control">
+
+
+                        <option value="">
+                            Pilih Jabatan
+                        </option>
+
+
+                        <option value="Security">
+                            Security
+                        </option>
+
+
+                        <option value="Danru">
+                            Danru
+                        </option>
+
+
+                        <option value="Chief Security">
+                            Chief Security
+                        </option>
+
+
+                        <option value="Supervisor">
+                            Supervisor
+                        </option>
+
+
+                    </select>
+
+
+                </div>
+
+
+                <!-- GROUP -->
+
+                <div
+                    class="anggota-form-group">
+
+
+                    <label
+                        for="group"
+                        class="anggota-form-label">
+
+                        Group
+
+                    </label>
+
+
+                    <select
+                        id="group"
+                        class="anggota-form-control">
+
+
+                        <option value="">
+                            Memuat Group...
+                        </option>
+
+
+                    </select>
+
+
+                </div>
+
+
+                <!-- STATUS -->
+
+                <div
+                    class="anggota-form-group"
+                    style="margin-bottom:0;">
+
+
+                    <label
+                        for="status"
+                        class="anggota-form-label">
+
+                        Status
+
+                    </label>
+
+
+                    <select
+                        id="status"
+                        class="anggota-form-control">
+
+
+                        <option value="Aktif">
+                            Aktif
+                        </option>
+
+
+                        <option value="Nonaktif">
+                            Nonaktif
+                        </option>
+
+
+                    </select>
+
+
+                </div>
+
+
+            </div>
+
+
+            <!-- FOOTER -->
+
+            <div
+                class="anggota-modal-footer">
+
+
+                <button
+                    type="button"
+                    class="anggota-btn anggota-btn-secondary"
+                    data-bs-dismiss="modal">
+
+                    Batal
+
+                </button>
+
+
+                <button
+                    id="btnSaveAnggota"
+                    type="button"
+                    class="anggota-btn anggota-btn-primary"
+                    onclick="saveAnggota()">
+
+                    <i class="bi bi-save"></i>
+
+                    <span>
+                        Simpan
+                    </span>
+
+                </button>
+
+
+            </div>
+
+
+        </div>
+
 
     </div>
 
-</div>
-
-<!-- ==========================
-MODAL
-========================== -->
-
-<div
-class="modal fade"
-id="anggotaModal"
-tabindex="-1"
-data-bs-backdrop="static">
-
-<div class="modal-dialog">
-
-<div class="modal-content bg-dark text-white">
-
-<div class="modal-header">
-
-<h5 class="modal-title">
-
-Data Anggota
-
-</h5>
-
-<button
-class="btn-close btn-close-white"
-data-bs-dismiss="modal">
-
-</button>
 
 </div>
 
-<div class="modal-body">
 
-<input
-id="nama"
-class="form-control mb-3"
-maxlength="100"
-autocomplete="off"
-placeholder="Nama Lengkap">
+<script>
+/*
+ * ==========================================================
+ * ANGGOTA PAGE UI ENHANCEMENT
+ *
+ * Tidak menggantikan js/anggota.js.
+ * Hanya memperbarui counter setelah data berhasil dirender.
+ * ==========================================================
+ */
 
-<select
-id="jabatan"
-class="form-select mb-3">
+(function () {
 
-<option value="">Pilih Jabatan</option>
+    function updateAnggotaSummary() {
 
-<option>Security</option>
+        /*
+         * anggotaData adalah variabel yang digunakan
+         * oleh js/anggota.js.
+         *
+         * Karena berada pada global lexical scope,
+         * kita tidak mengandalkan window.anggotaData.
+         *
+         * Jika belum tersedia, counter tetap "-".
+         */
 
-<option>Danru</option>
+        try {
 
-<option>Chief Security</option>
+            if (
+                typeof anggotaData ===
+                "undefined"
+            ) {
 
-<option>Supervisor</option>
+                return;
 
-</select>
+            }
 
-<select
-id="group"
-class="form-select mb-3">
 
-<option value="">Pilih Group</option>
+            const total =
+                Array.isArray(anggotaData)
+                    ? anggotaData.length
+                    : 0;
 
-</select>
 
-<select
-id="status"
-class="form-select">
+            const active =
+                Array.isArray(anggotaData)
+                    ? anggotaData.filter(
+                        function (item) {
 
-<option value="Aktif">
+                            return String(
+                                item.status || ""
+                            ).toLowerCase()
+                            === "aktif";
 
-Aktif
+                        }
+                    ).length
+                    : 0;
 
-</option>
 
-<option value="Nonaktif">
+            const inactive =
+                total - active;
 
-Nonaktif
 
-</option>
+            const totalEl =
+                document.getElementById(
+                    "anggotaTotalCount"
+                );
 
-</select>
 
-</div>
+            const activeEl =
+                document.getElementById(
+                    "anggotaActiveCount"
+                );
 
-<div class="modal-footer">
 
-<button
-class="btn btn-secondary"
-data-bs-dismiss="modal">
+            const inactiveEl =
+                document.getElementById(
+                    "anggotaInactiveCount"
+                );
 
-Batal
 
-</button>
+            if (totalEl) {
 
-<button
-id="btnSaveAnggota"
-class="btn btn-info"
-onclick="saveAnggota()">
+                totalEl.textContent =
+                    total;
 
-<i class="bi bi-save"></i>
+            }
 
-<span>Simpan</span>
 
-</button>
+            if (activeEl) {
 
-</div>
+                activeEl.textContent =
+                    active;
 
-</div>
+            }
 
-</div>
 
-</div>
+            if (inactiveEl) {
+
+                inactiveEl.textContent =
+                    inactive;
+
+            }
+
+        }
+
+        catch (error) {
+
+            console.warn(
+                "Guardian KPI Anggota summary:",
+                error
+            );
+
+        }
+
+    }
+
+
+    /*
+     * Pantau perubahan DOM tabel.
+     *
+     * js/anggota.js melakukan renderAnggota()
+     * dengan mengubah tbody.innerHTML.
+     */
+
+    const tbody =
+        document.getElementById(
+            "tblAnggota"
+        );
+
+
+    if (tbody) {
+
+        const observer =
+            new MutationObserver(
+                function () {
+
+                    updateAnggotaSummary();
+
+                }
+            );
+
+
+        observer.observe(
+            tbody,
+            {
+                childList: true,
+                subtree: true
+            }
+        );
+
+    }
+
+
+    /*
+     * Update awal.
+     */
+
+    setTimeout(
+        updateAnggotaSummary,
+        300
+    );
+
+
+})();
+</script>
