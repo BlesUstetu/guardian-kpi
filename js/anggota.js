@@ -874,16 +874,8 @@ function updateAnggotaCounters(
 
 function openAnggotaModal() {
 
-    clearForm();
-
-
-    populateAnggotaGroupSelect();
-
-
     const element =
-        document.getElementById(
-            "anggotaModal"
-        );
+        document.getElementById("anggotaModal");
 
 
     if (!element) {
@@ -919,8 +911,19 @@ function openAnggotaModal() {
 
     modal.show();
 
-}
 
+    setTimeout(function () {
+
+        const nama =
+            document.getElementById("nama");
+
+        if (nama) {
+            nama.focus();
+        }
+
+    }, 200);
+
+}
 
 /* ==========================================================
    CLOSE MODAL
@@ -1364,20 +1367,14 @@ async function saveAnggota() {
    EDIT
    ========================================================== */
 
-function editAnggota(
-    id
-) {
+function editAnggota(id) {
 
     const item =
         anggotaData.find(
             function (row) {
 
-                return (
-                    String(
-                        row?.id
-                    ) ===
-                    String(id)
-                );
+                return String(row?.id) ===
+                       String(id);
 
             }
         );
@@ -1394,32 +1391,23 @@ function editAnggota(
     }
 
 
-    editId =
-        item.id;
-
+    /*
+     * PENTING:
+     * editId harus ditetapkan TERAKHIR
+     * setelah form diisi.
+     */
 
     const nama =
-        document.getElementById(
-            "nama"
-        );
-
+        document.getElementById("nama");
 
     const jabatan =
-        document.getElementById(
-            "jabatan"
-        );
-
+        document.getElementById("jabatan");
 
     const group =
-        document.getElementById(
-            "group"
-        );
-
+        document.getElementById("group");
 
     const status =
-        document.getElementById(
-            "status"
-        );
+        document.getElementById("status");
 
 
     if (nama) {
@@ -1440,49 +1428,8 @@ function editAnggota(
 
     if (group) {
 
-        /*
-         * Jika item.group adalah ID:
-         */
-
         group.value =
             item.group || "";
-
-
-        /*
-         * Jika item.group adalah nama,
-         * cari ID group yang sesuai.
-         */
-
-        if (
-            group.value !==
-            String(item.group || "")
-        ) {
-
-            const found =
-                anggotaGroupList.find(
-                    function (g) {
-
-                        return (
-                            anggotaNormalize(
-                                g?.nama
-                            ) ===
-                            anggotaNormalize(
-                                item.group
-                            )
-                        );
-
-                    }
-                );
-
-
-            if (found) {
-
-                group.value =
-                    found.id;
-
-            }
-
-        }
 
     }
 
@@ -1490,13 +1437,52 @@ function editAnggota(
     if (status) {
 
         status.value =
-            item.status ||
-            "Aktif";
+            item.status || "Aktif";
 
     }
 
 
-    openAnggotaModal();
+    /*
+     * Tetapkan editId PALING AKHIR.
+     * Jangan panggil clearForm() setelah ini.
+     */
+
+    editId =
+        item.id;
+
+
+    console.log(
+        "Guardian KPI - MODE EDIT:",
+        {
+            editId: editId,
+            id: item.id,
+            nama: item.nama,
+            status: item.status
+        }
+    );
+
+
+    const element =
+        document.getElementById(
+            "anggotaModal"
+        );
+
+
+    if (
+        element &&
+        typeof bootstrap !== "undefined" &&
+        bootstrap.Modal
+    ) {
+
+        const modal =
+            bootstrap.Modal.getOrCreateInstance(
+                element
+            );
+
+
+        modal.show();
+
+    }
 
 }
 
