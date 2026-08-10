@@ -105,13 +105,19 @@ async function initPenilaian() {
 
 
 /* ==========================================================
- * LOAD TAHUN
+ * LOAD TAHUN DINAMIS
+ *
+ * Tahun:
+ * - Tidak dibatasi sampai 2028
+ * - Tahun historis dari data tetap tersedia
+ * - Tahun berjalan selalu tersedia
+ * - Tahun berikutnya dibuat otomatis
  * ==========================================================
  */
 
 function loadPenilaianTahun() {
 
-    const select =
+    const filterSelect =
         document.getElementById(
             "filterTahun"
         );
@@ -121,65 +127,249 @@ function loadPenilaianTahun() {
             "tahunPenilaian"
         );
 
-    const tahun =
+
+    const currentYear =
         new Date().getFullYear();
 
 
     /*
-     * FILTER TAHUN
+     * ======================================================
+     * KUMPULKAN TAHUN YANG SUDAH ADA
+     * ======================================================
      */
 
-    if (select) {
+    const existingYears =
+        Array.isArray(
+            penilaianList
+        )
+            ? penilaianList
+                .map(function(item) {
 
-        select.innerHTML =
-            `<option value="">
-                Semua Tahun
-            </option>`;
+                    return Number(
+                        item.tahun
+                    );
+
+                })
+                .filter(function(year) {
+
+                    return (
+                        Number.isInteger(year) &&
+                        year >= 2000 &&
+                        year <= 9999
+                    );
+
+                })
+            : [];
 
 
-        for (
-            let i = tahun - 2;
-            i <= tahun + 2;
-            i++
-        ) {
+    /*
+     * Tahun pertama.
+     *
+     * Jika sudah ada data lama,
+     * gunakan tahun paling awal.
+     *
+     * Jika belum ada data,
+     * mulai dari tahun berjalan.
+     */
 
-            select.innerHTML += `
-                <option value="${i}">
-                    ${i}
-                </option>
-            `;
-        }
+    let startYear =
+        existingYears.length
+            ? Math.min(
+                ...existingYears
+            )
+            : currentYear;
+
+
+    /*
+     * Jangan pernah membuat tahun
+     * lebih kecil dari tahun berjalan
+     * jika belum ada data historis.
+     */
+
+    if (
+        !existingYears.length
+    ) {
+
+        startYear =
+            currentYear;
+
     }
 
 
     /*
-     * TAHUN PADA FORM
+     * ======================================================
+     * FILTER TAHUN
+     * ======================================================
+     *
+     * Tambahkan tahun historis + tahun berjalan
+     * + tahun mendatang.
+     *
+     * Future range dibuat dinamis.
+     *
+     * Tidak ada angka "2028" yang ditanam
+     * dalam kode.
+     */
+
+    if (filterSelect) {
+
+        const selectedValue =
+            filterSelect.value;
+
+
+        filterSelect.innerHTML = `
+            <option value="">
+                Semua Tahun
+            </option>
+        `;
+
+
+        /*
+         * Tampilkan tahun historis sampai
+         * beberapa tahun ke depan.
+         *
+         * Setiap tahun aplikasi berjalan,
+         * range ikut bergerak otomatis.
+         */
+
+        const futureYears =
+            10;
+
+
+        const endYear =
+            Math.max(
+                currentYear +
+                futureYears,
+
+                existingYears.length
+                    ? Math.max(
+                        ...existingYears
+                    )
+                    : currentYear
+            );
+
+
+        for (
+            let year = startYear;
+            year <= endYear;
+            year++
+        ) {
+
+            filterSelect.innerHTML += `
+                <option value="${year}">
+                    ${year}
+                </option>
+            `;
+
+        }
+
+
+        /*
+         * Kembalikan pilihan sebelumnya
+         * jika masih tersedia.
+         */
+
+        if (
+            selectedValue &&
+            [...filterSelect.options]
+                .some(function(option) {
+
+                    return (
+                        option.value ===
+                        selectedValue
+                    );
+
+                })
+        ) {
+
+            filterSelect.value =
+                selectedValue;
+
+        }
+
+    }
+
+
+    /*
+     * ======================================================
+     * FORM PENILAIAN
+     * ======================================================
      */
 
     if (formSelect) {
 
-        formSelect.innerHTML = "";
+        const selectedValue =
+            formSelect.value;
+
+
+        formSelect.innerHTML =
+            "";
+
+
+        const futureYears =
+            10;
+
+
+        const endYear =
+            Math.max(
+                currentYear +
+                futureYears,
+
+                existingYears.length
+                    ? Math.max(
+                        ...existingYears
+                    )
+                    : currentYear
+            );
 
 
         for (
-            let i = tahun - 2;
-            i <= tahun + 2;
-            i++
+            let year = startYear;
+            year <= endYear;
+            year++
         ) {
 
             formSelect.innerHTML += `
                 <option
-                    value="${i}"
-                    ${i === tahun ? "selected" : ""}
+                    value="${year}"
+                    ${
+                        year === currentYear
+                            ? "selected"
+                            : ""
+                    }
                 >
-                    ${i}
+                    ${year}
                 </option>
             `;
+
         }
+
+
+        /*
+         * Jika sebelumnya sedang Edit,
+         * pertahankan tahun yang sedang diedit.
+         */
+
+        if (
+            selectedValue &&
+            [...formSelect.options]
+                .some(function(option) {
+
+                    return (
+                        option.value ===
+                        selectedValue
+                    );
+
+                })
+        ) {
+
+            formSelect.value =
+                selectedValue;
+
+        }
+
     }
 
 }
-
 
 /* ==========================================================
  * LOAD ANGGOTA
