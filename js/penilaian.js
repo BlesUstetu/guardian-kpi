@@ -81,15 +81,9 @@ let penilaianEditId = null;
 
 async function initPenilaian() {
 
-    /*
-     * Pastikan mode awal = BARU.
-     */
-
     penilaianEditId = null;
 
     clearPenilaianForm();
-
-    loadPenilaianTahun();
 
     await Promise.all([
 
@@ -101,8 +95,14 @@ async function initPenilaian() {
 
     ]);
 
-}
+    /*
+     * Setelah data penilaian tersedia,
+     * baru bangun dropdown tahun.
+     */
 
+    loadPenilaianTahun();
+
+}
 
 /* ==========================================================
  * LOAD TAHUN DINAMIS
