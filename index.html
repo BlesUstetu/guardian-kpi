@@ -1645,6 +1645,140 @@ async function guardianSubmitPin() {
 
 }
 
+/* ======================================================
+   UBAH PIN ADMIN
+====================================================== */
+
+function guardianChangeAdminPin() {
+
+    const oldPin =
+        window.prompt(
+            "Masukkan PIN Admin lama:"
+        );
+
+    if (oldPin === null) {
+        return;
+    }
+
+    if (!guardianValidPin(oldPin)) {
+
+        alert(
+            "PIN lama harus terdiri dari 4–12 digit."
+        );
+
+        return;
+    }
+
+
+    const newPin =
+        window.prompt(
+            "Masukkan PIN Admin baru (4–12 digit):"
+        );
+
+    if (newPin === null) {
+        return;
+    }
+
+
+    if (!guardianValidPin(newPin)) {
+
+        alert(
+            "PIN baru harus terdiri dari 4–12 digit."
+        );
+
+        return;
+    }
+
+
+    const confirmPin =
+        window.prompt(
+            "Konfirmasi PIN Admin baru:"
+        );
+
+    if (confirmPin === null) {
+        return;
+    }
+
+
+    if (newPin !== confirmPin) {
+
+        alert(
+            "Konfirmasi PIN baru tidak sama."
+        );
+
+        return;
+    }
+
+
+    if (
+        typeof google === "undefined" ||
+        !google.script ||
+        !google.script.run
+    ) {
+
+        alert(
+            "Koneksi ke server Admin PIN tidak tersedia."
+        );
+
+        return;
+    }
+
+
+    google.script.run
+
+        .withSuccessHandler(
+            function(result) {
+
+                if (
+                    result &&
+                    result.success
+                ) {
+
+                    alert(
+                        result.message ||
+                        "PIN Admin berhasil diubah."
+                    );
+
+
+                    sessionStorage.removeItem(
+                        GUARDIAN_SESSION_KEY
+                    );
+
+
+                    guardianLoadPage(
+                        "dashboard"
+                    );
+
+                    return;
+                }
+
+
+                alert(
+                    result?.message ||
+                    "Gagal mengubah PIN Admin."
+                );
+
+            }
+        )
+
+        .withFailureHandler(
+            function(err) {
+
+                alert(
+                    err?.message ||
+                    "Gagal mengubah PIN Admin."
+                );
+
+            }
+        )
+
+        .changeAdminPin(
+            oldPin,
+            newPin
+        );
+
+}
+    
 
 function guardianClosePinModal() {
 
@@ -1923,6 +2057,9 @@ window.guardianLoadPage =
 
 window.guardianRequestSettings =
     guardianRequestSettings;
+
+window.guardianChangeAdminPin =
+    guardianChangeAdminPin;
 
 window.guardianLockSettings =
     guardianLockSettings;
