@@ -541,20 +541,63 @@ const API = {
 
     async deletePenilaian(id) {
 
-        return this.post({
+    return this.post({
 
-            action:
-                "deletePenilaian",
+        action: "deletePenilaian",
 
-            id:
-                id
+        id: id
 
-        });
+    });
 
-    }
+},
+
+
+/* ======================================================
+ * ADMIN PIN
+ * ====================================================== */
+
+async verifyAdminPin(pin) {
+
+    return this.post({
+
+        action: "verifyAdminPin",
+
+        pin: pin
+
+    });
+
+},
+
+
+async adminPinStatus() {
+
+    return this.post({
+
+        action: "adminPinStatus"
+
+    });
+
+},
+
+
+async changeAdminPin(
+    oldPin,
+    newPin
+) {
+
+    return this.post({
+
+        action: "changeAdminPin",
+
+        oldPin: oldPin,
+
+        newPin: newPin
+
+    });
+
+ }
 
 };
-
 
 /* ==========================================================
  * LOCK OBJECT
