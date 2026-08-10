@@ -1322,9 +1322,10 @@ function guardianSettingsUnlocked() {
 
 /* ======================================================
    SETTINGS ACCESS
+   ADMIN PIN VIA REST API
 ====================================================== */
 
-function guardianRequestSettings() {
+async function guardianRequestSettings() {
 
     const modalElement =
         document.getElementById(
@@ -1335,14 +1336,6 @@ function guardianRequestSettings() {
     if (!modalElement) {
         return;
     }
-
-
-    const hasPin =
-        Boolean(
-            localStorage.getItem(
-                GUARDIAN_PIN_KEY
-            )
-        );
 
 
     const title =
@@ -1376,12 +1369,76 @@ function guardianRequestSettings() {
         );
 
 
-    error.classList.add(
-        "d-none"
-    );
+    /*
+     * PIN TIDAK dibuat oleh user.
+     *
+     * Selalu gunakan PIN Admin
+     * dari server.
+     */
 
-    error.textContent =
-        "";
+    if (title) {
+
+        title.textContent =
+            "Settings Terkunci";
+
+    }
+
+
+    if (message) {
+
+        message.textContent =
+            "Masukkan PIN Admin untuk membuka Settings.";
+
+    }
+
+
+    /*
+     * Sembunyikan form buat PIN.
+     */
+
+    if (create) {
+
+        create.classList.add(
+            "d-none"
+        );
+
+    }
+
+
+    /*
+     * Tampilkan form PIN Admin.
+     */
+
+    if (enter) {
+
+        enter.classList.remove(
+            "d-none"
+        );
+
+    }
+
+
+    if (submit) {
+
+        submit.textContent =
+            "Buka Settings";
+
+        submit.disabled =
+            false;
+
+    }
+
+
+    if (error) {
+
+        error.textContent =
+            "";
+
+        error.classList.add(
+            "d-none"
+        );
+
+    }
 
 
     [
@@ -1390,7 +1447,7 @@ function guardianRequestSettings() {
         "guardianPinInput"
     ]
     .forEach(
-        id => {
+        function(id) {
 
             const input =
                 document.getElementById(
@@ -1398,80 +1455,159 @@ function guardianRequestSettings() {
                 );
 
             if (input) {
-                input.value = "";
+
+                input.value =
+                    "";
+
             }
 
         }
     );
 
 
-    if (!hasPin) {
+    /*
+     * Pastikan API tersedia.
+     */
 
-        title.textContent =
-            "Buat PIN Settings";
+    if (
+        typeof API ===
+        "undefined"
+    ) {
 
-        message.textContent =
-            "Buat PIN 4–12 digit untuk melindungi Settings.";
+        if (error) {
 
-        create.classList.remove(
-            "d-none"
-        );
+            error.textContent =
+                "API Guardian KPI tidak tersedia.";
 
-        enter.classList.add(
-            "d-none"
-        );
+            error.classList.remove(
+                "d-none"
+            );
 
-        submit.textContent =
-            "Simpan PIN & Buka";
+        }
 
-    } else {
-
-        title.textContent =
-            "Settings Terkunci";
-
-        message.textContent =
-            "Masukkan PIN untuk membuka Settings.";
-
-        create.classList.add(
-            "d-none"
-        );
-
-        enter.classList.remove(
-            "d-none"
-        );
-
-        submit.textContent =
-            "Buka Settings";
+        return;
 
     }
 
 
-    const modal =
-        bootstrap.Modal.getOrCreateInstance(
-            modalElement
+    try {
+
+        /*
+         * Cek status PIN Admin.
+         */
+
+        const result =
+            await API.post({
+
+                action:
+                    "adminPinStatus"
+
+            });
+
+
+        console.log(
+            "ADMIN PIN STATUS:",
+            result
         );
 
 
-    modal.show();
+        if (
+            !result ||
+            !result.success
+        ) {
+
+            if (error) {
+
+                error.textContent =
+                    result?.message ||
+                    "PIN Admin belum tersedia.";
+
+                error.classList.remove(
+                    "d-none"
+                );
+
+            }
+
+            return;
+
+        }
 
 
-    setTimeout(
-        function() {
+        /*
+         * PIN belum dikonfigurasi.
+         */
 
-            document
-                .getElementById(
-                    hasPin
-                        ? "guardianPinInput"
-                        : "guardianNewPin"
-                )
-                ?.focus();
+        if (
+            !result.data?.configured
+        ) {
 
-        },
-        300
-    );
+            if (error) {
+
+                error.textContent =
+                    "PIN Admin belum dikonfigurasi.";
+
+                error.classList.remove(
+                    "d-none"
+                );
+
+            }
+
+            return;
+
+        }
+
+
+        /*
+         * Tampilkan modal.
+         */
+
+        const modal =
+            bootstrap.Modal.getOrCreateInstance(
+                modalElement
+            );
+
+
+        modal.show();
+
+
+        setTimeout(
+            function() {
+
+                document
+                    .getElementById(
+                        "guardianPinInput"
+                    )
+                    ?.focus();
+
+            },
+            300
+        );
+
+    }
+
+    catch (err) {
+
+        console.error(
+            "ADMIN PIN STATUS ERROR:",
+            err
+        );
+
+
+        if (error) {
+
+            error.textContent =
+                err?.message ||
+                "Gagal menghubungi server Admin PIN.";
+
+            error.classList.remove(
+                "d-none"
+            );
+
+        }
+
+    }
 
 }
-
 
 /* ======================================================
    SUBMIT PIN
