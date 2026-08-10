@@ -1815,6 +1815,39 @@ async function guardianSubmitPin() {
 }
 
 /* ======================================================
+   CLOSE ADMIN PIN MODAL
+====================================================== */
+
+function guardianClosePinModal() {
+
+    const modalElement =
+        document.getElementById(
+            "guardianPinModal"
+        );
+
+
+    if (!modalElement) {
+
+        return;
+
+    }
+
+
+    const modal =
+        bootstrap.Modal.getInstance(
+            modalElement
+        );
+
+
+    if (modal) {
+
+        modal.hide();
+
+    }
+
+}
+
+/* ======================================================
    UBAH PIN ADMIN
    GitHub Pages → REST API → Apps Script
 ====================================================== */
