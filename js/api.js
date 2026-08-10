@@ -353,6 +353,7 @@ async getPenilaian() {
 
 },
 
+
 async getPenilaianById(id) {
 
     return this.get(
@@ -363,6 +364,7 @@ async getPenilaianById(id) {
     );
 
 },
+
 
 async savePenilaian(data) {
 
@@ -375,6 +377,7 @@ async savePenilaian(data) {
     });
 
 },
+
 
 async updatePenilaian(id, data) {
 
@@ -390,6 +393,7 @@ async updatePenilaian(id, data) {
 
 },
 
+
 async deletePenilaian(id) {
 
     return this.post({
@@ -400,9 +404,55 @@ async deletePenilaian(id) {
 
     });
 
-}
+},
 
-};
+
+/* ======================================================
+ * EXPORT PDF PENILAIAN
+ *
+ * id:
+ *
+ * P0001|9|2026
+ * ====================================================== */
+
+async exportPenilaianPDF(id) {
+
+    return this.post({
+
+        action: "exportPenilaianPDF",
+
+        id: id
+
+    });
+
+},
+
+
+/* ======================================================
+ * EXPORT EXCEL PENILAIAN
+ *
+ * filter:
+ *
+ * {
+ *     bulan: "",
+ *     tahun: "",
+ *     status: "",
+ *     anggotaId: ""
+ * }
+ *
+ * ====================================================== */
+
+async exportPenilaianExcel(filter = {}) {
+
+    return this.post({
+
+        action: "exportPenilaianExcel",
+
+        filter: filter
+
+    });
+
+}
 
 /* ==========================================================
  * LOCK OBJECT
