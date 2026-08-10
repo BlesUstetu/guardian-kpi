@@ -1,5 +1,444 @@
-<div class="container-fluid">
+<!--
+==========================================================
+ Guardian KPI Web3
+ Page : Laporan
+==========================================================
+-->
 
-<h3>Halaman Dalam Pengembangan</h3>
+<div class="container-fluid py-3">
+
+    <!-- HEADER -->
+    <div
+        class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+
+        <div>
+
+            <h3 class="mb-1">
+                <i
+                    class="bi bi-file-earmark-bar-graph me-2 text-info">
+                </i>
+
+                Laporan Penilaian KPI
+            </h3>
+
+            <div class="text-secondary">
+                Laporan dan export data penilaian anggota Security.
+            </div>
+
+        </div>
+
+
+        <div class="d-flex gap-2">
+
+            <button
+                type="button"
+                id="btnLaporanRefresh"
+                class="btn btn-outline-info">
+
+                <i class="bi bi-arrow-clockwise"></i>
+
+                Refresh
+
+            </button>
+
+
+            <button
+                type="button"
+                id="btnLaporanPDF"
+                class="btn btn-danger">
+
+                <i class="bi bi-file-earmark-pdf me-1"></i>
+
+                Export PDF
+
+            </button>
+
+
+            <button
+                type="button"
+                id="btnLaporanCSV"
+                class="btn btn-success">
+
+                <i class="bi bi-file-earmark-spreadsheet me-1"></i>
+
+                Export Sheet
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- FILTER -->
+    <div class="card border-secondary mb-4">
+
+        <div class="card-body">
+
+            <div class="row g-3">
+
+                <!-- SEARCH -->
+
+                <div class="col-12 col-lg-4">
+
+                    <label
+                        for="laporanSearch"
+                        class="form-label">
+
+                        Cari Anggota
+
+                    </label>
+
+                    <div class="input-group">
+
+                        <span class="input-group-text">
+
+                            <i
+                                class="bi bi-search">
+                            </i>
+
+                        </span>
+
+                        <input
+                            type="text"
+                            id="laporanSearch"
+                            class="form-control"
+                            placeholder="Nama / ID / Group...">
+
+                    </div>
+
+                </div>
+
+
+                <!-- BULAN -->
+
+                <div class="col-12 col-md-4 col-lg-2">
+
+                    <label
+                        for="laporanBulan"
+                        class="form-label">
+
+                        Bulan
+
+                    </label>
+
+                    <select
+                        id="laporanBulan"
+                        class="form-select">
+
+                    </select>
+
+                </div>
+
+
+                <!-- TAHUN -->
+
+                <div class="col-12 col-md-4 col-lg-2">
+
+                    <label
+                        for="laporanTahun"
+                        class="form-label">
+
+                        Tahun
+
+                    </label>
+
+                    <select
+                        id="laporanTahun"
+                        class="form-select">
+
+                        <option value="">
+                            Semua Tahun
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- STATUS -->
+
+                <div class="col-12 col-md-4 col-lg-2">
+
+                    <label
+                        for="laporanStatus"
+                        class="form-label">
+
+                        Status
+
+                    </label>
+
+                    <select
+                        id="laporanStatus"
+                        class="form-select">
+
+                        <option value="">
+                            Semua Status
+                        </option>
+
+                        <option value="draft">
+                            Draft
+                        </option>
+
+                        <option value="submitted">
+                            Submitted
+                        </option>
+
+                        <option value="approved">
+                            Approved
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- INFO -->
+
+                <div class="col-12 col-lg-2 d-flex align-items-end">
+
+                    <div
+                        class="small text-secondary pb-2">
+
+                        Filter otomatis.
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- SUMMARY -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-12 col-md-6">
+
+            <div class="card border-secondary h-100">
+
+                <div class="card-body">
+
+                    <div class="text-secondary small">
+                        Total Data
+                    </div>
+
+                    <div
+                        id="laporanTotalData"
+                        class="fs-3 fw-bold text-info">
+
+                        0
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-12 col-md-6">
+
+            <div class="card border-secondary h-100">
+
+                <div class="card-body">
+
+                    <div class="text-secondary small">
+                        Rata-rata Nilai
+                    </div>
+
+                    <div
+                        id="laporanRataRata"
+                        class="fs-3 fw-bold text-success">
+
+                        0.00
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- TABLE -->
+    <div class="card border-secondary">
+
+        <div class="card-header bg-transparent">
+
+            <div class="d-flex justify-content-between">
+
+                <strong>
+
+                    <i
+                        class="bi bi-table me-2 text-info">
+                    </i>
+
+                    Data Penilaian
+
+                </strong>
+
+                <span
+                    class="small text-secondary">
+
+                    Read Only
+
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="card-body p-0">
+
+            <div
+                class="table-responsive">
+
+                <table
+                    class="table table-dark table-hover align-middle mb-0">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                ID
+                            </th>
+
+                            <th>
+                                Nama Anggota
+                            </th>
+
+                            <th>
+                                Group
+                            </th>
+
+                            <th>
+                                Bulan
+                            </th>
+
+                            <th>
+                                Tahun
+                            </th>
+
+                            <th>
+                                Nilai
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                Anggota ID
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody
+                        id="laporanTableBody">
+
+                        <tr>
+
+                            <td
+                                colspan="8"
+                                class="text-center py-5">
+
+                                <span
+                                    class="spinner-border spinner-border-sm me-2">
+                                </span>
+
+                                Memuat data...
+
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
 
 </div>
+
+
+<style>
+
+    /*
+     * ==================================================
+     * LAPORAN LOCAL STYLE
+     * Tidak mengubah CSS global.
+     * ==================================================
+     */
+
+    #laporanTableBody td,
+    #laporanTableBody th {
+
+        white-space:
+            nowrap;
+
+    }
+
+
+    .laporan-nilai {
+
+        display:
+            inline-block;
+
+        min-width:
+            58px;
+
+        text-align:
+            center;
+
+        padding:
+            4px 8px;
+
+        border-radius:
+            6px;
+
+        background:
+            rgba(
+                25,
+                135,
+                84,
+                .20
+            );
+
+        color:
+            #20c997;
+
+        font-weight:
+            700;
+
+    }
+
+
+    @media print {
+
+        body {
+
+            background:
+                #ffffff !important;
+
+        }
+
+    }
+
+</style>
