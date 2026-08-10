@@ -1813,28 +1813,41 @@ async function guardianSubmitPin() {
     }
 
 }
+
 /* ======================================================
    UBAH PIN ADMIN
+   GitHub Pages → REST API → Apps Script
 ====================================================== */
 
-function guardianChangeAdminPin() {
+async function guardianChangeAdminPin() {
 
     const oldPin =
         window.prompt(
             "Masukkan PIN Admin lama:"
         );
 
-    if (oldPin === null) {
+
+    if (
+        oldPin === null
+    ) {
+
         return;
+
     }
 
-    if (!guardianValidPin(oldPin)) {
+
+    if (
+        !guardianValidPin(
+            oldPin
+        )
+    ) {
 
         alert(
             "PIN lama harus terdiri dari 4–12 digit."
         );
 
         return;
+
     }
 
 
@@ -1843,18 +1856,28 @@ function guardianChangeAdminPin() {
             "Masukkan PIN Admin baru (4–12 digit):"
         );
 
-    if (newPin === null) {
+
+    if (
+        newPin === null
+    ) {
+
         return;
+
     }
 
 
-    if (!guardianValidPin(newPin)) {
+    if (
+        !guardianValidPin(
+            newPin
+        )
+    ) {
 
         alert(
             "PIN baru harus terdiri dari 4–12 digit."
         );
 
         return;
+
     }
 
 
@@ -1863,116 +1886,130 @@ function guardianChangeAdminPin() {
             "Konfirmasi PIN Admin baru:"
         );
 
-    if (confirmPin === null) {
+
+    if (
+        confirmPin === null
+    ) {
+
         return;
+
     }
 
 
-    if (newPin !== confirmPin) {
+    if (
+        newPin !==
+        confirmPin
+    ) {
 
         alert(
             "Konfirmasi PIN baru tidak sama."
         );
 
         return;
+
     }
 
 
     if (
-        typeof google === "undefined" ||
-        !google.script ||
-        !google.script.run
+        typeof API ===
+        "undefined"
     ) {
 
         alert(
-            "Koneksi ke server Admin PIN tidak tersedia."
+            "API Guardian KPI tidak tersedia."
         );
 
         return;
+
     }
 
 
-    google.script.run
+    try {
 
-        .withSuccessHandler(
-            function(result) {
-
-                if (
-                    result &&
-                    result.success
-                ) {
-
-                    alert(
-                        result.message ||
-                        "PIN Admin berhasil diubah."
-                    );
-
-
-                    sessionStorage.removeItem(
-                        GUARDIAN_SESSION_KEY
-                    );
-
-
-                    guardianLoadPage(
-                        "dashboard"
-                    );
-
-                    return;
-                }
-
-
-                alert(
-                    result?.message ||
-                    "Gagal mengubah PIN Admin."
-                );
-
-            }
-        )
-
-        .withFailureHandler(
-            function(err) {
-
-                alert(
-                    err?.message ||
-                    "Gagal mengubah PIN Admin."
-                );
-
-            }
-        )
-
-        .changeAdminPin(
-            oldPin,
-            newPin
+        console.log(
+            "========== CHANGE ADMIN PIN =========="
         );
+
+
+        const result =
+            await API.post({
+
+                action:
+                    "changeAdminPin",
+
+                oldPin:
+                    oldPin,
+
+                newPin:
+                    newPin
+
+            });
+
+
+        console.log(
+            "CHANGE PIN RESPONSE:",
+            result
+        );
+
+
+        if (
+            !result ||
+            !result.success
+        ) {
+
+            alert(
+
+                result?.message ||
+                "Gagal mengubah PIN Admin."
+
+            );
+
+            return;
+
+        }
+
+
+        /*
+         * PIN berhasil diubah.
+         */
+
+        sessionStorage.removeItem(
+            GUARDIAN_SESSION_KEY
+        );
+
+
+        alert(
+
+            result.message ||
+            "PIN Admin berhasil diubah."
+
+        );
+
+
+        guardianLoadPage(
+            "dashboard"
+        );
+
+    }
+
+    catch (err) {
+
+        console.error(
+            "CHANGE ADMIN PIN ERROR:",
+            err
+        );
+
+
+        alert(
+
+            err?.message ||
+            "Gagal menghubungi server Admin PIN."
+
+        );
+
+    }
 
 }
-    
-
-function guardianClosePinModal() {
-
-    const element =
-        document.getElementById(
-            "guardianPinModal"
-        );
-
-
-    if (!element) {
-        return;
-    }
-
-
-    const modal =
-        bootstrap.Modal.getInstance(
-            element
-        );
-
-
-    if (modal) {
-        modal.hide();
-    }
-
-}
-
 
 /* ======================================================
    SETTINGS LOCK
