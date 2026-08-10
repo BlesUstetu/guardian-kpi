@@ -1610,10 +1610,17 @@ async function guardianRequestSettings() {
 }
 
 /* ======================================================
-   SUBMIT PIN
+   SUBMIT ADMIN PIN
+   GitHub Pages → REST API → Apps Script
 ====================================================== */
 
 async function guardianSubmitPin() {
+
+    const input =
+        document.getElementById(
+            "guardianPinInput"
+        );
+
 
     const error =
         document.getElementById(
@@ -1621,114 +1628,42 @@ async function guardianSubmitPin() {
         );
 
 
+    const submit =
+        document.getElementById(
+            "guardianPinSubmit"
+        );
+
+
+    const pin =
+        input
+            ? input.value.trim()
+            : "";
+
+
     function showError(
         message
     ) {
 
+        if (!error) {
+
+            alert(
+                message
+            );
+
+            return;
+
+        }
+
+
         error.textContent =
             message;
+
 
         error.classList.remove(
             "d-none"
         );
 
     }
-
-
-    const stored =
-        localStorage.getItem(
-            GUARDIAN_PIN_KEY
-        );
-
-
-    /* FIRST TIME */
-
-    if (!stored) {
-
-        const pin =
-            document.getElementById(
-                "guardianNewPin"
-            )
-            ?.value
-            .trim();
-
-
-        const confirm =
-            document.getElementById(
-                "guardianConfirmPin"
-            )
-            ?.value
-            .trim();
-
-
-        if (
-            !guardianValidPin(
-                pin
-            )
-        ) {
-
-            showError(
-                "PIN harus 4–12 digit."
-            );
-
-            return;
-
-        }
-
-
-        if (
-            pin !==
-            confirm
-        ) {
-
-            showError(
-                "Konfirmasi PIN tidak sama."
-            );
-
-            return;
-
-        }
-
-
-        const hash =
-            await guardianHash(
-                pin
-            );
-
-
-        localStorage.setItem(
-            GUARDIAN_PIN_KEY,
-            hash
-        );
-
-
-        sessionStorage.setItem(
-            GUARDIAN_SESSION_KEY,
-            "1"
-        );
-
-
-        guardianClosePinModal();
-
-
-        guardianLoadPage(
-            "setting"
-        );
-
-
-        return;
-
-    }
-
-
-    /* EXISTING PIN */
-
-    const pin =
-        document.getElementById(
-            "guardianPinInput"
-        )
-        ?.value
-        .trim();
 
 
     if (
@@ -1738,27 +1673,21 @@ async function guardianSubmitPin() {
     ) {
 
         showError(
-            "Masukkan PIN 4–12 digit."
+            "PIN Admin harus terdiri dari 4–12 digit."
         );
 
         return;
 
     }
-
-
-    const hash =
-        await guardianHash(
-            pin
-        );
 
 
     if (
-        hash !==
-        stored
+        typeof API ===
+        "undefined"
     ) {
 
         showError(
-            "PIN salah."
+            "API Guardian KPI tidak tersedia."
         );
 
         return;
@@ -1766,21 +1695,124 @@ async function guardianSubmitPin() {
     }
 
 
-    sessionStorage.setItem(
-        GUARDIAN_SESSION_KEY,
-        "1"
-    );
+    if (submit) {
+
+        submit.disabled =
+            true;
+
+        submit.textContent =
+            "Memverifikasi...";
+
+    }
 
 
-    guardianClosePinModal();
+    try {
+
+        console.log(
+            "========== VERIFY ADMIN PIN =========="
+        );
 
 
-    guardianLoadPage(
-        "setting"
-    );
+        const result =
+            await API.post({
+
+                action:
+                    "verifyAdminPin",
+
+                pin:
+                    pin
+
+            });
+
+
+        console.log(
+            "VERIFY ADMIN PIN RESPONSE:",
+            result
+        );
+
+
+        if (
+            !result ||
+            !result.success
+        ) {
+
+            showError(
+
+                result?.message ||
+                "PIN Admin salah."
+
+            );
+
+            return;
+
+        }
+
+
+        /*
+         * PIN benar.
+         *
+         * Yang disimpan hanya status sesi.
+         * PIN TIDAK disimpan di browser.
+         */
+
+        sessionStorage.setItem(
+
+            GUARDIAN_SESSION_KEY,
+
+            "1"
+
+        );
+
+
+        if (input) {
+
+            input.value =
+                "";
+
+        }
+
+
+        guardianClosePinModal();
+
+
+        guardianLoadPage(
+            "setting"
+        );
+
+    }
+
+    catch (err) {
+
+        console.error(
+            "VERIFY ADMIN PIN ERROR:",
+            err
+        );
+
+
+        showError(
+
+            err?.message ||
+            "Gagal menghubungi server Admin PIN."
+
+        );
+
+    }
+
+    finally {
+
+        if (submit) {
+
+            submit.disabled =
+                false;
+
+            submit.textContent =
+                "Buka Settings";
+
+        }
+
+    }
 
 }
-
 /* ======================================================
    UBAH PIN ADMIN
 ====================================================== */
