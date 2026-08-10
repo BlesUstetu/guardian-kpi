@@ -1583,9 +1583,14 @@ function gkpIsSettingsUnlocked() {
 
 /* ==========================================================
    CHANGE ADMIN PIN
+   GitHub Pages → REST API → Apps Script
 ========================================================== */
 
-function guardianChangeAdminPin() {
+async function guardianChangeAdminPin() {
+
+    /*
+     * PIN LAMA
+     */
 
     const oldPin =
         window.prompt(
@@ -1603,9 +1608,7 @@ function guardianChangeAdminPin() {
 
 
     if (
-        !gkpValidPin(
-            oldPin
-        )
+        !gkpValidPin(oldPin)
     ) {
 
         alert(
@@ -1616,6 +1619,10 @@ function guardianChangeAdminPin() {
 
     }
 
+
+    /*
+     * PIN BARU
+     */
 
     const newPin =
         window.prompt(
@@ -1633,9 +1640,7 @@ function guardianChangeAdminPin() {
 
 
     if (
-        !gkpValidPin(
-            newPin
-        )
+        !gkpValidPin(newPin)
     ) {
 
         alert(
@@ -1646,6 +1651,10 @@ function guardianChangeAdminPin() {
 
     }
 
+
+    /*
+     * KONFIRMASI
+     */
 
     const confirmPin =
         window.prompt(
@@ -1663,8 +1672,7 @@ function guardianChangeAdminPin() {
 
 
     if (
-        newPin !==
-        confirmPin
+        newPin !== confirmPin
     ) {
 
         alert(
@@ -1676,15 +1684,17 @@ function guardianChangeAdminPin() {
     }
 
 
+    /*
+     * PASTIKAN API TERSEDIA
+     */
+
     if (
-        typeof google ===
-        "undefined" ||
-        !google.script ||
-        !google.script.run
+        typeof API ===
+        "undefined"
     ) {
 
         alert(
-            "Koneksi ke server Admin PIN tidak tersedia."
+            "API Guardian KPI tidak tersedia."
         );
 
         return;
@@ -1692,76 +1702,118 @@ function guardianChangeAdminPin() {
     }
 
 
-    google.script.run
+    try {
 
-        .withSuccessHandler(
-            function (result) {
+        console.log(
+            "================================"
+        );
 
-                if (
-                    result &&
-                    result.success
-                ) {
+        console.log(
+            "CHANGE ADMIN PIN"
+        );
 
-                    sessionStorage.removeItem(
-                        GKP_SETTINGS_SESSION
-                    );
-
-
-                    alert(
-                        result.message ||
-                        "PIN Admin berhasil diubah."
-                    );
+        console.log(
+            "Mengirim permintaan ke server..."
+        );
 
 
-                    gkpLoadPage(
-                        "dashboard"
-                    );
+        /*
+         * REST API
+         *
+         * PIN dikirim ke Apps Script
+         * melalui endpoint doPost().
+         */
+
+        const result =
+            await API.post({
+
+                action:
+                    "changeAdminPin",
+
+                oldPin:
+                    oldPin,
+
+                newPin:
+                    newPin
+
+            });
 
 
-                    return;
-
-                }
-
-
-                alert(
-
-                    result?.message ||
-                    "Gagal mengubah PIN Admin."
-
-                );
-
-            }
-        )
-
-        .withFailureHandler(
-            function (err) {
-
-                console.error(
-                    "changeAdminPin:",
-                    err
-                );
+        console.log(
+            "CHANGE PIN RESPONSE:",
+            result
+        );
 
 
-                alert(
+        /*
+         * RESPONSE GAGAL
+         */
 
-                    err?.message ||
-                    "Gagal mengubah PIN Admin."
+        if (
+            !result ||
+            !result.success
+        ) {
 
-                );
+            alert(
 
-            }
-        )
+                result?.message ||
+                "Gagal mengubah PIN Admin."
 
-        .changeAdminPin(
+            );
 
-            oldPin,
+            return;
 
-            newPin
+        }
+
+
+        /*
+         * BERHASIL
+         *
+         * Hapus sesi Settings lama.
+         */
+
+        sessionStorage.removeItem(
+            GKP_SETTINGS_SESSION
+        );
+
+
+        alert(
+
+            result.message ||
+            "PIN Admin berhasil diubah."
 
         );
 
-}
 
+        /*
+         * Kembali ke Dashboard.
+         */
+
+        gkpLoadPage(
+            "dashboard"
+        );
+
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Guardian KPI changeAdminPin:",
+            error
+        );
+
+
+        alert(
+
+            error?.message ||
+            "Gagal menghubungi server Admin PIN."
+
+        );
+
+    }
+
+}
 
 /* ==========================================================
    GLOBAL EXPORT
@@ -2712,27 +2764,101 @@ function gkpSubmitPin() {
     }
 
 
+    /* ==========================================================
+ * VERIFY ADMIN PIN VIA REST API
+ * GitHub Pages → API.post() → Code.gs
+ * ========================================================== */
+
+try {
+
+    const result = await API.post({
+
+        action: "verifyAdminPin",
+
+        pin: pin
+
+    });
+
+    console.log(
+        "VERIFY ADMIN PIN RESPONSE:",
+        result
+    );
+
+
     /*
-     * Pastikan Apps Script tersedia.
+     * PIN SALAH / SERVER MENOLAK
      */
 
     if (
-        typeof google ===
-            "undefined" ||
-
-        !google.script ||
-
-        !google.script.run
+        !result ||
+        !result.success
     ) {
 
         gkpShowPinError(
-            "Koneksi ke server Admin PIN tidak tersedia."
+
+            result?.message ||
+            "PIN Admin salah."
+
         );
 
         return;
 
     }
 
+
+    /*
+     * PIN BENAR
+     *
+     * Hanya simpan status sesi.
+     * PIN TIDAK disimpan di browser.
+     */
+
+    sessionStorage.setItem(
+
+        GKP_SETTINGS_SESSION,
+
+        "1"
+
+    );
+
+
+    if (input) {
+
+        input.value = "";
+
+    }
+
+
+    gkpClosePinModal();
+
+
+    /*
+     * Buka Settings.
+     */
+
+    await gkpLoadPage(
+        "setting"
+    );
+
+
+}
+
+catch (error) {
+
+    console.error(
+        "VERIFY ADMIN PIN ERROR:",
+        error
+    );
+
+
+    gkpShowPinError(
+
+        error?.message ||
+        "Gagal menghubungi server Admin PIN."
+
+    );
+
+ }
 
     const submit =
         document.getElementById(
