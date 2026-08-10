@@ -11,9 +11,11 @@
 
 "use strict";
 
+
 const API = {
 
     BASE_URL: CONFIG.API_URL,
+
 
     /* ======================================================
      * REQUEST (GET)
@@ -23,22 +25,49 @@ const API = {
 
         try {
 
-            console.log("================================");
-            console.log("API REQUEST :", this.BASE_URL + url);
-            console.log("OPTIONS :", options);
-
-            const response = await fetch(
-
-                this.BASE_URL + url,
-                {
-                    ...options,
-                    cache: "no-store",
-                    redirect: "follow"
-                }
+            console.log(
+                "================================"
             );
 
-            console.log("STATUS :", response.status);
-            console.log("URL FINAL :", response.url);
+            console.log(
+                "API REQUEST :",
+                this.BASE_URL + url
+            );
+
+            console.log(
+                "OPTIONS :",
+                options
+            );
+
+
+            const response =
+                await fetch(
+
+                    this.BASE_URL + url,
+
+                    {
+                        ...options,
+
+                        cache:
+                            "no-store",
+
+                        redirect:
+                            "follow"
+                    }
+
+                );
+
+
+            console.log(
+                "STATUS :",
+                response.status
+            );
+
+            console.log(
+                "URL FINAL :",
+                response.url
+            );
+
 
             if (!response.ok) {
 
@@ -48,29 +77,40 @@ const API = {
 
             }
 
-            const json = await response.json();
 
-            console.log("POST RESPONSE :", json);
+            const json =
+                await response.json();
+
+
+            console.log(
+                "POST RESPONSE :",
+                json
+            );
+
 
             return json;
 
-        }
 
+        }
         catch (err) {
 
             console.error(err);
 
+
             return {
 
-                success: false,
+                success:
+                    false,
 
-                message: err.message
+                message:
+                    err.message
 
             };
 
         }
 
     },
+
 
     /* ======================================================
      * GET
@@ -80,11 +120,14 @@ const API = {
 
         return this.request(
 
-            `?action=${encodeURIComponent(action)}`
+            `?action=${encodeURIComponent(
+                action
+            )}`
 
         );
 
     },
+
 
     /* ======================================================
      * POST
@@ -94,37 +137,70 @@ const API = {
 
         try {
 
-            console.log("========== POST ==========");
-            console.log("URL :", this.BASE_URL);
-            console.log("BODY :", body);
+            console.log(
+                "========== POST =========="
+            );
 
-            const form = new URLSearchParams();
+            console.log(
+                "URL :",
+                this.BASE_URL
+            );
+
+            console.log(
+                "BODY :",
+                body
+            );
+
+
+            const form =
+                new URLSearchParams();
+
 
             form.append(
 
                 "payload",
 
-                JSON.stringify(body)
+                JSON.stringify(
+                    body
+                )
 
             );
 
-            const response = await fetch(
 
-                this.BASE_URL,
+            const response =
+                await fetch(
 
-                {
+                    this.BASE_URL,
 
-                    method: "POST",
-                    body: form,
-                    cache: "no-store",
-                    redirect: "follow"
+                    {
 
-                }
+                        method:
+                            "POST",
 
+                        body:
+                            form,
+
+                        cache:
+                            "no-store",
+
+                        redirect:
+                            "follow"
+
+                    }
+
+                );
+
+
+            console.log(
+                "POST STATUS :",
+                response.status
             );
 
-            console.log("POST STATUS :", response.status);
-            console.log("POST URL :", response.url);
+            console.log(
+                "POST URL :",
+                response.url
+            );
+
 
             if (!response.ok) {
 
@@ -136,19 +212,23 @@ const API = {
 
             }
 
+
             return await response.json();
 
-        }
 
+        }
         catch (err) {
 
             console.error(err);
 
+
             return {
 
-                success: false,
+                success:
+                    false,
 
-                message: err.message
+                message:
+                    err.message
 
             };
 
@@ -156,15 +236,19 @@ const API = {
 
     },
 
-        /* ======================================================
+
+    /* ======================================================
      * DASHBOARD
      * ====================================================== */
 
     async getDashboard() {
 
-        return this.get("dashboard");
+        return this.get(
+            "dashboard"
+        );
 
     },
+
 
     /* ======================================================
      * ANGGOTA
@@ -172,9 +256,12 @@ const API = {
 
     async getAnggota() {
 
-        return this.get("anggota");
+        return this.get(
+            "anggota"
+        );
 
     },
+
 
     async getAnggotaById(id) {
 
@@ -187,53 +274,70 @@ const API = {
 
     },
 
+
     async saveAnggota(data) {
 
         return this.post({
 
-            action: "saveAnggota",
+            action:
+                "saveAnggota",
 
-            data: data
+            data:
+                data
 
         });
 
     },
 
-    async updateAnggota(id, data) {
+
+    async updateAnggota(
+        id,
+        data
+    ) {
 
         return this.post({
 
-            action: "updateAnggota",
+            action:
+                "updateAnggota",
 
-            id: id,
+            id:
+                id,
 
-            data: data
+            data:
+                data
 
         });
 
     },
+
 
     async deleteAnggota(id) {
 
         return this.post({
 
-            action: "deleteAnggota",
+            action:
+                "deleteAnggota",
 
-            id: id
+            id:
+                id
 
         });
 
     },
 
-        /* ======================================================
+
+    /* ======================================================
      * GROUP
      * ====================================================== */
 
     async getGroup() {
 
-        return this.get("group");
+        return this.get(
+            "group"
+        );
 
     },
+
 
     async getGroupById(id) {
 
@@ -246,43 +350,57 @@ const API = {
 
     },
 
+
     async saveGroup(data) {
 
         return this.post({
 
-            action: "saveGroup",
+            action:
+                "saveGroup",
 
-            data: data
+            data:
+                data
 
         });
 
     },
 
-    async updateGroup(id, data) {
+
+    async updateGroup(
+        id,
+        data
+    ) {
 
         return this.post({
 
-            action: "updateGroup",
+            action:
+                "updateGroup",
 
-            id: id,
+            id:
+                id,
 
-            data: data
+            data:
+                data
 
         });
 
     },
+
 
     async deleteGroup(id) {
 
         return this.post({
 
-            action: "deleteGroup",
+            action:
+                "deleteGroup",
 
-            id: id
+            id:
+                id
 
         });
 
     },
+
 
     /* ======================================================
      * MASTER KPI
@@ -290,9 +408,12 @@ const API = {
 
     async getMasterKPI() {
 
-        return this.get("masterKPI");
+        return this.get(
+            "masterKPI"
+        );
 
     },
+
 
     async getMasterKPIById(id) {
 
@@ -305,154 +426,135 @@ const API = {
 
     },
 
+
     async saveMasterKPI(data) {
 
         return this.post({
 
-            action: "saveMasterKPI",
+            action:
+                "saveMasterKPI",
 
-            data: data
+            data:
+                data
 
         });
 
     },
 
-    async updateMasterKPI(id, data) {
+
+    async updateMasterKPI(
+        id,
+        data
+    ) {
 
         return this.post({
 
-            action: "updateMasterKPI",
+            action:
+                "updateMasterKPI",
 
-            id: id,
+            id:
+                id,
 
-            data: data
+            data:
+                data
 
         });
 
     },
+
 
     async deleteMasterKPI(id) {
 
         return this.post({
 
-            action: "deleteMasterKPI",
+            action:
+                "deleteMasterKPI",
 
-            id: id
+            id:
+                id
 
         });
 
     },
 
-/* ======================================================
- * PENILAIAN
- * ====================================================== */
 
-async getPenilaian() {
+    /* ======================================================
+     * PENILAIAN
+     * ====================================================== */
 
-    return this.get("penilaian");
+    async getPenilaian() {
 
-},
+        return this.get(
+            "penilaian"
+        );
 
-
-async getPenilaianById(id) {
-
-    return this.get(
-
-        "penilaian&id=" +
-        encodeURIComponent(id)
-
-    );
-
-},
+    },
 
 
-async savePenilaian(data) {
+    async getPenilaianById(id) {
 
-    return this.post({
+        return this.get(
 
-        action: "savePenilaian",
+            "penilaian&id=" +
+            encodeURIComponent(id)
 
-        data: data
+        );
 
-    });
-
-},
-
-
-async updatePenilaian(id, data) {
-
-    return this.post({
-
-        action: "updatePenilaian",
-
-        id: id,
-
-        data: data
-
-    });
-
-},
+    },
 
 
-async deletePenilaian(id) {
+    async savePenilaian(data) {
 
-    return this.post({
+        return this.post({
 
-        action: "deletePenilaian",
+            action:
+                "savePenilaian",
 
-        id: id
+            data:
+                data
 
-    });
+        });
 
-},
-
-
-/* ======================================================
- * EXPORT PDF PENILAIAN
- *
- * id:
- *
- * P0001|9|2026
- * ====================================================== */
-
-async exportPenilaianPDF(id) {
-
-    return this.post({
-
-        action: "exportPenilaianPDF",
-
-        id: id
-
-    });
-
-},
+    },
 
 
-/* ======================================================
- * EXPORT EXCEL PENILAIAN
- *
- * filter:
- *
- * {
- *     bulan: "",
- *     tahun: "",
- *     status: "",
- *     anggotaId: ""
- * }
- *
- * ====================================================== */
+    async updatePenilaian(
+        id,
+        data
+    ) {
 
-async exportPenilaianExcel(filter = {}) {
+        return this.post({
 
-    return this.post({
+            action:
+                "updatePenilaian",
 
-        action: "exportPenilaianExcel",
+            id:
+                id,
 
-        filter: filter
+            data:
+                data
 
-    });
+        });
 
-}
+    },
+
+
+    async deletePenilaian(id) {
+
+        return this.post({
+
+            action:
+                "deletePenilaian",
+
+            id:
+                id
+
+        });
+
+    }
+
+};
+
 
 /* ==========================================================
  * LOCK OBJECT
