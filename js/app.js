@@ -1,23 +1,29 @@
 /**
  * ==========================================================
- * GUARDIAN KPI WEB3
- * APP.JS — UI CONTROLLER
+ * Guardian KPI Web3
+ * File : js/app.js
+ * Module : UI Controller
+ * Version : 3.2.0 STABLE
  * ==========================================================
  *
- * Fungsi:
+ * TANGGUNG JAWAB:
  * - Hamburger menu
- * - Dropdown Dashboard / Settings
- * - Dark / Light mode
- * - Settings PIN Admin
+ * - Navigasi halaman
+ * - Dark / Light theme
+ * - Admin PIN Settings
  * - Page loader
- * - Menjalankan initializer halaman
+ * - Page initializer
  *
- * TIDAK mengubah:
- * - api.js
- * - dashboard.js
- * - backend Apps Script
- * - data KPI
- * - chart
+ * TIDAK MENGUBAH:
+ * - js/api.js
+ * - js/dashboard.js
+ * - js/anggota.js
+ * - js/group.js
+ * - js/masterkpi.js
+ * - js/penilaian.js
+ * - js/laporan.js
+ * - Apps Script backend
+ * - Database
  *
  * ==========================================================
  */
@@ -26,54 +32,104 @@
 
 
 /* ==========================================================
-   STORAGE
-========================================================== */
+ * STORAGE
+ * ==========================================================
+ */
 
 const GKP_THEME_KEY =
     "guardianKPI.theme";
+
 
 const GKP_SETTINGS_SESSION =
     "guardianKPI.settingsUnlocked";
 
 
 /* ==========================================================
-   STATE
-========================================================== */
+ * STATE
+ * ==========================================================
+ */
 
 let gkpCurrentPage =
     "dashboard";
 
 
 /* ==========================================================
-   INITIALIZATION
-========================================================== */
+ * INITIAL APPLICATION
+ * ==========================================================
+ */
 
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
+function gkpInitializeApplication() {
 
-        console.log(
-            "Guardian KPI UI initialized."
-        );
+    console.log(
+        "========================================"
+    );
+
+    console.log(
+        "Guardian KPI Web3"
+    );
+
+    console.log(
+        "UI Controller initialized."
+    );
+
+    console.log(
+        "Admin PIN: SERVER-SIDE REST API"
+    );
+
+    console.log(
+        "========================================"
+    );
 
 
-        gkpInitTheme();
+    gkpInitTheme();
 
-        gkpInitMenu();
+    gkpInitMenu();
 
-        gkpInitPin();
+    gkpInitPin();
 
-        gkpLoadPage(
-            "dashboard"
-        );
 
-    }
-);
+    /*
+     * Dashboard sebagai halaman awal.
+     */
+
+    gkpLoadPage(
+        "dashboard"
+    );
+
+}
 
 
 /* ==========================================================
-   THEME
-========================================================== */
+ * DOM READY
+ * ==========================================================
+ */
+
+if (
+    document.readyState ===
+    "loading"
+) {
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            gkpInitializeApplication();
+
+        }
+    );
+
+}
+else {
+
+    gkpInitializeApplication();
+
+}
+
+
+/* ==========================================================
+ * THEME
+ * ==========================================================
+ */
 
 function gkpInitTheme() {
 
@@ -96,9 +152,10 @@ function gkpInitTheme() {
 }
 
 
-/* ----------------------------------------------------------
-   APPLY THEME
----------------------------------------------------------- */
+/* ==========================================================
+ * APPLY THEME
+ * ==========================================================
+ */
 
 function gkpApplyTheme(
     theme
@@ -123,12 +180,6 @@ function gkpApplyTheme(
     );
 
 
-    /*
-     * Support beberapa kemungkinan
-     * ID icon agar tidak error jika
-     * HTML menggunakan salah satu.
-     */
-
     const icon =
         document.getElementById(
             "guardianThemeIcon"
@@ -140,26 +191,15 @@ function gkpApplyTheme(
 
     if (icon) {
 
-        if (
+        icon.className =
             normalized === "dark"
-        ) {
 
-            icon.className =
-                "bi bi-sun-fill";
+                ? "bi bi-sun-fill"
 
-        } else {
-
-            icon.className =
-                "bi bi-moon-stars-fill";
-
-        }
+                : "bi bi-moon-stars-fill";
 
     }
 
-
-    /*
-     * Support tombol theme lama
-     */
 
     const button =
         document.getElementById(
@@ -173,10 +213,15 @@ function gkpApplyTheme(
     if (button) {
 
         button.setAttribute(
+
             "aria-label",
+
             normalized === "dark"
+
                 ? "Gunakan mode terang"
+
                 : "Gunakan mode gelap"
+
         );
 
     }
@@ -190,9 +235,10 @@ function gkpApplyTheme(
 }
 
 
-/* ----------------------------------------------------------
-   TOGGLE THEME
----------------------------------------------------------- */
+/* ==========================================================
+ * TOGGLE THEME
+ * ==========================================================
+ */
 
 function gkpToggleTheme() {
 
@@ -218,21 +264,25 @@ function gkpToggleTheme() {
 
 
 /* ==========================================================
-   MENU
-========================================================== */
+ * MENU INITIALIZATION
+ * ==========================================================
+ */
 
 function gkpInitMenu() {
 
-    const button =
-        document.getElementById(
-            "guardianMenuButton"
-        ) ||
+    const menuButton =
         document.getElementById(
             "menuButton"
+        ) ||
+        document.getElementById(
+            "guardianMenuButton"
         );
 
 
     const menu =
+        document.getElementById(
+            "sidebar"
+        ) ||
         document.getElementById(
             "guardianMenu"
         ) ||
@@ -241,76 +291,135 @@ function gkpInitMenu() {
         );
 
 
-    if (!button || !menu) {
+    /*
+     * HAMBURGER
+     */
 
-        console.warn(
-            "Guardian KPI: menu element tidak ditemukan."
+    if (menuButton) {
+
+        menuButton.addEventListener(
+
+            "click",
+
+            function (event) {
+
+                event.stopPropagation();
+
+                gkpToggleMenu();
+
+            }
+
         );
-
-        return;
 
     }
 
 
     /*
-     * HAMBURGER
+     * THEME
      */
 
-    button.addEventListener(
-        "click",
-        function (event) {
+    const themeButton =
+        document.getElementById(
+            "themeToggle"
+        ) ||
+        document.getElementById(
+            "guardianThemeButton"
+        );
 
-            event.stopPropagation();
 
-            gkpToggleMenu();
+    if (themeButton) {
 
-        }
-    );
+        themeButton.addEventListener(
+
+            "click",
+
+            function () {
+
+                gkpToggleTheme();
+
+            }
+
+        );
+
+    }
 
 
     /*
      * MENU ITEMS
      */
 
-    menu
-        .querySelectorAll(
-            "[data-page]"
-        )
-        .forEach(
-            function (item) {
+    if (menu) {
 
-                item.addEventListener(
-                    "click",
-                    function () {
+        menu
+            .querySelectorAll(
+                "[data-page]"
+            )
+            .forEach(
+                function (item) {
 
-                        const page =
-                            item.dataset.page;
+                    /*
+                     * Hindari memasang
+                     * listener dua kali.
+                     */
+
+                    if (
+                        item.dataset
+                            .gkpBound ===
+                        "1"
+                    ) {
+
+                        return;
+
+                    }
 
 
-                        gkpCloseMenu();
+                    item.dataset
+                        .gkpBound =
+                        "1";
 
 
-                        if (
-                            page ===
-                            "setting"
-                        ) {
+                    item.addEventListener(
 
-                            gkpRequestSettings();
+                        "click",
 
-                            return;
+                        function () {
+
+                            const page =
+                                item.dataset.page;
+
+
+                            gkpCloseMenu();
+
+
+                            /*
+                             * Settings harus
+                             * melalui PIN Admin.
+                             */
+
+                            if (
+                                page ===
+                                "setting"
+                            ) {
+
+                                gkpRequestSettings();
+
+                                return;
+
+                            }
+
+
+                            gkpLoadPage(
+                                page
+                            );
 
                         }
 
+                    );
 
-                        gkpLoadPage(
-                            page
-                        );
+                }
+            );
 
-                    }
-                );
-
-            }
-        );
+    }
 
 
     /*
@@ -318,14 +427,39 @@ function gkpInitMenu() {
      */
 
     document.addEventListener(
+
         "click",
+
         function (event) {
 
+            const currentMenu =
+                document.getElementById(
+                    "sidebar"
+                ) ||
+                document.getElementById(
+                    "guardianMenu"
+                ) ||
+                document.getElementById(
+                    "mainMenu"
+                );
+
+
+            const currentButton =
+                document.getElementById(
+                    "menuButton"
+                ) ||
+                document.getElementById(
+                    "guardianMenuButton"
+                );
+
+
             if (
-                !menu.contains(
+                currentMenu &&
+                currentButton &&
+                !currentMenu.contains(
                     event.target
                 ) &&
-                !button.contains(
+                !currentButton.contains(
                     event.target
                 )
             ) {
@@ -335,59 +469,28 @@ function gkpInitMenu() {
             }
 
         }
+
     );
-
-
-    /*
-     * THEME BUTTON
-     */
-
-    const themeButton =
-        document.getElementById(
-            "guardianThemeButton"
-        ) ||
-        document.getElementById(
-            "themeToggle"
-        );
-
-
-    if (themeButton) {
-
-        themeButton.addEventListener(
-            "click",
-            function () {
-
-                gkpToggleTheme();
-
-            }
-        );
-
-    }
 
 }
 
 
 /* ==========================================================
-   TOGGLE MENU
-========================================================== */
+ * TOGGLE MENU
+ * ==========================================================
+ */
 
 function gkpToggleMenu() {
 
     const menu =
         document.getElementById(
+            "sidebar"
+        ) ||
+        document.getElementById(
             "guardianMenu"
         ) ||
         document.getElementById(
             "mainMenu"
-        );
-
-
-    const button =
-        document.getElementById(
-            "guardianMenuButton"
-        ) ||
-        document.getElementById(
-            "menuButton"
         );
 
 
@@ -411,7 +514,8 @@ function gkpToggleMenu() {
 
         gkpCloseMenu();
 
-    } else {
+    }
+    else {
 
         gkpOpenMenu();
 
@@ -421,12 +525,16 @@ function gkpToggleMenu() {
 
 
 /* ==========================================================
-   OPEN MENU
-========================================================== */
+ * OPEN MENU
+ * ==========================================================
+ */
 
 function gkpOpenMenu() {
 
     const menu =
+        document.getElementById(
+            "sidebar"
+        ) ||
         document.getElementById(
             "guardianMenu"
         ) ||
@@ -437,10 +545,10 @@ function gkpOpenMenu() {
 
     const button =
         document.getElementById(
-            "guardianMenuButton"
+            "menuButton"
         ) ||
         document.getElementById(
-            "menuButton"
+            "guardianMenuButton"
         );
 
 
@@ -450,10 +558,6 @@ function gkpOpenMenu() {
 
     }
 
-
-    /*
-     * Support kedua class.
-     */
 
     menu.classList.add(
         "open"
@@ -486,12 +590,16 @@ function gkpOpenMenu() {
 
 
 /* ==========================================================
-   CLOSE MENU
-========================================================== */
+ * CLOSE MENU
+ * ==========================================================
+ */
 
 function gkpCloseMenu() {
 
     const menu =
+        document.getElementById(
+            "sidebar"
+        ) ||
         document.getElementById(
             "guardianMenu"
         ) ||
@@ -502,10 +610,10 @@ function gkpCloseMenu() {
 
     const button =
         document.getElementById(
-            "guardianMenuButton"
+            "menuButton"
         ) ||
         document.getElementById(
-            "menuButton"
+            "guardianMenuButton"
         );
 
 
@@ -544,8 +652,9 @@ function gkpCloseMenu() {
 
 
 /* ==========================================================
-   PAGE LOADER
-========================================================== */
+ * PAGE LOADER
+ * ==========================================================
+ */
 
 async function gkpLoadPage(
     page
@@ -559,10 +668,20 @@ async function gkpLoadPage(
     }
 
 
-    console.log(
-        "Guardian KPI: loading page",
-        page
-    );
+    /*
+     * SETTINGS HARUS PIN
+     */
+
+    if (
+        page === "setting" &&
+        !gkpSettingsUnlocked()
+    ) {
+
+        gkpRequestSettings();
+
+        return;
+
+    }
 
 
     gkpCurrentPage =
@@ -571,20 +690,14 @@ async function gkpLoadPage(
 
     const container =
         document.getElementById(
-            "guardianPage"
-        ) ||
-        document.getElementById(
-            "pageContainer"
-        ) ||
-        document.getElementById(
-            "mainContent"
+            "appContent"
         );
 
 
     if (!container) {
 
         console.error(
-            "Guardian KPI: page container tidak ditemukan."
+            "Guardian KPI: #appContent tidak ditemukan."
         );
 
         return;
@@ -593,21 +706,14 @@ async function gkpLoadPage(
 
 
     /*
-     * Loading state.
+     * Loading
      */
 
     container.innerHTML = `
 
-        <div class="page-loading">
+        <div class="guardian-loading">
 
-            <div class="spinner-border"
-                 role="status">
-
-                <span class="visually-hidden">
-                    Loading...
-                </span>
-
-            </div>
+            <div class="guardian-spinner"></div>
 
         </div>
 
@@ -618,13 +724,16 @@ async function gkpLoadPage(
 
         const response =
             await fetch(
+
                 "pages/" +
                 page +
                 ".html",
+
                 {
                     cache:
                         "no-store"
                 }
+
             );
 
 
@@ -632,7 +741,7 @@ async function gkpLoadPage(
 
             throw new Error(
 
-                "Halaman " +
+                "Halaman pages/" +
                 page +
                 ".html tidak ditemukan."
 
@@ -650,17 +759,7 @@ async function gkpLoadPage(
 
 
         /*
-         * Jalankan initializer
-         * berdasarkan halaman.
-         */
-
-        await gkpRunPageInitializer(
-            page
-        );
-
-
-        /*
-         * Update active menu.
+         * Active menu.
          */
 
         gkpSetActiveMenu(
@@ -668,33 +767,59 @@ async function gkpLoadPage(
         );
 
 
-        console.log(
-            "Guardian KPI: page loaded",
+        /*
+         * Jalankan initializer.
+         */
+
+        await gkpInitializePage(
             page
         );
 
 
+        /*
+         * Scroll ke atas.
+         */
+
+        window.scrollTo(
+            {
+                top: 0,
+                behavior: "smooth"
+            }
+        );
+
+
+        console.log(
+            "Guardian KPI page loaded:",
+            page
+        );
+
     }
-    catch (err) {
+
+    catch (error) {
 
         console.error(
             "Guardian KPI page error:",
-            err
+            error
         );
 
 
         container.innerHTML = `
 
-            <div class="alert alert-danger">
+            <div
+                class="alert alert-danger">
 
                 <strong>
-                    Gagal memuat halaman.
+
+                    Halaman gagal dimuat.
+
                 </strong>
 
                 <div class="mt-2">
+
                     ${gkpEscapeHtml(
-                        err.message
+                        error.message
                     )}
+
                 </div>
 
             </div>
@@ -707,10 +832,11 @@ async function gkpLoadPage(
 
 
 /* ==========================================================
-   PAGE INITIALIZER
-========================================================== */
+ * PAGE INITIALIZER
+ * ==========================================================
+ */
 
-async function gkpRunPageInitializer(
+async function gkpInitializePage(
     page
 ) {
 
@@ -718,6 +844,11 @@ async function gkpRunPageInitializer(
 
         switch (page) {
 
+
+            /* ==================================================
+             * DASHBOARD
+             * ==================================================
+             */
 
             case "dashboard":
 
@@ -733,6 +864,11 @@ async function gkpRunPageInitializer(
                 break;
 
 
+            /* ==================================================
+             * ANGGOTA
+             * ==================================================
+             */
+
             case "anggota":
 
                 if (
@@ -746,6 +882,11 @@ async function gkpRunPageInitializer(
 
                 break;
 
+
+            /* ==================================================
+             * GROUP
+             * ==================================================
+             */
 
             case "group":
 
@@ -761,6 +902,11 @@ async function gkpRunPageInitializer(
                 break;
 
 
+            /* ==================================================
+             * MASTER KPI
+             * ==================================================
+             */
+
             case "masterkpi":
 
                 if (
@@ -774,6 +920,11 @@ async function gkpRunPageInitializer(
 
                 break;
 
+
+            /* ==================================================
+             * PENILAIAN
+             * ==================================================
+             */
 
             case "penilaian":
 
@@ -789,7 +940,17 @@ async function gkpRunPageInitializer(
                 break;
 
 
+            /* ==================================================
+             * LAPORAN
+             * ==================================================
+             */
+
             case "laporan":
+
+                console.log(
+                    "Guardian KPI: initializing Laporan..."
+                );
+
 
                 if (
                     typeof loadLaporan ===
@@ -799,39 +960,59 @@ async function gkpRunPageInitializer(
                     await loadLaporan();
 
                 }
+                else {
 
-                break;
+                    console.error(
 
+                        "Guardian KPI: loadLaporan() tidak tersedia."
 
-            case "setting":
-
-                if (
-                    typeof loadSetting ===
-                    "function"
-                ) {
-
-                    await loadSetting();
+                    );
 
                 }
 
                 break;
 
 
-            default:
+            /* ==================================================
+             * SETTINGS
+             *
+             * Halaman Settings bersifat
+             * statis. Tidak memerlukan
+             * loader backend.
+             * ==================================================
+             */
+
+            case "setting":
 
                 console.log(
-                    "Tidak ada initializer untuk:",
+                    "Guardian KPI: Settings loaded."
+                );
+
+                break;
+
+
+            /* ==================================================
+             * UNKNOWN
+             * ==================================================
+             */
+
+            default:
+
+                console.warn(
+                    "Guardian KPI: tidak ada initializer untuk:",
                     page
                 );
 
         }
 
     }
-    catch (err) {
+
+    catch (error) {
 
         console.error(
-            "Page initializer error:",
-            err
+            "Guardian KPI page initializer error:",
+            page,
+            error
         );
 
     }
@@ -840,8 +1021,9 @@ async function gkpRunPageInitializer(
 
 
 /* ==========================================================
-   ACTIVE MENU
-========================================================== */
+ * ACTIVE MENU
+ * ==========================================================
+ */
 
 function gkpSetActiveMenu(
     page
@@ -854,18 +1036,25 @@ function gkpSetActiveMenu(
         .forEach(
             function (item) {
 
-                const itemPage =
-                    item.dataset.page;
+                if (
+                    item.classList.contains(
+                        "guardian-menu-item"
+                    ) ||
+                    item.classList.contains(
+                        "main-menu-item"
+                    )
+                ) {
 
+                    item.classList.toggle(
 
-                item.classList.toggle(
+                        "active",
 
-                    "active",
+                        item.dataset.page ===
+                        page
 
-                    itemPage ===
-                    page
+                    );
 
-                );
+                }
 
             }
         );
@@ -874,8 +1063,9 @@ function gkpSetActiveMenu(
 
 
 /* ==========================================================
-   HTML ESCAPE
-========================================================== */
+ * HTML ESCAPE
+ * ==========================================================
+ */
 
 function gkpEscapeHtml(
     value
@@ -916,8 +1106,28 @@ function gkpEscapeHtml(
 
 
 /* ==========================================================
-   PIN INITIALIZATION
-========================================================== */
+ * SETTINGS SESSION
+ * ==========================================================
+ */
+
+function gkpSettingsUnlocked() {
+
+    return (
+
+        sessionStorage.getItem(
+            GKP_SETTINGS_SESSION
+        ) ===
+        "1"
+
+    );
+
+}
+
+
+/* ==========================================================
+ * ADMIN PIN INITIALIZATION
+ * ==========================================================
+ */
 
 function gkpInitPin() {
 
@@ -942,7 +1152,7 @@ function gkpInitPin() {
 
 
     /*
-     * SUBMIT
+     * Submit button
      */
 
     const submit =
@@ -954,15 +1164,28 @@ function gkpInitPin() {
         );
 
 
-    if (submit) {
+    if (
+        submit &&
+        submit.dataset
+            .gkpPinBound !==
+        "1"
+    ) {
+
+        submit.dataset
+            .gkpPinBound =
+            "1";
+
 
         submit.addEventListener(
+
             "click",
+
             function () {
 
                 gkpSubmitPin();
 
             }
+
         );
 
     }
@@ -981,10 +1204,22 @@ function gkpInitPin() {
         );
 
 
-    if (input) {
+    if (
+        input &&
+        input.dataset
+            .gkpPinBound !==
+        "1"
+    ) {
+
+        input.dataset
+            .gkpPinBound =
+            "1";
+
 
         input.addEventListener(
+
             "keydown",
+
             function (event) {
 
                 if (
@@ -999,52 +1234,67 @@ function gkpInitPin() {
                 }
 
             }
+
         );
 
     }
 
 
     /*
-     * CLOSE
+     * CLOSE BUTTON
      */
 
     const closeButtons =
         modal.querySelectorAll(
-            "[data-close-pin], .pin-modal-close"
+            "[data-close-pin], .pin-modal-close, #guardianPinClose"
         );
 
 
     closeButtons.forEach(
+
         function (button) {
 
+            if (
+                button.dataset
+                    .gkpPinCloseBound ===
+                "1"
+            ) {
+
+                return;
+
+            }
+
+
+            button.dataset
+                .gkpPinCloseBound =
+                "1";
+
+
             button.addEventListener(
+
                 "click",
+
                 function () {
 
                     gkpClosePinModal();
 
                 }
+
             );
 
         }
+
     );
 
 }
 
 
 /* ==========================================================
-   REQUEST SETTINGS
-========================================================== */
+ * REQUEST SETTINGS
+ * ==========================================================
+ */
 
 function gkpRequestSettings() {
-
-    /*
-     * Settings selalu membutuhkan
-     * PIN Admin.
-     *
-     * Tidak ada lagi pembuatan PIN
-     * melalui localStorage.
-     */
 
     const modal =
         document.getElementById(
@@ -1067,65 +1317,32 @@ function gkpRequestSettings() {
 
 
     const title =
-        modal.querySelector(
-            ".pin-modal-title"
-        ) ||
         document.getElementById(
             "guardianPinTitle"
         );
 
 
     const message =
-        modal.querySelector(
-            ".pin-modal-message"
-        ) ||
         document.getElementById(
             "guardianPinMessage"
-        );
-
-
-    const createGroup =
-        document.getElementById(
-            "guardianPinCreateGroup"
-        ) ||
-        document.getElementById(
-            "settingsPinCreateGroup"
-        );
-
-
-    const enterGroup =
-        document.getElementById(
-            "guardianPinEnterGroup"
-        ) ||
-        document.getElementById(
-            "settingsPinEnterGroup"
-        );
-
-
-    const submit =
-        document.getElementById(
-            "guardianPinSubmit"
-        ) ||
-        document.getElementById(
-            "settingsPinSubmit"
         );
 
 
     const input =
         document.getElementById(
             "guardianPinInput"
-        ) ||
-        document.getElementById(
-            "settingsPinInput"
         );
 
 
     const error =
         document.getElementById(
             "guardianPinError"
-        ) ||
+        );
+
+
+    const submit =
         document.getElementById(
-            "settingsPinError"
+            "guardianPinSubmit"
         );
 
 
@@ -1133,1367 +1350,6 @@ function gkpRequestSettings() {
 
         title.textContent =
             "Settings Terkunci";
-
-    }
-
-
-    if (message) {
-
-        message.textContent =
-            "Masukkan PIN Admin untuk membuka Settings.";
-
-    }
-
-
-    /*
-     * Jangan tampilkan pembuatan PIN
-     * dari browser.
-     */
-
-    if (createGroup) {
-
-        createGroup.classList.add(
-            "d-none"
-        );
-
-    }
-
-
-    if (enterGroup) {
-
-        enterGroup.classList.remove(
-            "d-none"
-        );
-
-    }
-
-
-    if (submit) {
-
-        submit.textContent =
-            "Buka Settings";
-
-    }
-
-
-    if (error) {
-
-        error.textContent =
-            "";
-
-        error.classList.add(
-            "d-none"
-        );
-
-    }
-
-
-    if (input) {
-
-        input.value =
-            "";
-
-        input.focus();
-
-    }
-
-
-    gkpOpenPinModal();
-
-}
-
-
-/* ==========================================================
-   OPEN PIN MODAL
-========================================================== */
-
-function gkpOpenPinModal() {
-
-    const modal =
-        document.getElementById(
-            "guardianPinModal"
-        ) ||
-        document.getElementById(
-            "settingsPinModal"
-        );
-
-
-    if (!modal) {
-
-        return;
-
-    }
-
-
-    modal.classList.remove(
-        "d-none"
-    );
-
-    modal.classList.add(
-        "show"
-    );
-
-
-    modal.style.display =
-        "flex";
-
-
-    document.body.classList.add(
-        "pin-modal-open"
-    );
-
-}
-
-
-/* ==========================================================
-   CLOSE PIN MODAL
-========================================================== */
-
-function gkpClosePinModal() {
-
-    const modal =
-        document.getElementById(
-            "guardianPinModal"
-        ) ||
-        document.getElementById(
-            "settingsPinModal"
-        );
-
-
-    if (!modal) {
-
-        return;
-
-    }
-
-
-    modal.classList.remove(
-        "show"
-    );
-
-    modal.classList.add(
-        "d-none"
-    );
-
-
-    modal.style.display =
-        "";
-
-
-    document.body.classList.remove(
-        "pin-modal-open"
-    );
-
-
-    const input =
-        document.getElementById(
-            "guardianPinInput"
-        ) ||
-        document.getElementById(
-            "settingsPinInput"
-        );
-
-
-    if (input) {
-
-        input.value =
-            "";
-
-    }
-
-}
-
-
-/* ==========================================================
-   VALIDATE PIN
-========================================================== */
-
-function gkpValidPin(
-    pin
-) {
-
-    return /^\d{4,12}$/.test(
-        String(
-            pin || ""
-        )
-    );
-
-}
-
-
-/* ==========================================================
-   SHOW PIN ERROR
-========================================================== */
-
-function gkpShowPinError(
-    message
-) {
-
-    const error =
-        document.getElementById(
-            "guardianPinError"
-        ) ||
-        document.getElementById(
-            "settingsPinError"
-        );
-
-
-    if (!error) {
-
-        alert(
-            message
-        );
-
-        return;
-
-    }
-
-
-    error.textContent =
-        message;
-
-
-    error.classList.remove(
-        "d-none"
-    );
-
-}
-
-
-/* ==========================================================
-   SUBMIT ADMIN PIN
-========================================================== */
-
-function gkpSubmitPin() {
-
-    const pinInput =
-        document.getElementById(
-            "guardianPinInput"
-        ) ||
-        document.getElementById(
-            "settingsPinInput"
-        );
-
-
-    const pin =
-        pinInput
-            ?.value
-            .trim();
-
-
-    if (
-        !gkpValidPin(
-            pin
-        )
-    ) {
-
-        gkpShowPinError(
-            "Masukkan PIN Admin 4–12 digit."
-        );
-
-        return;
-
-    }
-
-
-    /*
-     * Google Apps Script server-side
-     * verification.
-     */
-
-    if (
-        typeof google ===
-        "undefined" ||
-        !google.script ||
-        !google.script.run
-    ) {
-
-        gkpShowPinError(
-            "Koneksi ke server Admin PIN tidak tersedia."
-        );
-
-        return;
-
-    }
-
-
-    const submit =
-        document.getElementById(
-            "guardianPinSubmit"
-        ) ||
-        document.getElementById(
-            "settingsPinSubmit"
-        );
-
-
-    if (submit) {
-
-        submit.disabled =
-            true;
-
-        submit.dataset.originalText =
-            submit.textContent;
-
-        submit.textContent =
-            "Memverifikasi...";
-
-    }
-
-
-    google.script.run
-
-        .withSuccessHandler(
-            function (result) {
-
-                if (submit) {
-
-                    submit.disabled =
-                        false;
-
-                    submit.textContent =
-                        submit.dataset
-                            .originalText ||
-                        "Buka Settings";
-
-                }
-
-
-                if (
-                    !result ||
-                    !result.success
-                ) {
-
-                    gkpShowPinError(
-
-                        result?.message ||
-                        "PIN Admin salah."
-
-                    );
-
-                    return;
-
-                }
-
-
-                /*
-                 * PIN benar.
-                 *
-                 * Yang disimpan hanya status
-                 * sesi, BUKAN PIN.
-                 */
-
-                sessionStorage.setItem(
-
-                    GKP_SETTINGS_SESSION,
-
-                    "1"
-
-                );
-
-
-                if (pinInput) {
-
-                    pinInput.value =
-                        "";
-
-                }
-
-
-                gkpClosePinModal();
-
-
-                gkpLoadPage(
-                    "setting"
-                );
-
-            }
-        )
-
-        .withFailureHandler(
-            function (err) {
-
-                if (submit) {
-
-                    submit.disabled =
-                        false;
-
-                    submit.textContent =
-                        submit.dataset
-                            .originalText ||
-                        "Buka Settings";
-
-                }
-
-
-                console.error(
-                    "verifyAdminPin:",
-                    err
-                );
-
-
-                gkpShowPinError(
-
-                    err?.message ||
-                    "Gagal memverifikasi PIN Admin."
-
-                );
-
-            }
-        )
-
-        .verifyAdminPin(
-            pin
-        );
-
-}
-
-
-/* ==========================================================
-   LOCK SETTINGS
-========================================================== */
-
-function gkpLockSettings() {
-
-    sessionStorage.removeItem(
-        GKP_SETTINGS_SESSION
-    );
-
-
-    gkpLoadPage(
-        "dashboard"
-    );
-
-}
-
-
-/* ==========================================================
-   CHECK SETTINGS SESSION
-========================================================== */
-
-function gkpIsSettingsUnlocked() {
-
-    return (
-        sessionStorage.getItem(
-            GKP_SETTINGS_SESSION
-        ) === "1"
-    );
-
-}
-
-
-/* ==========================================================
-   CHANGE ADMIN PIN
-   GitHub Pages → REST API → Apps Script
-========================================================== */
-
-async function guardianChangeAdminPin() {
-
-    /*
-     * PIN LAMA
-     */
-
-    const oldPin =
-        window.prompt(
-            "Masukkan PIN Admin lama:"
-        );
-
-
-    if (
-        oldPin === null
-    ) {
-
-        return;
-
-    }
-
-
-    if (
-        !gkpValidPin(oldPin)
-    ) {
-
-        alert(
-            "PIN lama harus terdiri dari 4–12 digit."
-        );
-
-        return;
-
-    }
-
-
-    /*
-     * PIN BARU
-     */
-
-    const newPin =
-        window.prompt(
-            "Masukkan PIN Admin baru (4–12 digit):"
-        );
-
-
-    if (
-        newPin === null
-    ) {
-
-        return;
-
-    }
-
-
-    if (
-        !gkpValidPin(newPin)
-    ) {
-
-        alert(
-            "PIN baru harus terdiri dari 4–12 digit."
-        );
-
-        return;
-
-    }
-
-
-    /*
-     * KONFIRMASI
-     */
-
-    const confirmPin =
-        window.prompt(
-            "Konfirmasi PIN Admin baru:"
-        );
-
-
-    if (
-        confirmPin === null
-    ) {
-
-        return;
-
-    }
-
-
-    if (
-        newPin !== confirmPin
-    ) {
-
-        alert(
-            "Konfirmasi PIN baru tidak sama."
-        );
-
-        return;
-
-    }
-
-
-    /*
-     * PASTIKAN API TERSEDIA
-     */
-
-    if (
-        typeof API ===
-        "undefined"
-    ) {
-
-        alert(
-            "API Guardian KPI tidak tersedia."
-        );
-
-        return;
-
-    }
-
-
-    try {
-
-        console.log(
-            "================================"
-        );
-
-        console.log(
-            "CHANGE ADMIN PIN"
-        );
-
-        console.log(
-            "Mengirim permintaan ke server..."
-        );
-
-
-        /*
-         * REST API
-         *
-         * PIN dikirim ke Apps Script
-         * melalui endpoint doPost().
-         */
-
-        const result =
-            await API.post({
-
-                action:
-                    "changeAdminPin",
-
-                oldPin:
-                    oldPin,
-
-                newPin:
-                    newPin
-
-            });
-
-
-        console.log(
-            "CHANGE PIN RESPONSE:",
-            result
-        );
-
-
-        /*
-         * RESPONSE GAGAL
-         */
-
-        if (
-            !result ||
-            !result.success
-        ) {
-
-            alert(
-
-                result?.message ||
-                "Gagal mengubah PIN Admin."
-
-            );
-
-            return;
-
-        }
-
-
-        /*
-         * BERHASIL
-         *
-         * Hapus sesi Settings lama.
-         */
-
-        sessionStorage.removeItem(
-            GKP_SETTINGS_SESSION
-        );
-
-
-        alert(
-
-            result.message ||
-            "PIN Admin berhasil diubah."
-
-        );
-
-
-        /*
-         * Kembali ke Dashboard.
-         */
-
-        gkpLoadPage(
-            "dashboard"
-        );
-
-
-    }
-
-    catch (error) {
-
-        console.error(
-            "Guardian KPI changeAdminPin:",
-            error
-        );
-
-
-        alert(
-
-            error?.message ||
-            "Gagal menghubungi server Admin PIN."
-
-        );
-
-    }
-
-}
-
-/* ==========================================================
-   GLOBAL EXPORT
-========================================================== */
-
-window.gkpLoadPage =
-    gkpLoadPage;
-
-window.gkpRequestSettings =
-    gkpRequestSettings;
-
-window.gkpSubmitPin =
-    gkpSubmitPin;
-
-window.gkpClosePinModal =
-    gkpClosePinModal;
-
-window.gkpLockSettings =
-    gkpLockSettings;
-
-window.gkpToggleTheme =
-    gkpToggleTheme;
-
-window.gkpOpenMenu =
-    gkpOpenMenu;
-
-window.gkpCloseMenu =
-    gkpCloseMenu;
-
-
-/* ==========================================================
-   ACTIVE MENU
-========================================================== */
-
-function gkpSetActiveMenu(
-    page
-) {
-
-    document
-        .querySelectorAll(
-            "[data-page]"
-        )
-        .forEach(
-            function (item) {
-
-                /*
-                 * Jangan menganggap semua
-                 * data-page sebagai menu.
-                 */
-
-                if (
-                    item.classList.contains(
-                        "guardian-menu-item"
-                    ) ||
-                    item.classList.contains(
-                        "main-menu-item"
-                    )
-                ) {
-
-                    item.classList.remove(
-                        "active"
-                    );
-
-                }
-
-            }
-        );
-
-
-    const active =
-        document.querySelector(
-            `.guardian-menu-item[data-page="${page}"], .main-menu-item[data-page="${page}"]`
-        );
-
-
-    if (active) {
-
-        active.classList.add(
-            "active"
-        );
-
-    }
-
-}
-
-
-/* ==========================================================
-   PAGE LOADER
-========================================================== */
-
-async function gkpLoadPage(
-    page
-) {
-
-    /*
-     * SETTINGS HARUS PIN
-     */
-
-    if (
-        page === "setting" &&
-        !gkpSettingsUnlocked()
-    ) {
-
-        gkpRequestSettings();
-
-        return;
-
-    }
-
-
-    gkpCurrentPage =
-        page;
-
-
-    const container =
-        document.getElementById(
-            "appContent"
-        );
-
-
-    if (!container) {
-
-        console.error(
-            "Guardian KPI: #appContent tidak ditemukan."
-        );
-
-        return;
-
-    }
-
-
-    /*
-     * LOADING
-     */
-
-    container.innerHTML = `
-
-        <div class="guardian-loading">
-
-            <div class="guardian-spinner"></div>
-
-        </div>
-
-    `;
-
-
-    try {
-
-        /*
-         * Halaman HTML
-         */
-
-        const response =
-            await fetch(
-                "pages/" +
-                page +
-                ".html",
-                {
-                    cache:
-                        "no-store"
-                }
-            );
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                "Halaman pages/" +
-                page +
-                ".html tidak ditemukan."
-            );
-
-        }
-
-
-        const html =
-            await response.text();
-
-
-        container.innerHTML =
-            html;
-
-
-        /*
-         * ACTIVE MENU
-         */
-
-        gkpSetActiveMenu(
-            page
-        );
-
-
-        /*
-         * INITIALIZER
-         */
-
-        gkpInitializePage(
-            page
-        );
-
-
-        /*
-         * SCROLL TOP
-         */
-
-        window.scrollTo(
-            {
-                top: 0,
-                behavior: "smooth"
-            }
-        );
-
-
-        console.log(
-            "Guardian KPI page loaded:",
-            page
-        );
-
-    }
-
-
-    catch (error) {
-
-        console.error(
-            "Guardian KPI page error:",
-            error
-        );
-
-
-        container.innerHTML = `
-
-            <div style="
-                max-width:650px;
-                margin:50px auto;
-                padding:20px;
-                border:1px solid rgba(255,80,100,.25);
-                border-radius:12px;
-                background:rgba(255,80,100,.07);
-                color:#ff6478;
-            ">
-
-                <div style="
-                    font-weight:700;
-                    margin-bottom:7px;
-                ">
-
-                    <i class="bi bi-exclamation-triangle"></i>
-
-                    Halaman gagal dimuat
-
-                </div>
-
-
-                <div style="
-                    color:#8995a5;
-                    font-size:13px;
-                ">
-
-                    ${gkpEscape(
-                        error.message
-                    )}
-
-                </div>
-
-            </div>
-
-        `;
-
-    }
-
-}
-
-
-/* ==========================================================
-   PAGE INITIALIZER
-========================================================== */
-
-function gkpInitializePage(
-    page
-) {
-
-    /*
-     * DASHBOARD
-     *
-     * Jangan membuat ulang API.
-     */
-
-    if (
-        page ===
-        "dashboard"
-    ) {
-
-        if (
-            typeof loadDashboard ===
-            "function"
-        ) {
-
-            loadDashboard();
-
-        }
-
-        return;
-
-    }
-
-
-    /*
-     * ANGGOTA
-     */
-
-    if (
-        page ===
-        "anggota"
-    ) {
-
-        if (
-            typeof loadAnggota ===
-            "function"
-        ) {
-
-            loadAnggota();
-
-        }
-
-        return;
-
-    }
-
-
-    /*
-     * GROUP
-     */
-
-    if (
-        page ===
-        "group"
-    ) {
-
-        if (
-            typeof loadGroup ===
-            "function"
-        ) {
-
-            loadGroup();
-
-        }
-
-        return;
-
-    }
-
-
-    /*
-     * MASTER KPI
-     */
-
-    if (
-        page ===
-        "masterkpi"
-    ) {
-
-        if (
-            typeof loadMasterKPI ===
-            "function"
-        ) {
-
-            loadMasterKPI();
-
-        }
-
-        return;
-
-    }
-
-
-    /*
-     * PENILAIAN
-     *
-     * Modul Penilaian tidak diubah.
-     */
-
-    if (
-        page ===
-        "penilaian"
-    ) {
-
-        if (
-            typeof loadPenilaian ===
-            "function"
-        ) {
-
-            loadPenilaian();
-
-        }
-
-        return;
-
-    }
-
-
-    /*
-     * LAPORAN
-     */
-
-    if (
-        page ===
-        "laporan"
-    ) {
-
-        if (
-            typeof loadLaporan ===
-            "function"
-        ) {
-
-            loadLaporan();
-
-        }
-
-        return;
-
-    }
-
-
-    /*
-     * SETTINGS
-     */
-
-    if (
-        page ===
-        "setting"
-    ) {
-
-        if (
-            typeof loadSetting ===
-            "function"
-        ) {
-
-            loadSetting();
-
-        }
-
-        return;
-
-    }
-
-}
-
-
-/* ==========================================================
-   HTML ESCAPE
-========================================================== */
-
-function gkpEscape(
-    value
-) {
-
-    return String(
-        value == null
-            ? ""
-            : value
-    )
-
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-
-        .replace(
-            /</g,
-            "&lt;"
-        )
-
-        .replace(
-            />/g,
-            "&gt;"
-        )
-
-        .replace(
-            /"/g,
-            "&quot;"
-        )
-
-        .replace(
-            /'/g,
-            "&#039;"
-        );
-
-}
-
-
-/* ==========================================================
-   PIN INIT
-========================================================== */
-
-function gkpInitPin() {
-
-    const modal =
-        document.getElementById(
-            "guardianPinModal"
-        );
-
-
-    if (!modal) {
-
-        console.warn(
-            "Guardian KPI: guardianPinModal tidak ditemukan."
-        );
-
-        return;
-
-    }
-
-
-    /*
-     * Submit button
-     */
-
-    const submit =
-        document.getElementById(
-            "guardianPinSubmit"
-        );
-
-
-    if (submit) {
-
-        submit.addEventListener(
-            "click",
-            function () {
-
-                gkpSubmitPin();
-
-            }
-        );
-
-    }
-
-
-    /*
-     * Enter key
-     */
-
-    const input =
-        document.getElementById(
-            "guardianPinInput"
-        );
-
-
-    if (input) {
-
-        input.addEventListener(
-            "keydown",
-            function (event) {
-
-                if (
-                    event.key ===
-                    "Enter"
-                ) {
-
-                    event.preventDefault();
-
-                    gkpSubmitPin();
-
-                }
-
-            }
-        );
-
-    }
-
-
-    /*
-     * Close button
-     */
-
-    const close =
-        document.getElementById(
-            "guardianPinClose"
-        );
-
-
-    if (close) {
-
-        close.addEventListener(
-            "click",
-            function () {
-
-                gkpClosePinModal();
-
-            }
-        );
-
-    }
-
-}
-
-
-/* ==========================================================
-   SETTINGS SESSION
-========================================================== */
-
-function gkpSettingsUnlocked() {
-
-    return (
-        sessionStorage.getItem(
-            GKP_SETTINGS_SESSION
-        ) ===
-        "1"
-    );
-
-}
-
-
-/* ==========================================================
-   REQUEST SETTINGS
-========================================================== */
-
-function gkpRequestSettings() {
-
-    const modal =
-        document.getElementById(
-            "guardianPinModal"
-        );
-
-
-    if (!modal) {
-
-        console.error(
-            "Guardian KPI: modal PIN tidak ditemukan."
-        );
-
-        return;
-
-    }
-
-
-    const title =
-        document.getElementById(
-            "guardianPinTitle"
-        );
-
-
-    const message =
-        document.getElementById(
-            "guardianPinMessage"
-        );
-
-
-    const input =
-        document.getElementById(
-            "guardianPinInput"
-        );
-
-
-    const error =
-        document.getElementById(
-            "guardianPinError"
-        );
-
-
-    const submit =
-        document.getElementById(
-            "guardianPinSubmit"
-        );
-
-
-    /*
-     * Tidak ada lagi:
-     *
-     * localStorage.getItem()
-     * localStorage.setItem()
-     * create PIN
-     *
-     * PIN selalu berasal dari Admin PIN
-     * yang diverifikasi server.
-     */
-
-    if (title) {
-
-        title.textContent =
-            "PIN Admin";
 
     }
 
@@ -2541,6 +1397,7 @@ function gkpRequestSettings() {
 
 
     setTimeout(
+
         function () {
 
             if (input) {
@@ -2550,21 +1407,27 @@ function gkpRequestSettings() {
             }
 
         },
+
         100
+
     );
 
 }
 
 
 /* ==========================================================
-   OPEN PIN MODAL
-========================================================== */
+ * OPEN PIN MODAL
+ * ==========================================================
+ */
 
 function gkpOpenPinModal() {
 
     const modal =
         document.getElementById(
             "guardianPinModal"
+        ) ||
+        document.getElementById(
+            "settingsPinModal"
         );
 
 
@@ -2597,14 +1460,18 @@ function gkpOpenPinModal() {
 
 
 /* ==========================================================
-   CLOSE PIN MODAL
-========================================================== */
+ * CLOSE PIN MODAL
+ * ==========================================================
+ */
 
 function gkpClosePinModal() {
 
     const modal =
         document.getElementById(
             "guardianPinModal"
+        ) ||
+        document.getElementById(
+            "settingsPinModal"
         );
 
 
@@ -2626,9 +1493,7 @@ function gkpClosePinModal() {
 
 
     modal.style.display =
-        ""
-
-       ;
+        "";
 
 
     document.body.classList.remove(
@@ -2639,6 +1504,9 @@ function gkpClosePinModal() {
     const input =
         document.getElementById(
             "guardianPinInput"
+        ) ||
+        document.getElementById(
+            "settingsPinInput"
         );
 
 
@@ -2653,6 +1521,9 @@ function gkpClosePinModal() {
     const error =
         document.getElementById(
             "guardianPinError"
+        ) ||
+        document.getElementById(
+            "settingsPinError"
         );
 
 
@@ -2671,8 +1542,9 @@ function gkpClosePinModal() {
 
 
 /* ==========================================================
-   VALIDATE ADMIN PIN FORMAT
-========================================================== */
+ * VALIDATE PIN FORMAT
+ * ==========================================================
+ */
 
 function gkpValidPin(
     pin
@@ -2688,8 +1560,9 @@ function gkpValidPin(
 
 
 /* ==========================================================
-   SHOW PIN ERROR
-========================================================== */
+ * SHOW PIN ERROR
+ * ==========================================================
+ */
 
 function gkpShowPinError(
     message
@@ -2698,6 +1571,9 @@ function gkpShowPinError(
     const error =
         document.getElementById(
             "guardianPinError"
+        ) ||
+        document.getElementById(
+            "settingsPinError"
         );
 
 
@@ -2724,14 +1600,26 @@ function gkpShowPinError(
 
 
 /* ==========================================================
-   SUBMIT ADMIN PIN
-========================================================== */
+ * SUBMIT ADMIN PIN
+ *
+ * GitHub Pages
+ *      ↓
+ * js/api.js
+ *      ↓
+ * Apps Script doPost()
+ *      ↓
+ * verifyAdminPin()
+ * ==========================================================
+ */
 
-function gkpSubmitPin() {
+async function gkpSubmitPin() {
 
     const input =
         document.getElementById(
             "guardianPinInput"
+        ) ||
+        document.getElementById(
+            "settingsPinInput"
         );
 
 
@@ -2743,10 +1631,6 @@ function gkpSubmitPin() {
 
     /*
      * Validasi format lokal.
-     *
-     * Ini BUKAN verifikasi keamanan.
-     * Verifikasi sebenarnya dilakukan
-     * oleh AdminPin.gs.
      */
 
     if (
@@ -2764,41 +1648,17 @@ function gkpSubmitPin() {
     }
 
 
-    /* ==========================================================
- * VERIFY ADMIN PIN VIA REST API
- * GitHub Pages → API.post() → Code.gs
- * ========================================================== */
-
-try {
-
-    const result = await API.post({
-
-        action: "verifyAdminPin",
-
-        pin: pin
-
-    });
-
-    console.log(
-        "VERIFY ADMIN PIN RESPONSE:",
-        result
-    );
-
-
     /*
-     * PIN SALAH / SERVER MENOLAK
+     * API harus tersedia.
      */
 
     if (
-        !result ||
-        !result.success
+        typeof API ===
+        "undefined"
     ) {
 
         gkpShowPinError(
-
-            result?.message ||
-            "PIN Admin salah."
-
+            "API Guardian KPI tidak tersedia."
         );
 
         return;
@@ -2806,63 +1666,12 @@ try {
     }
 
 
-    /*
-     * PIN BENAR
-     *
-     * Hanya simpan status sesi.
-     * PIN TIDAK disimpan di browser.
-     */
-
-    sessionStorage.setItem(
-
-        GKP_SETTINGS_SESSION,
-
-        "1"
-
-    );
-
-
-    if (input) {
-
-        input.value = "";
-
-    }
-
-
-    gkpClosePinModal();
-
-
-    /*
-     * Buka Settings.
-     */
-
-    await gkpLoadPage(
-        "setting"
-    );
-
-
-}
-
-catch (error) {
-
-    console.error(
-        "VERIFY ADMIN PIN ERROR:",
-        error
-    );
-
-
-    gkpShowPinError(
-
-        error?.message ||
-        "Gagal menghubungi server Admin PIN."
-
-    );
-
- }
-
     const submit =
         document.getElementById(
             "guardianPinSubmit"
+        ) ||
+        document.getElementById(
+            "settingsPinSubmit"
         );
 
 
@@ -2871,10 +1680,9 @@ catch (error) {
         submit.disabled =
             true;
 
-
-        submit.dataset.originalText =
+        submit.dataset
+            .originalText =
             submit.textContent;
-
 
         submit.textContent =
             "Memverifikasi...";
@@ -2882,150 +1690,138 @@ catch (error) {
     }
 
 
-    /*
-     * SERVER-SIDE VERIFICATION
-     *
-     * PIN tidak disimpan di browser.
-     */
+    try {
 
-    google.script.run
-
-        .withSuccessHandler(
-            function (result) {
-
-                if (submit) {
-
-                    submit.disabled =
-                        false;
-
-
-                    submit.textContent =
-                        submit.dataset
-                            .originalText ||
-                        "Buka Settings";
-
-                }
-
-
-                if (
-                    !result ||
-                    !result.success
-                ) {
-
-                    gkpShowPinError(
-
-                        result?.message ||
-                        "PIN Admin salah."
-
-                    );
-
-                    return;
-
-                }
-
-
-                /*
-                 * PIN BENAR
-                 *
-                 * Yang disimpan hanya status
-                 * sesi sementara.
-                 *
-                 * PIN TIDAK disimpan.
-                 */
-
-                sessionStorage.setItem(
-
-                    GKP_SETTINGS_SESSION,
-
-                    "1"
-
-                );
-
-
-                if (input) {
-
-                    input.value =
-                        "";
-
-                }
-
-
-                gkpClosePinModal();
-
-
-                /*
-                 * Buka Settings.
-                 */
-
-                gkpLoadPage(
-                    "setting"
-                );
-
-            }
-        )
-
-
-        .withFailureHandler(
-            function (error) {
-
-                if (submit) {
-
-                    submit.disabled =
-                        false;
-
-
-                    submit.textContent =
-                        submit.dataset
-                            .originalText ||
-                        "Buka Settings";
-
-                }
-
-
-                console.error(
-                    "Guardian KPI verifyAdminPin:",
-                    error
-                );
-
-
-                gkpShowPinError(
-
-                    error?.message ||
-                    "Gagal memverifikasi PIN Admin."
-
-                );
-
-            }
-        )
-
-
-        .verifyAdminPin(
-            pin
+        console.log(
+            "========== VERIFY ADMIN PIN =========="
         );
+
+
+        const result =
+            await API.post({
+
+                action:
+                    "verifyAdminPin",
+
+                pin:
+                    pin
+
+            });
+
+
+        console.log(
+            "VERIFY ADMIN PIN RESPONSE:",
+            result
+        );
+
+
+        /*
+         * PIN salah / server menolak.
+         */
+
+        if (
+            !result ||
+            !result.success
+        ) {
+
+            gkpShowPinError(
+
+                result?.message ||
+                "PIN Admin salah."
+
+            );
+
+            return;
+
+        }
+
+
+        /*
+         * PIN BENAR.
+         *
+         * Hanya status sesi yang
+         * disimpan di browser.
+         *
+         * PIN tidak disimpan.
+         */
+
+        sessionStorage.setItem(
+
+            GKP_SETTINGS_SESSION,
+
+            "1"
+
+        );
+
+
+        if (input) {
+
+            input.value =
+                "";
+
+        }
+
+
+        gkpClosePinModal();
+
+
+        /*
+         * Buka Settings.
+         */
+
+        await gkpLoadPage(
+            "setting"
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "VERIFY ADMIN PIN ERROR:",
+            error
+        );
+
+
+        gkpShowPinError(
+
+            error?.message ||
+            "Gagal menghubungi server Admin PIN."
+
+        );
+
+    }
+
+    finally {
+
+        if (submit) {
+
+            submit.disabled =
+                false;
+
+            submit.textContent =
+                submit.dataset
+                    .originalText ||
+                "Buka Settings";
+
+        }
+
+    }
 
 }
 
 
 /* ==========================================================
-   LOCK SETTINGS
-========================================================== */
+ * LOCK SETTINGS
+ * ==========================================================
+ */
 
 function gkpLockSettings() {
-
-    /*
-     * Hapus status sesi.
-     *
-     * PIN tetap tersimpan di server.
-     */
 
     sessionStorage.removeItem(
         GKP_SETTINGS_SESSION
     );
 
-
-    /*
-     * Kembali ke Dashboard.
-     */
 
     gkpLoadPage(
         "dashboard"
@@ -3035,10 +1831,19 @@ function gkpLockSettings() {
 
 
 /* ==========================================================
-   CHANGE ADMIN PIN
-========================================================== */
+ * CHANGE ADMIN PIN
+ *
+ * GitHub Pages
+ *      ↓
+ * js/api.js
+ *      ↓
+ * Apps Script doPost()
+ *      ↓
+ * changeAdminPin()
+ * ==========================================================
+ */
 
-function guardianChangeAdminPin() {
+async function guardianChangeAdminPin() {
 
     /*
      * PIN LAMA
@@ -3060,9 +1865,13 @@ function guardianChangeAdminPin() {
     }
 
 
+    const oldPinClean =
+        oldPin.trim();
+
+
     if (
         !gkpValidPin(
-            oldPin
+            oldPinClean
         )
     ) {
 
@@ -3095,9 +1904,13 @@ function guardianChangeAdminPin() {
     }
 
 
+    const newPinClean =
+        newPin.trim();
+
+
     if (
         !gkpValidPin(
-            newPin
+            newPinClean
         )
     ) {
 
@@ -3130,9 +1943,13 @@ function guardianChangeAdminPin() {
     }
 
 
+    const confirmPinClean =
+        confirmPin.trim();
+
+
     if (
-        newPin !==
-        confirmPin
+        newPinClean !==
+        confirmPinClean
     ) {
 
         alert(
@@ -3145,20 +1962,16 @@ function guardianChangeAdminPin() {
 
 
     /*
-     * SERVER APPS SCRIPT
+     * API
      */
 
     if (
-        typeof google ===
-            "undefined" ||
-
-        !google.script ||
-
-        !google.script.run
+        typeof API ===
+        "undefined"
     ) {
 
         alert(
-            "Koneksi ke server Admin PIN tidak tersedia."
+            "API Guardian KPI tidak tersedia."
         );
 
         return;
@@ -3166,593 +1979,114 @@ function guardianChangeAdminPin() {
     }
 
 
-    google.script.run
+    try {
 
-        .withSuccessHandler(
-            function (result) {
-
-                if (
-                    !result ||
-                    !result.success
-                ) {
-
-                    alert(
-
-                        result?.message ||
-                        "Gagal mengubah PIN Admin."
-
-                    );
-
-                    return;
-
-                }
-
-
-                /*
-                 * PIN berhasil diubah.
-                 *
-                 * Sesi lama kita hapus.
-                 */
-
-                sessionStorage.removeItem(
-                    GKP_SETTINGS_SESSION
-                );
-
-
-                alert(
-
-                    result.message ||
-                    "PIN Admin berhasil diubah."
-
-                );
-
-
-                gkpLoadPage(
-                    "dashboard"
-                );
-
-            }
-        )
-
-
-        .withFailureHandler(
-            function (error) {
-
-                console.error(
-                    "Guardian KPI changeAdminPin:",
-                    error
-                );
-
-
-                alert(
-
-                    error?.message ||
-                    "Gagal mengubah PIN Admin."
-
-                );
-
-            }
-        )
-
-
-        .changeAdminPin(
-
-            oldPin,
-
-            newPin
-
-        );
-
-}
-
-
-/* ==========================================================
-   THEME
-========================================================== */
-
-function gkpToggleTheme() {
-
-    const current =
-        document.documentElement
-            .getAttribute(
-                "data-theme"
-            ) ||
-        "dark";
-
-
-    const next =
-        current === "dark"
-            ? "light"
-            : "dark";
-
-
-    document.documentElement
-        .setAttribute(
-            "data-theme",
-            next
+        console.log(
+            "========== CHANGE ADMIN PIN =========="
         );
 
 
-    localStorage.setItem(
-        GKP_THEME_KEY,
-        next
-    );
+        const result =
+            await API.post({
+
+                action:
+                    "changeAdminPin",
+
+                oldPin:
+                    oldPinClean,
+
+                newPin:
+                    newPinClean
+
+            });
 
 
-    /*
-     * Icon
-     */
-
-    const icon =
-        document.getElementById(
-            "themeIcon"
-        ) ||
-        document.getElementById(
-            "guardianThemeIcon"
+        console.log(
+            "CHANGE PIN RESPONSE:",
+            result
         );
 
 
-    if (icon) {
+        if (
+            !result ||
+            !result.success
+        ) {
 
-        icon.className =
-            next === "dark"
+            alert(
 
-                ? "bi bi-sun-fill"
+                result?.message ||
+                "Gagal mengubah PIN Admin."
 
-                : "bi bi-moon-stars-fill";
+            );
 
-    }
-
-}
-
-
-/* ==========================================================
-   MENU
-========================================================== */
-
-function gkpToggleMenu() {
-
-    const menu =
-        document.getElementById(
-            "sidebar"
-        ) ||
-        document.getElementById(
-            "guardianMenu"
-        ) ||
-        document.getElementById(
-            "mainMenu"
-        );
-
-
-    if (!menu) {
-
-        return;
-
-    }
-
-
-    menu.classList.toggle(
-        "show"
-    );
-
-
-    menu.classList.toggle(
-        "open"
-    );
-
-}
-
-
-/* ==========================================================
-   CLOSE MENU
-========================================================== */
-
-function gkpCloseMenu() {
-
-    const menu =
-        document.getElementById(
-            "sidebar"
-        ) ||
-        document.getElementById(
-            "guardianMenu"
-        ) ||
-        document.getElementById(
-            "mainMenu"
-        );
-
-
-    if (!menu) {
-
-        return;
-
-    }
-
-
-    menu.classList.remove(
-        "show"
-    );
-
-
-    menu.classList.remove(
-        "open"
-    );
-
-}
-
-
-/* ==========================================================
-   OPEN MENU
-========================================================== */
-
-function gkpOpenMenu() {
-
-    const menu =
-        document.getElementById(
-            "sidebar"
-        ) ||
-        document.getElementById(
-            "guardianMenu"
-        ) ||
-        document.getElementById(
-            "mainMenu"
-        );
-
-
-    if (!menu) {
-
-        return;
-
-    }
-
-
-    menu.classList.add(
-        "show"
-    );
-
-
-    menu.classList.add(
-        "open"
-    );
-
-}
-
-
-/* ==========================================================
-   GLOBAL COMPATIBILITY
-========================================================== */
-
-window.gkpSubmitPin =
-    gkpSubmitPin;
-
-
-window.gkpRequestSettings =
-    gkpRequestSettings;
-
-
-window.gkpClosePinModal =
-    gkpClosePinModal;
-
-
-window.gkpLockSettings =
-    gkpLockSettings;
-
-
-window.gkpToggleTheme =
-    gkpToggleTheme;
-
-
-window.gkpToggleMenu =
-    gkpToggleMenu;
-
-
-window.gkpOpenMenu =
-    gkpOpenMenu;
-
-
-window.gkpCloseMenu =
-    gkpCloseMenu;
-
-
-window.guardianChangeAdminPin =
-    guardianChangeAdminPin;
-
-
-window.guardianChangeAdminPin =
-    guardianChangeAdminPin;
-
-
-/* ==========================================================
-   INITIAL THEME
-========================================================== */
-
-function gkpInitTheme() {
-
-    const savedTheme =
-        localStorage.getItem(
-            GKP_THEME_KEY
-        );
-
-
-    const theme =
-        savedTheme === "light"
-            ? "light"
-            : "dark";
-
-
-    document.documentElement
-        .setAttribute(
-            "data-theme",
-            theme
-        );
-
-
-    /*
-     * Update icon.
-     */
-
-    const icon =
-        document.getElementById(
-            "themeIcon"
-        ) ||
-        document.getElementById(
-            "guardianThemeIcon"
-        );
-
-
-    if (icon) {
-
-        icon.className =
-            theme === "dark"
-
-                ? "bi bi-sun-fill"
-
-                : "bi bi-moon-stars-fill";
-
-    }
-
-}
-
-
-/* ==========================================================
-   INITIAL MENU
-========================================================== */
-
-function gkpInitMenu() {
-
-    /*
-     * Tombol hamburger.
-     */
-
-    const menuButton =
-        document.getElementById(
-            "menuButton"
-        ) ||
-        document.getElementById(
-            "guardianMenuButton"
-        );
-
-
-    if (menuButton) {
-
-        menuButton.addEventListener(
-            "click",
-            function (event) {
-
-                event.stopPropagation();
-
-                gkpToggleMenu();
-
-            }
-        );
-
-    }
-
-
-    /*
-     * Theme button.
-     */
-
-    const themeButton =
-        document.getElementById(
-            "themeToggle"
-        ) ||
-        document.getElementById(
-            "guardianThemeButton"
-        );
-
-
-    if (themeButton) {
-
-        themeButton.addEventListener(
-            "click",
-            function () {
-
-                gkpToggleTheme();
-
-            }
-        );
-
-    }
-
-
-    /*
-     * Menu items.
-     */
-
-    document
-        .querySelectorAll(
-            "[data-page]"
-        )
-        .forEach(
-            function (item) {
-
-                item.addEventListener(
-                    "click",
-                    function () {
-
-                        const page =
-                            item.dataset.page;
-
-
-                        /*
-                         * Settings harus
-                         * melalui PIN Admin.
-                         */
-
-                        if (
-                            page ===
-                            "setting"
-                        ) {
-
-                            gkpCloseMenu();
-
-                            gkpRequestSettings();
-
-                            return;
-
-                        }
-
-
-                        gkpCloseMenu();
-
-
-                        gkpLoadPage(
-                            page
-                        );
-
-                    }
-                );
-
-            }
-        );
-
-
-    /*
-     * Click outside.
-     */
-
-    document.addEventListener(
-        "click",
-        function (event) {
-
-            const menu =
-                document.getElementById(
-                    "sidebar"
-                ) ||
-                document.getElementById(
-                    "guardianMenu"
-                ) ||
-                document.getElementById(
-                    "mainMenu"
-                );
-
-
-            const button =
-                document.getElementById(
-                    "menuButton"
-                ) ||
-                document.getElementById(
-                    "guardianMenuButton"
-                );
-
-
-            if (
-                menu &&
-                button &&
-                !menu.contains(
-                    event.target
-                ) &&
-                !button.contains(
-                    event.target
-                )
-            ) {
-
-                gkpCloseMenu();
-
-            }
+            return;
 
         }
-    );
+
+
+        /*
+         * PIN berhasil diubah.
+         *
+         * Hapus sesi Settings.
+         */
+
+        sessionStorage.removeItem(
+            GKP_SETTINGS_SESSION
+        );
+
+
+        alert(
+
+            result.message ||
+            "PIN Admin berhasil diubah."
+
+        );
+
+
+        /*
+         * Kembali Dashboard.
+         */
+
+        await gkpLoadPage(
+            "dashboard"
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Guardian KPI changeAdminPin:",
+            error
+        );
+
+
+        alert(
+
+            error?.message ||
+            "Gagal menghubungi server Admin PIN."
+
+        );
+
+    }
 
 }
 
 
 /* ==========================================================
-   INITIAL APPLICATION
-========================================================== */
-
-function gkpInitializeApplication() {
-
-    console.log(
-        "========================================"
-    );
-
-    console.log(
-        "Guardian KPI Web3"
-    );
-
-    console.log(
-        "UI Controller initialized."
-    );
-
-    console.log(
-        "Admin PIN: SERVER-SIDE"
-    );
-
-    console.log(
-        "========================================"
-    );
-
-
-    gkpInitTheme();
-
-    gkpInitMenu();
-
-    gkpInitPin();
-
-
-    /*
-     * Dashboard sebagai halaman awal.
-     */
-
-    gkpLoadPage(
-        "dashboard"
-    );
-
-}
-
-
-/* ==========================================================
-   DOM READY
-========================================================== */
-
-if (
-    document.readyState ===
-    "loading"
-) {
-
-    document.addEventListener(
-        "DOMContentLoaded",
-        function () {
-
-            gkpInitializeApplication();
-
-        }
-    );
-
-} else {
-
-    gkpInitializeApplication();
-
-}
-
-
-/* ==========================================================
-   FINAL GLOBAL EXPORT
-========================================================== */
+ * GLOBAL EXPORT
+ *
+ * Kompatibilitas dengan HTML
+ * dan modul lain.
+ * ==========================================================
+ */
 
 window.gkpInitializeApplication =
     gkpInitializeApplication;
+
+
+window.gkpLoadPage =
+    gkpLoadPage;
 
 
 window.gkpInitializePage =
@@ -3771,17 +2105,62 @@ window.gkpShowPinError =
     gkpShowPinError;
 
 
-window.gkpEscape =
-    gkpEscape;
+window.gkpOpenPinModal =
+    gkpOpenPinModal;
+
+
+window.gkpClosePinModal =
+    gkpClosePinModal;
+
+
+window.gkpSubmitPin =
+    gkpSubmitPin;
+
+
+window.gkpLockSettings =
+    gkpLockSettings;
+
+
+window.gkpToggleTheme =
+    gkpToggleTheme;
+
+
+window.gkpInitTheme =
+    gkpInitTheme;
+
+
+window.gkpApplyTheme =
+    gkpApplyTheme;
+
+
+window.gkpInitMenu =
+    gkpInitMenu;
+
+
+window.gkpToggleMenu =
+    gkpToggleMenu;
+
+
+window.gkpOpenMenu =
+    gkpOpenMenu;
+
+
+window.gkpCloseMenu =
+    gkpCloseMenu;
 
 
 window.gkpSetActiveMenu =
     gkpSetActiveMenu;
 
 
+window.gkpEscapeHtml =
+    gkpEscapeHtml;
+
+
 /* ==========================================================
-   GUARDIAN COMPATIBILITY ALIAS
-========================================================== */
+ * GUARDIAN COMPATIBILITY ALIAS
+ * ==========================================================
+ */
 
 window.guardianLoadPage =
     gkpLoadPage;
@@ -3812,5 +2191,6 @@ window.guardianChangeAdminPin =
 
 
 /* ==========================================================
-   END APP.JS
-========================================================== */
+ * END APP.JS
+ * ==========================================================
+ */
