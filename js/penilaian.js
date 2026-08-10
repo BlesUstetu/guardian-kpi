@@ -2,18 +2,44 @@
  * ==========================================================
  * Guardian KPI Web3
  * File : js/penilaian.js
- * Module : PENILAIAN
- * Version : 7.0.0
+ * Version : 7.0.0 FINAL
+ * Module  : PENILAIAN
  * ==========================================================
  *
- * PERBAIKAN:
- * 1. Edit tidak lagi membuat ID baru.
- * 2. penilaianEditId dipertahankan saat reset form.
- * 3. Cegah duplikasi Anggota + Bulan + Tahun.
- * 4. Validasi nilai KPI 0-100.
- * 5. Nilai akhir dihitung otomatis.
- * 6. Detail KPI dimuat kembali saat Edit.
- * 7. Frontend tetap melakukan validasi sebelum request backend.
+ * LOGIKA FINAL:
+ *
+ * 1. ID anggota bersifat PERSISTEN.
+ *
+ * 2. Penilaian bulan/tahun baru:
+ *    - mencari ID terakhir anggota
+ *    - backend menggunakan ID tersebut
+ *    - membuat BARIS BARU
+ *
+ * 3. Kombinasi unik:
+ *
+ *       Anggota + Bulan + Tahun
+ *
+ * 4. ID boleh sama untuk bulan berbeda.
+ *
+ *    Contoh:
+ *
+ *       P0001 | BLES | Agustus  | 2026
+ *       P0001 | BLES | September| 2026
+ *       P0001 | BLES | Oktober  | 2026
+ *
+ * 5. Identitas BARIS:
+ *
+ *       ID + Bulan + Tahun
+ *
+ *    Contoh:
+ *
+ *       P0001|8|2026
+ *       P0001|9|2026
+ *
+ * 6. Edit hanya mengubah baris yang sesuai.
+ *
+ * 7. Hapus hanya menghapus baris yang sesuai.
+ *
  * 8. Backend tetap menjadi validasi final.
  *
  * ==========================================================
@@ -21,9 +47,30 @@
 
 "use strict";
 
+
+/* ==========================================================
+ * GLOBAL STATE
+ * ==========================================================
+ */
+
 let penilaianList = [];
+
 let anggotaList = [];
+
 let masterKPIList = [];
+
+/*
+ * Nilai ini berisi ROW KEY ketika Edit.
+ *
+ * Contoh:
+ *
+ * P0001|8|2026
+ *
+ * BUKAN hanya:
+ *
+ * P0001
+ */
+
 let penilaianEditId = null;
 
 
@@ -32,7 +79,11 @@ let penilaianEditId = null;
  * ==========================================================
  */
 
-async function initPenilaian(){
+async function initPenilaian() {
+
+    /*
+     * Pastikan mode awal = BARU.
+     */
 
     penilaianEditId = null;
 
@@ -41,10 +92,15 @@ async function initPenilaian(){
     loadPenilaianTahun();
 
     await Promise.all([
+
         loadPenilaianAnggota(),
+
         loadPenilaianMasterKPI(),
+
         loadPenilaianData()
+
     ]);
+
 }
 
 
@@ -53,61 +109,75 @@ async function initPenilaian(){
  * ==========================================================
  */
 
-function loadPenilaianTahun(){
+function loadPenilaianTahun() {
 
-    const filterTahun =
-        document.getElementById("filterTahun");
+    const select =
+        document.getElementById(
+            "filterTahun"
+        );
 
-    const tahunPenilaian =
-        document.getElementById("tahunPenilaian");
+    const formSelect =
+        document.getElementById(
+            "tahunPenilaian"
+        );
 
-    const tahunSekarang =
+    const tahun =
         new Date().getFullYear();
 
 
-    /* FILTER TAHUN */
+    /*
+     * FILTER TAHUN
+     */
 
-    if(filterTahun){
+    if (select) {
 
-        filterTahun.innerHTML =
-            `<option value="">Semua Tahun</option>`;
-
-        for(
-            let tahun = tahunSekarang - 2;
-            tahun <= tahunSekarang + 2;
-            tahun++
-        ){
-
-            filterTahun.innerHTML +=
-                `<option value="${tahun}">
-                    ${tahun}
-                </option>`;
-        }
-    }
+        select.innerHTML =
+            `<option value="">
+                Semua Tahun
+            </option>`;
 
 
-    /* FORM TAHUN */
+        for (
+            let i = tahun - 2;
+            i <= tahun + 2;
+            i++
+        ) {
 
-    if(tahunPenilaian){
-
-        tahunPenilaian.innerHTML = "";
-
-        for(
-            let tahun = tahunSekarang - 2;
-            tahun <= tahunSekarang + 2;
-            tahun++
-        ){
-
-            tahunPenilaian.innerHTML += `
-                <option
-                    value="${tahun}"
-                    ${tahun === tahunSekarang ? "selected" : ""}
-                >
-                    ${tahun}
+            select.innerHTML += `
+                <option value="${i}">
+                    ${i}
                 </option>
             `;
         }
     }
+
+
+    /*
+     * TAHUN PADA FORM
+     */
+
+    if (formSelect) {
+
+        formSelect.innerHTML = "";
+
+
+        for (
+            let i = tahun - 2;
+            i <= tahun + 2;
+            i++
+        ) {
+
+            formSelect.innerHTML += `
+                <option
+                    value="${i}"
+                    ${i === tahun ? "selected" : ""}
+                >
+                    ${i}
+                </option>
+            `;
+        }
+    }
+
 }
 
 
@@ -116,14 +186,18 @@ function loadPenilaianTahun(){
  * ==========================================================
  */
 
-async function loadPenilaianAnggota(){
+async function loadPenilaianAnggota() {
 
-    try{
+    try {
 
         const result =
             await API.getAnggota();
 
-        if(!result || !result.success){
+
+        if (
+            !result ||
+            !result.success
+        ) {
 
             throw new Error(
                 result?.message ||
@@ -131,8 +205,11 @@ async function loadPenilaianAnggota(){
             );
         }
 
+
         anggotaList =
-            Array.isArray(result.data)
+            Array.isArray(
+                result.data
+            )
                 ? result.data
                 : [];
 
@@ -142,34 +219,50 @@ async function loadPenilaianAnggota(){
                 "anggotaPenilaian"
             );
 
-        if(!select) return;
+
+        if (!select) {
+            return;
+        }
 
 
-        select.innerHTML =
-            `<option value="">
+        select.innerHTML = `
+            <option value="">
                 Pilih Anggota
-            </option>`;
+            </option>
+        `;
 
 
-        anggotaList.forEach(function(item){
+        anggotaList.forEach(
+            function(item) {
 
-            select.innerHTML += `
-                <option value="${escapePenilaianHtml(item.id)}">
-                    ${escapePenilaianHtml(item.nama)}
-                </option>
-            `;
-        });
+                select.innerHTML += `
+                    <option
+                        value="${escapePenilaianHtml(
+                            item.id
+                        )}"
+                    >
+                        ${escapePenilaianHtml(
+                            item.nama
+                        )}
+                    </option>
+                `;
+            }
+        );
 
 
-    }catch(error){
+    }
+    catch (err) {
 
         console.error(
             "loadPenilaianAnggota:",
-            error
+            err
         );
 
-        alert(error.message);
+        alert(
+            err.message
+        );
     }
+
 }
 
 
@@ -178,15 +271,18 @@ async function loadPenilaianAnggota(){
  * ==========================================================
  */
 
-async function loadPenilaianMasterKPI(){
+async function loadPenilaianMasterKPI() {
 
-    try{
+    try {
 
         const result =
             await API.getMasterKPI();
 
 
-        if(!result || !result.success){
+        if (
+            !result ||
+            !result.success
+        ) {
 
             throw new Error(
                 result?.message ||
@@ -196,28 +292,41 @@ async function loadPenilaianMasterKPI(){
 
 
         masterKPIList =
-            Array.isArray(result.data)
-                ? result.data.filter(function(item){
+            (
+                Array.isArray(
+                    result.data
+                )
+                    ? result.data
+                    : []
+            )
+            .filter(
+                function(item) {
 
-                    return String(
-                        item.status || ""
-                    )
-                    .trim()
-                    .toLowerCase() === "aktif";
+                    return (
+                        String(
+                            item.status || ""
+                        )
+                        .trim()
+                        .toLowerCase() ===
+                        "aktif"
+                    );
+                }
+            );
 
-                })
-                : [];
 
-
-    }catch(error){
+    }
+    catch (err) {
 
         console.error(
             "loadPenilaianMasterKPI:",
-            error
+            err
         );
 
-        alert(error.message);
+        alert(
+            err.message
+        );
     }
+
 }
 
 
@@ -226,33 +335,41 @@ async function loadPenilaianMasterKPI(){
  * ==========================================================
  */
 
-async function loadPenilaianData(){
+async function loadPenilaianData() {
 
     const tbody =
         document.getElementById(
             "tblPenilaian"
         );
 
-    if(!tbody) return;
+
+    if (!tbody) {
+        return;
+    }
 
 
     tbody.innerHTML = `
         <tr>
-            <td colspan="8"
-                class="text-center">
+            <td
+                colspan="8"
+                class="text-center"
+            >
                 Memuat data...
             </td>
         </tr>
     `;
 
 
-    try{
+    try {
 
         const result =
             await API.getPenilaian();
 
 
-        if(!result || !result.success){
+        if (
+            !result ||
+            !result.success
+        ) {
 
             throw new Error(
                 result?.message ||
@@ -262,7 +379,9 @@ async function loadPenilaianData(){
 
 
         penilaianList =
-            Array.isArray(result.data)
+            Array.isArray(
+                result.data
+            )
                 ? result.data.map(
                     normalizePenilaianItem
                 )
@@ -274,57 +393,77 @@ async function loadPenilaianData(){
         );
 
 
-    }catch(error){
+    }
+    catch (err) {
 
         console.error(
             "loadPenilaianData:",
-            error
+            err
         );
 
 
         tbody.innerHTML = `
             <tr>
-                <td colspan="8"
-                    class="text-danger text-center">
+                <td
+                    colspan="8"
+                    class="text-danger text-center"
+                >
                     ${escapePenilaianHtml(
-                        error.message
+                        err.message
                     )}
                 </td>
             </tr>
         `;
     }
+
 }
 
 
 /* ==========================================================
- * NORMALIZE
+ * NORMALIZE DATA
  * ==========================================================
  */
 
-function normalizePenilaianItem(item){
+function normalizePenilaianItem(item) {
 
-    item = item || {};
+    item =
+        item || {};
 
 
     let detail =
-        item.detail;
+        item.detail ||
+        [];
 
 
-    if(typeof detail === "string"){
+    /*
+     * Detail dari Sheet biasanya JSON string.
+     */
 
-        try{
+    if (
+        typeof detail ===
+        "string"
+    ) {
+
+        try {
 
             detail =
-                JSON.parse(detail);
+                JSON.parse(
+                    detail
+                );
 
-        }catch(error){
+        }
+        catch (err) {
 
             detail = [];
         }
     }
 
 
-    if(!Array.isArray(detail)){
+    if (
+        !Array.isArray(
+            detail
+        )
+    ) {
 
         detail = [];
     }
@@ -368,15 +507,16 @@ function normalizePenilaianItem(item){
 
         nilaiAkhir:
             Number(
-                item.nilaiAkhir ||
-                item.nilai ||
+                item.nilaiAkhir ??
+                item.nilai ??
+                item.total ??
                 0
             ),
 
         total:
             Number(
-                item.total ||
-                item.nilaiAkhir ||
+                item.total ??
+                item.nilaiAkhir ??
                 0
             ),
 
@@ -389,6 +529,112 @@ function normalizePenilaianItem(item){
         detail:
             detail
     };
+
+}
+
+
+/* ==========================================================
+ * ROW KEY
+ *
+ * Identitas satu BARIS penilaian.
+ *
+ * Contoh:
+ *
+ * P0001|8|2026
+ *
+ * ==========================================================
+ */
+
+function getPenilaianRowKey(item) {
+
+    return [
+
+        String(
+            item?.id || ""
+        ).trim(),
+
+        Number(
+            item?.bulan || 0
+        ),
+
+        Number(
+            item?.tahun || 0
+        )
+
+    ].join("|");
+
+}
+
+
+/* ==========================================================
+ * PARSE ROW KEY
+ * ==========================================================
+ */
+
+function parsePenilaianRowKey(key) {
+
+    const parts =
+        String(
+            key || ""
+        )
+        .split("|");
+
+
+    return {
+
+        id:
+            String(
+                parts[0] || ""
+            ).trim(),
+
+        bulan:
+            Number(
+                parts[1] || 0
+            ),
+
+        tahun:
+            Number(
+                parts[2] || 0
+            )
+    };
+
+}
+
+
+/* ==========================================================
+ * UNIQUE KEY
+ *
+ * Untuk mencegah:
+ *
+ * anggota + bulan + tahun
+ *
+ * ==========================================================
+ */
+
+function getPenilaianUniqueKey(
+    anggotaId,
+    bulan,
+    tahun
+) {
+
+    return [
+
+        String(
+            anggotaId || ""
+        )
+        .trim()
+        .toLowerCase(),
+
+        Number(
+            bulan || 0
+        ),
+
+        Number(
+            tahun || 0
+        )
+
+    ].join("|");
+
 }
 
 
@@ -397,23 +643,30 @@ function normalizePenilaianItem(item){
  * ==========================================================
  */
 
-function renderPenilaianTable(data){
+function renderPenilaianTable(data) {
 
     const tbody =
         document.getElementById(
             "tblPenilaian"
         );
 
-    if(!tbody) return;
+
+    if (!tbody) {
+        return;
+    }
 
 
-    if(!Array.isArray(data) ||
-       !data.length){
+    if (
+        !Array.isArray(data) ||
+        !data.length
+    ) {
 
         tbody.innerHTML = `
             <tr>
-                <td colspan="8"
-                    class="text-center">
+                <td
+                    colspan="8"
+                    class="text-center"
+                >
                     Belum ada data Penilaian.
                 </td>
             </tr>
@@ -426,83 +679,105 @@ function renderPenilaianTable(data){
     let html = "";
 
 
-    data.forEach(function(item){
+    data.forEach(
+        function(item) {
 
-        html += `
-            <tr>
+            /*
+             * Row key berbeda walaupun ID sama.
+             */
 
-                <td>
-                    ${escapePenilaianHtml(
-                        item.id
-                    )}
-                </td>
-
-                <td>
-                    ${escapePenilaianHtml(
-                        item.namaAnggota
-                    )}
-                </td>
-
-                <td>
-                    ${escapePenilaianHtml(
-                        item.group
-                    )}
-                </td>
-
-                <td>
-                    ${escapePenilaianHtml(
-                        namaBulan(item.bulan)
-                    )}
-                </td>
-
-                <td>
-                    ${escapePenilaianHtml(
-                        item.tahun
-                    )}
-                </td>
-
-                <td>
-                    <span class="badge bg-success">
-                        ${Number(
-                            item.nilaiAkhir
-                        ).toFixed(2)}
-                    </span>
-                </td>
-
-                <td>
-                    ${statusBadge(
-                        item.status
-                    )}
-                </td>
-
-                <td>
-
-                    <button
-                        class="btn btn-warning btn-sm"
-                        onclick="editPenilaian('${escapePenilaianJs(item.id)}')"
-                        title="Edit">
-
-                        <i class="bi bi-pencil"></i>
-
-                    </button>
-
-                    <button
-                        class="btn btn-danger btn-sm"
-                        onclick="deletePenilaianConfirm('${escapePenilaianJs(item.id)}')"
-                        title="Hapus">
-
-                        <i class="bi bi-trash"></i>
-
-                    </button>
-
-                </td>
-
-            </tr>
-        `;
-    });
+            const rowKey =
+                getPenilaianRowKey(
+                    item
+                );
 
 
-    tbody.innerHTML = html;
+            html += `
+                <tr>
+
+                    <td>
+                        ${escapePenilaianHtml(
+                            item.id
+                        )}
+                    </td>
+
+                    <td>
+                        ${escapePenilaianHtml(
+                            item.namaAnggota
+                        )}
+                    </td>
+
+                    <td>
+                        ${escapePenilaianHtml(
+                            item.group
+                        )}
+                    </td>
+
+                    <td>
+                        ${escapePenilaianHtml(
+                            namaBulan(
+                                item.bulan
+                            )
+                        )}
+                    </td>
+
+                    <td>
+                        ${escapePenilaianHtml(
+                            item.tahun
+                        )}
+                    </td>
+
+                    <td>
+                        <span class="badge bg-success">
+
+                            ${Number(
+                                item.nilaiAkhir || 0
+                            ).toFixed(2)}
+
+                        </span>
+                    </td>
+
+                    <td>
+                        ${statusBadge(
+                            item.status
+                        )}
+                    </td>
+
+                    <td>
+
+                        <button
+                            type="button"
+                            class="btn btn-warning btn-sm"
+                            onclick="editPenilaian('${escapePenilaianJs(rowKey)}')"
+                            title="Edit"
+                        >
+
+                            <i class="bi bi-pencil"></i>
+
+                        </button>
+
+                        <button
+                            type="button"
+                            class="btn btn-danger btn-sm"
+                            onclick="deletePenilaianConfirm('${escapePenilaianJs(rowKey)}')"
+                            title="Hapus"
+                        >
+
+                            <i class="bi bi-trash"></i>
+
+                        </button>
+
+                    </td>
+
+                </tr>
+            `;
+        }
+    );
+
+
+    tbody.innerHTML =
+        html;
+
 }
 
 
@@ -511,7 +786,7 @@ function renderPenilaianTable(data){
  * ==========================================================
  */
 
-function namaBulan(bulan){
+function namaBulan(bulan) {
 
     const list = [
 
@@ -547,8 +822,10 @@ function namaBulan(bulan){
     return (
         list[
             Number(bulan)
-        ] || "-"
+        ] ||
+        "-"
     );
+
 }
 
 
@@ -557,13 +834,16 @@ function namaBulan(bulan){
  * ==========================================================
  */
 
-function statusBadge(status){
+function statusBadge(status) {
 
-    if(
-        String(status)
-            .trim()
-            .toLowerCase() === "final"
-    ){
+    if (
+        String(
+            status || ""
+        )
+        .trim()
+        .toLowerCase() ===
+        "final"
+    ) {
 
         return `
             <span class="badge bg-success">
@@ -578,57 +858,113 @@ function statusBadge(status){
             Draft
         </span>
     `;
+
 }
 
 
 /* ==========================================================
- * ESCAPE
+ * ESCAPE HTML
  * ==========================================================
  */
 
-function escapePenilaianHtml(value){
+function escapePenilaianHtml(value) {
 
     return String(
         value == null
             ? ""
             : value
     )
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+    .replace(
+        /&/g,
+        "&amp;"
+    )
+    .replace(
+        /</g,
+        "&lt;"
+    )
+    .replace(
+        />/g,
+        "&gt;"
+    )
+    .replace(
+        /"/g,
+        "&quot;"
+    )
+    .replace(
+        /'/g,
+        "&#039;"
+    );
+
 }
 
 
-function escapePenilaianJs(value){
+/* ==========================================================
+ * ESCAPE JAVASCRIPT
+ * ==========================================================
+ */
+
+function escapePenilaianJs(value) {
 
     return String(
         value == null
             ? ""
             : value
     )
-    .replace(/\\/g, "\\\\")
-    .replace(/'/g, "\\'")
-    .replace(/\n/g, "\\n")
-    .replace(/\r/g, "\\r");
+    .replace(
+        /\\/g,
+        "\\\\"
+    )
+    .replace(
+        /'/g,
+        "\\'"
+    )
+    .replace(
+        /\n/g,
+        "\\n"
+    )
+    .replace(
+        /\r/g,
+        "\\r"
+    );
+
 }
 
 
 /* ==========================================================
- * OPEN PENILAIAN BARU
+ * OPEN MODAL — PENILAIAN BARU
  * ==========================================================
  */
 
-function openPenilaianModal(){
+function openPenilaianModal() {
 
     /*
-     * Mode BARU harus selalu menghapus ID edit.
+     * Mode BARU.
      */
 
-    penilaianEditId = null;
+    penilaianEditId =
+        null;
+
 
     clearPenilaianForm();
+
+
+    const anggota =
+        document.getElementById(
+            "anggotaPenilaian"
+        );
+
+
+    /*
+     * Pastikan anggota bisa dipilih
+     * kembali setelah sebelumnya Edit.
+     */
+
+    if (anggota) {
+
+        anggota.disabled =
+            false;
+    }
+
 
     renderPenilaianIndikator();
 
@@ -638,7 +974,8 @@ function openPenilaianModal(){
             "#penilaianModal .modal-title"
         );
 
-    if(title){
+
+    if (title) {
 
         title.textContent =
             "Penilaian Baru";
@@ -650,31 +987,47 @@ function openPenilaianModal(){
             "penilaianModal"
         );
 
-    if(!modalElement) return;
+
+    if (!modalElement) {
+
+        alert(
+            "Modal Penilaian tidak ditemukan."
+        );
+
+        return;
+    }
 
 
     const modal =
+        bootstrap.Modal.getInstance(
+            modalElement
+        ) ||
         new bootstrap.Modal(
             modalElement
         );
 
+
     modal.show();
+
 }
 
 
 /* ==========================================================
- * CLOSE
+ * CLOSE MODAL
  * ==========================================================
  */
 
-function closePenilaianModal(){
+function closePenilaianModal() {
 
     const modalElement =
         document.getElementById(
             "penilaianModal"
         );
 
-    if(!modalElement) return;
+
+    if (!modalElement) {
+        return;
+    }
 
 
     const modal =
@@ -683,10 +1036,33 @@ function closePenilaianModal(){
         );
 
 
-    if(modal){
+    if (modal) {
 
         modal.hide();
     }
+
+
+    /*
+     * Setelah modal ditutup,
+     * mode Edit dibatalkan.
+     */
+
+    penilaianEditId =
+        null;
+
+
+    const anggota =
+        document.getElementById(
+            "anggotaPenilaian"
+        );
+
+
+    if (anggota) {
+
+        anggota.disabled =
+            false;
+    }
+
 }
 
 
@@ -695,17 +1071,22 @@ function closePenilaianModal(){
  * ==========================================================
  */
 
-function renderPenilaianIndikator(){
+function renderPenilaianIndikator() {
 
     const container =
         document.getElementById(
             "listIndikator"
         );
 
-    if(!container) return;
+
+    if (!container) {
+        return;
+    }
 
 
-    if(!masterKPIList.length){
+    if (
+        !masterKPIList.length
+    ) {
 
         container.innerHTML = `
             <div class="text-center text-secondary">
@@ -722,70 +1103,66 @@ function renderPenilaianIndikator(){
     let html = "";
 
 
-    masterKPIList.forEach(function(item){
+    masterKPIList.forEach(
+        function(item) {
 
-        const bobot =
-            Number(
-                item.bobot || 0
-            );
+            html += `
+                <div class="row mb-3 border-bottom pb-2">
 
+                    <div class="col-md-5">
 
-        html += `
+                        <strong>
+                            ${escapePenilaianHtml(
+                                item.indicator
+                            )}
+                        </strong>
 
-            <div class="row mb-3 border-bottom pb-2">
+                        <br>
 
-                <div class="col-md-5">
+                        <small class="text-info">
+                            ${escapePenilaianHtml(
+                                item.kategori
+                            )}
+                        </small>
 
-                    <strong>
-                        ${escapePenilaianHtml(
-                            item.indicator
-                        )}
-                    </strong>
-
-                    <br>
-
-                    <small class="text-info">
-
-                        ${escapePenilaianHtml(
-                            item.kategori
-                        )}
-
-                    </small>
-
-                </div>
+                    </div>
 
 
-                <div class="col-md-2 text-center">
+                    <div class="col-md-2 text-center">
 
-                    <span class="badge bg-info">
+                        <span class="badge bg-info">
+                            ${Number(
+                                item.bobot || 0
+                            )}%
+                        </span>
 
-                        ${bobot}%
-
-                    </span>
-
-                </div>
+                    </div>
 
 
-                <div class="col-md-5">
+                    <div class="col-md-5">
 
-                    <input
-                        type="number"
-                        class="form-control nilaiKPI"
-                        data-id="${escapePenilaianHtml(item.id)}"
-                        data-bobot="${bobot}"
-                        value="100"
-                        min="0"
-                        max="100"
-                        step="0.01"
-                        oninput="hitungNilaiPenilaian()"
-                    >
+                        <input
+                            type="number"
+                            class="form-control nilaiKPI"
+                            data-id="${escapePenilaianHtml(
+                                item.id
+                            )}"
+                            data-bobot="${Number(
+                                item.bobot || 0
+                            )}"
+                            value="100"
+                            min="0"
+                            max="100"
+                            step="0.01"
+                            oninput="hitungNilaiPenilaian()"
+                        >
+
+                    </div>
 
                 </div>
-
-            </div>
-
-        `;
-    });
+            `;
+        }
+    );
 
 
     container.innerHTML =
@@ -793,6 +1170,7 @@ function renderPenilaianIndikator(){
 
 
     hitungNilaiPenilaian();
+
 }
 
 
@@ -801,7 +1179,7 @@ function renderPenilaianIndikator(){
  * ==========================================================
  */
 
-function hitungNilaiPenilaian(){
+function hitungNilaiPenilaian() {
 
     let total = 0;
 
@@ -810,30 +1188,34 @@ function hitungNilaiPenilaian(){
         .querySelectorAll(
             ".nilaiKPI"
         )
-        .forEach(function(input){
+        .forEach(
+            function(input) {
 
-            const nilai =
-                Number(
-                    input.value || 0
-                );
-
-            const bobot =
-                Number(
-                    input.dataset.bobot || 0
-                );
+                const nilai =
+                    Number(
+                        input.value || 0
+                    );
 
 
-            if(
-                Number.isFinite(nilai) &&
-                Number.isFinite(bobot)
-            ){
+                const bobot =
+                    Number(
+                        input.dataset.bobot || 0
+                    );
 
-                total +=
-                    nilai *
-                    bobot /
-                    100;
+
+                if (
+                    Number.isFinite(nilai) &&
+                    Number.isFinite(bobot)
+                ) {
+
+                    total +=
+                        nilai *
+                        bobot /
+                        100;
+                }
+
             }
-        });
+        );
 
 
     total =
@@ -847,33 +1229,35 @@ function hitungNilaiPenilaian(){
             "totalNilai"
         );
 
+
     const akhirElement =
         document.getElementById(
             "nilaiAkhir"
         );
 
 
-    if(totalElement){
+    if (totalElement) {
 
         totalElement.value =
             total;
     }
 
 
-    if(akhirElement){
+    if (akhirElement) {
 
         akhirElement.value =
             total;
     }
+
 }
 
 
 /* ==========================================================
- * DETAIL
+ * GET DETAIL KPI
  * ==========================================================
  */
 
-function getPenilaianDetail(){
+function getPenilaianDetail() {
 
     const detail = [];
 
@@ -882,66 +1266,45 @@ function getPenilaianDetail(){
         .querySelectorAll(
             ".nilaiKPI"
         )
-        .forEach(function(input){
+        .forEach(
+            function(input) {
 
-            detail.push({
+                detail.push({
 
-                kpiId:
-                    String(
-                        input.dataset.id ||
-                        ""
-                    ).trim(),
+                    kpiId:
+                        String(
+                            input.dataset.id ||
+                            ""
+                        ).trim(),
 
-                bobot:
-                    Number(
-                        input.dataset.bobot
-                    ),
+                    bobot:
+                        Number(
+                            input.dataset.bobot ||
+                            0
+                        ),
 
-                nilai:
-                    Number(
-                        input.value
-                    )
-            });
-        });
+                    nilai:
+                        Number(
+                            input.value ||
+                            0
+                        )
+                });
+            }
+        );
 
 
     return detail;
+
 }
 
 
 /* ==========================================================
- * UNIQUE KEY
- * ==========================================================
- */
-
-function getPenilaianUniqueKey(
-    anggotaId,
-    bulan,
-    tahun
-){
-
-    return [
-
-        String(
-            anggotaId || ""
-        )
-        .trim()
-        .toLowerCase(),
-
-        Number(
-            bulan || 0
-        ),
-
-        Number(
-            tahun || 0
-        )
-
-    ].join("|");
-}
-
-
-/* ==========================================================
- * FIND DUPLICATE
+ * FIND DUPLICATE FRONTEND
+ *
+ * Unik berdasarkan:
+ *
+ * anggota + bulan + tahun
+ *
  * ==========================================================
  */
 
@@ -949,10 +1312,10 @@ function findDuplicatePenilaian(
     anggotaId,
     bulan,
     tahun,
-    excludeId
-){
+    excludeRowKey
+) {
 
-    const key =
+    const targetKey =
         getPenilaianUniqueKey(
             anggotaId,
             bulan,
@@ -960,23 +1323,38 @@ function findDuplicatePenilaian(
         );
 
 
+    const excluded =
+        excludeRowKey
+            ? parsePenilaianRowKey(
+                excludeRowKey
+            )
+            : null;
+
+
     return (
         penilaianList.find(
-            function(item){
+            function(item) {
 
-                const itemId =
+                /*
+                 * Jika sedang Edit,
+                 * abaikan baris yang sedang diedit.
+                 */
+
+                if (
+                    excluded &&
                     String(
                         item.id || ""
-                    ).trim();
-
-
-                if(
-                    excludeId &&
-                    itemId ===
-                    String(
-                        excludeId
-                    ).trim()
-                ){
+                    ).trim() ===
+                    excluded.id &&
+                    Number(
+                        item.bulan
+                    ) ===
+                    excluded.bulan &&
+                    Number(
+                        item.tahun
+                    ) ===
+                    excluded.tahun
+                ) {
 
                     return false;
                 }
@@ -987,11 +1365,14 @@ function findDuplicatePenilaian(
                         item.anggotaId,
                         item.bulan,
                         item.tahun
-                    ) === key
+                    ) ===
+                    targetKey
                 );
             }
-        ) || null
+        ) ||
+        null
     );
+
 }
 
 
@@ -1000,17 +1381,19 @@ function findDuplicatePenilaian(
  * ==========================================================
  */
 
-function validatePenilaian(){
+function validatePenilaian() {
 
     const anggota =
         document.getElementById(
             "anggotaPenilaian"
         );
 
+
     const bulan =
         document.getElementById(
             "bulanPenilaian"
         );
+
 
     const tahun =
         document.getElementById(
@@ -1018,14 +1401,16 @@ function validatePenilaian(){
         );
 
 
-    /* ANGGOTA */
+    /*
+     * ANGGOTA
+     */
 
-    if(
+    if (
         !anggota ||
         !String(
             anggota.value
         ).trim()
-    ){
+    ) {
 
         alert(
             "Pilih anggota."
@@ -1035,27 +1420,23 @@ function validatePenilaian(){
     }
 
 
+    /*
+     * BULAN
+     */
+
     const bulanValue =
         Number(
             bulan?.value
         );
 
 
-    const tahunValue =
-        Number(
-            tahun?.value
-        );
-
-
-    /* BULAN */
-
-    if(
+    if (
         !Number.isInteger(
             bulanValue
         ) ||
         bulanValue < 1 ||
         bulanValue > 12
-    ){
+    ) {
 
         alert(
             "Bulan penilaian tidak valid."
@@ -1065,15 +1446,23 @@ function validatePenilaian(){
     }
 
 
-    /* TAHUN */
+    /*
+     * TAHUN
+     */
 
-    if(
+    const tahunValue =
+        Number(
+            tahun?.value
+        );
+
+
+    if (
         !Number.isInteger(
             tahunValue
         ) ||
         tahunValue < 2000 ||
         tahunValue > 2100
-    ){
+    ) {
 
         alert(
             "Tahun penilaian tidak valid."
@@ -1083,11 +1472,13 @@ function validatePenilaian(){
     }
 
 
-    /* KPI */
+    /*
+     * MASTER KPI
+     */
 
-    if(
+    if (
         !masterKPIList.length
-    ){
+    ) {
 
         alert(
             "Tidak ada Master KPI Aktif."
@@ -1097,11 +1488,17 @@ function validatePenilaian(){
     }
 
 
+    /*
+     * DETAIL KPI
+     */
+
     const detail =
         getPenilaianDetail();
 
 
-    if(!detail.length){
+    if (
+        !detail.length
+    ) {
 
         alert(
             "Belum ada indikator KPI."
@@ -1111,19 +1508,23 @@ function validatePenilaian(){
     }
 
 
-    /* NILAI */
+    /*
+     * VALIDASI NILAI
+     */
 
-    for(
+    for (
         let i = 0;
         i < detail.length;
         i++
-    ){
+    ) {
 
         const item =
             detail[i];
 
 
-        if(!item.kpiId){
+        if (
+            !item.kpiId
+        ) {
 
             alert(
                 "ID KPI tidak valid."
@@ -1133,28 +1534,28 @@ function validatePenilaian(){
         }
 
 
-        if(
+        if (
             !Number.isFinite(
                 item.nilai
             ) ||
             item.nilai < 0 ||
             item.nilai > 100
-        ){
+        ) {
 
             alert(
-                "Semua nilai KPI harus berada di antara 0 sampai 100."
+                "Nilai KPI harus berada di antara 0 sampai 100."
             );
 
             return false;
         }
 
 
-        if(
+        if (
             !Number.isFinite(
                 item.bobot
             ) ||
             item.bobot < 0
-        ){
+        ) {
 
             alert(
                 "Bobot KPI tidak valid."
@@ -1165,7 +1566,9 @@ function validatePenilaian(){
     }
 
 
-    /* DUPLIKASI */
+    /*
+     * CEK DUPLIKASI
+     */
 
     const duplicate =
         findDuplicatePenilaian(
@@ -1176,7 +1579,7 @@ function validatePenilaian(){
         );
 
 
-    if(duplicate){
+    if (duplicate) {
 
         alert(
             "Penilaian untuk " +
@@ -1190,7 +1593,7 @@ function validatePenilaian(){
             " sudah ada dengan ID " +
             duplicate.id +
             ".\n\n" +
-            "Silakan gunakan tombol Edit."
+            "Silakan gunakan Edit."
         );
 
         return false;
@@ -1198,6 +1601,7 @@ function validatePenilaian(){
 
 
     return true;
+
 }
 
 
@@ -1205,20 +1609,31 @@ function validatePenilaian(){
  * CLEAR FORM
  *
  * PENTING:
- * Fungsi ini TIDAK BOLEH mengubah penilaianEditId.
+ *
+ * Fungsi ini TIDAK mengubah penilaianEditId.
+ *
  * ==========================================================
  */
 
-function clearPenilaianForm(){
+function clearPenilaianForm() {
 
     const anggota =
         document.getElementById(
             "anggotaPenilaian"
         );
 
-    if(anggota){
+
+    if (anggota) {
 
         anggota.value = "";
+
+        /*
+         * Ketika form dibersihkan,
+         * anggota boleh dipilih.
+         */
+
+        anggota.disabled =
+            false;
     }
 
 
@@ -1227,7 +1642,8 @@ function clearPenilaianForm(){
             "bulanPenilaian"
         );
 
-    if(bulan){
+
+    if (bulan) {
 
         bulan.value =
             new Date().getMonth() + 1;
@@ -1240,21 +1656,28 @@ function clearPenilaianForm(){
         );
 
 
-    if(tahun){
+    if (tahun) {
 
         const currentYear =
             new Date().getFullYear();
 
 
-        if(
+        const exists =
             [...tahun.options]
-            .some(function(option){
+            .some(
+                function(option) {
 
-                return Number(
-                    option.value
-                ) === currentYear;
-            })
-        ){
+                    return (
+                        Number(
+                            option.value
+                        ) ===
+                        currentYear
+                    );
+                }
+            );
+
+
+        if (exists) {
 
             tahun.value =
                 currentYear;
@@ -1268,7 +1691,7 @@ function clearPenilaianForm(){
         );
 
 
-    if(status){
+    if (status) {
 
         status.value =
             "Draft";
@@ -1281,7 +1704,7 @@ function clearPenilaianForm(){
         );
 
 
-    if(total){
+    if (total) {
 
         total.value =
             0;
@@ -1294,7 +1717,7 @@ function clearPenilaianForm(){
         );
 
 
-    if(akhir){
+    if (akhir) {
 
         akhir.value =
             0;
@@ -1307,11 +1730,24 @@ function clearPenilaianForm(){
         );
 
 
-    if(container){
+    if (container) {
 
         container.innerHTML =
             "";
     }
+
+
+    /*
+     * JANGAN menulis:
+     *
+     * penilaianEditId = null;
+     *
+     * di sini.
+     *
+     * Karena fungsi ini juga dipakai
+     * ketika Edit.
+     */
+
 }
 
 
@@ -1320,7 +1756,7 @@ function clearPenilaianForm(){
  * ==========================================================
  */
 
-function buildPenilaianPayload(){
+function buildPenilaianPayload() {
 
     return {
 
@@ -1364,7 +1800,9 @@ function buildPenilaianPayload(){
 
         detail:
             getPenilaianDetail()
+
     };
+
 }
 
 
@@ -1373,11 +1811,15 @@ function buildPenilaianPayload(){
  * ==========================================================
  */
 
-async function savePenilaian(){
+async function savePenilaian() {
 
-    if(
+    /*
+     * Validasi sebelum request.
+     */
+
+    if (
         !validatePenilaian()
-    ){
+    ) {
 
         return;
     }
@@ -1399,10 +1841,11 @@ async function savePenilaian(){
             : "Simpan";
 
 
-    if(btn){
+    if (btn) {
 
         btn.disabled =
             true;
+
 
         btn.innerHTML = `
             <span
@@ -1414,34 +1857,41 @@ async function savePenilaian(){
     }
 
 
-    try{
+    try {
 
         let result;
 
 
         /*
-         * JIKA ADA ID:
-         * UPDATE
+         * ==================================================
+         * MODE EDIT
+         * ==================================================
+         *
+         * penilaianEditId:
+         *
+         * P0001|8|2026
+         *
          */
 
-        if(
+        if (
             penilaianEditId
-        ){
+        ) {
 
             result =
                 await API.updatePenilaian(
                     penilaianEditId,
                     data
                 );
-
         }
 
+
         /*
-         * JIKA TIDAK ADA ID:
-         * SAVE BARU
+         * ==================================================
+         * MODE BARU
+         * ==================================================
          */
 
-        else{
+        else {
 
             result =
                 await API.savePenilaian(
@@ -1450,10 +1900,10 @@ async function savePenilaian(){
         }
 
 
-        if(
+        if (
             !result ||
             !result.success
-        ){
+        ) {
 
             throw new Error(
                 result?.message ||
@@ -1478,21 +1928,24 @@ async function savePenilaian(){
         await loadPenilaianData();
 
 
-    }catch(error){
+    }
+    catch (err) {
 
         console.error(
             "savePenilaian:",
-            error
+            err
         );
+
 
         alert(
-            error.message
+            err.message
         );
 
 
-    }finally{
+    }
+    finally {
 
-        if(btn){
+        if (btn) {
 
             btn.disabled =
                 false;
@@ -1501,39 +1954,69 @@ async function savePenilaian(){
                 originalHtml;
         }
     }
+
 }
 
 
 /* ==========================================================
- * EDIT
+ * EDIT PENILAIAN
+ *
+ * Parameter:
+ *
+ * P0001|8|2026
+ *
  * ==========================================================
  */
 
-async function editPenilaian(id){
+async function editPenilaian(rowKey) {
 
-    const normalizedId =
+    const normalizedKey =
         String(
-            id || ""
+            rowKey || ""
         ).trim();
 
 
+    if (!normalizedKey) {
+
+        alert(
+            "ID penilaian tidak valid."
+        );
+
+        return;
+    }
+
+
     /*
-     * Cari data berdasarkan ID.
+     * Parse row key.
+     */
+
+    const parsed =
+        parsePenilaianRowKey(
+            normalizedKey
+        );
+
+
+    /*
+     * Cari data berdasarkan:
+     *
+     * ID + Bulan + Tahun
      */
 
     let item =
         penilaianList.find(
-            function(row){
+            function(row) {
 
-                return String(
-                    row.id || ""
-                ).trim() ===
-                normalizedId;
+                return (
+                    getPenilaianRowKey(
+                        row
+                    ) ===
+                    normalizedKey
+                );
             }
         );
 
 
-    if(!item){
+    if (!item) {
 
         alert(
             "Data penilaian tidak ditemukan."
@@ -1543,36 +2026,28 @@ async function editPenilaian(id){
     }
 
 
-    try{
+    try {
 
         /*
-         * ==================================================
-         * PENTING
-         * ==================================================
+         * Bersihkan form.
          *
-         * Jangan pernah melakukan:
-         *
-         * penilaianEditId = id;
-         * clearPenilaianForm();
-         *
-         * jika clearPenilaianForm menghapus ID.
-         *
-         * Sekarang clearPenilaianForm tidak menghapus ID,
-         * tetapi kita tetap menggunakan urutan aman:
-         *
-         * clear → set ID.
-         * ==================================================
+         * Fungsi ini tidak menghapus
+         * penilaianEditId.
          */
 
         clearPenilaianForm();
 
 
+        /*
+         * SIMPAN ROW KEY.
+         */
+
         penilaianEditId =
-            normalizedId;
+            normalizedKey;
 
 
         /*
-         * Isi header penilaian.
+         * Anggota.
          */
 
         const anggota =
@@ -1580,43 +2055,68 @@ async function editPenilaian(id){
                 "anggotaPenilaian"
             );
 
-        if(anggota){
+
+        if (anggota) {
 
             anggota.value =
                 item.anggotaId;
+
+
+            /*
+             * ID anggota tidak boleh
+             * diganti ketika Edit.
+             */
+
+            anggota.disabled =
+                true;
         }
 
+
+        /*
+         * Bulan.
+         */
 
         const bulan =
             document.getElementById(
                 "bulanPenilaian"
             );
 
-        if(bulan){
+
+        if (bulan) {
 
             bulan.value =
                 item.bulan;
         }
 
 
+        /*
+         * Tahun.
+         */
+
         const tahun =
             document.getElementById(
                 "tahunPenilaian"
             );
 
-        if(tahun){
+
+        if (tahun) {
 
             tahun.value =
                 item.tahun;
         }
 
 
+        /*
+         * Status.
+         */
+
         const status =
             document.getElementById(
                 "statusPenilaian"
             );
 
-        if(status){
+
+        if (status) {
 
             status.value =
                 item.status ||
@@ -1625,27 +2125,30 @@ async function editPenilaian(id){
 
 
         /*
-         * Jika detail tidak tersedia,
-         * ambil detail berdasarkan ID.
+         * Jika detail belum tersedia,
+         * ambil dari backend.
+         *
+         * Backend versi baru harus
+         * menerima row key.
          */
 
-        if(
+        if (
             !Array.isArray(
                 item.detail
             ) ||
             !item.detail.length
-        ){
+        ) {
 
             const result =
                 await API.getPenilaianById(
-                    normalizedId
+                    normalizedKey
                 );
 
 
-            if(
+            if (
                 !result ||
                 !result.success
-            ){
+            ) {
 
                 throw new Error(
                     result?.message ||
@@ -1670,41 +2173,51 @@ async function editPenilaian(id){
 
 
         /*
-         * Masukkan nilai lama.
+         * Isi nilai lama.
          */
 
         item.detail.forEach(
-            function(detail){
+            function(detail) {
 
                 const kpiId =
                     String(
                         detail.kpiId ||
+                        detail.id ||
                         ""
                     ).trim();
 
 
-                if(!kpiId) return;
+                if (!kpiId) {
+                    return;
+                }
 
 
                 const input =
-                    [...document.querySelectorAll(
-                        ".nilaiKPI"
-                    )]
-                    .find(function(element){
+                    [
+                        ...document.querySelectorAll(
+                            ".nilaiKPI"
+                        )
+                    ]
+                    .find(
+                        function(element) {
 
-                        return String(
-                            element.dataset.id ||
-                            ""
-                        ).trim() ===
-                        kpiId;
-                    });
+                            return (
+                                String(
+                                    element.dataset.id ||
+                                    ""
+                                ).trim() ===
+                                kpiId
+                            );
+                        }
+                    );
 
 
-                if(input){
+                if (input) {
 
                     input.value =
                         Number(
-                            detail.nilai || 0
+                            detail.nilai ||
+                            0
                         );
                 }
             }
@@ -1719,7 +2232,7 @@ async function editPenilaian(id){
 
 
         /*
-         * Ubah judul modal.
+         * Judul modal.
          */
 
         const title =
@@ -1728,10 +2241,15 @@ async function editPenilaian(id){
             );
 
 
-        if(title){
+        if (title) {
 
             title.textContent =
-                "Edit Penilaian";
+                "Edit Penilaian - " +
+                namaBulan(
+                    parsed.bulan
+                ) +
+                " " +
+                parsed.tahun;
         }
 
 
@@ -1745,7 +2263,7 @@ async function editPenilaian(id){
             );
 
 
-        if(!modalElement){
+        if (!modalElement) {
 
             throw new Error(
                 "Modal Penilaian tidak ditemukan."
@@ -1765,11 +2283,12 @@ async function editPenilaian(id){
         modal.show();
 
 
-    }catch(error){
+    }
+    catch (err) {
 
         console.error(
             "editPenilaian:",
-            error
+            err
         );
 
 
@@ -1777,42 +2296,108 @@ async function editPenilaian(id){
             null;
 
 
+        const anggota =
+            document.getElementById(
+                "anggotaPenilaian"
+            );
+
+
+        if (anggota) {
+
+            anggota.disabled =
+                false;
+        }
+
+
         alert(
-            error.message
+            err.message
         );
     }
+
 }
 
 
 /* ==========================================================
- * DELETE
+ * DELETE PENILAIAN
+ *
+ * Parameter:
+ *
+ * P0001|8|2026
+ *
  * ==========================================================
  */
 
-async function deletePenilaianConfirm(id){
+async function deletePenilaianConfirm(
+    rowKey
+) {
 
-    if(
-        !confirm(
-            "Hapus data Penilaian ini?"
-        )
-    ){
+    const normalizedKey =
+        String(
+            rowKey || ""
+        ).trim();
+
+
+    const parsed =
+        parsePenilaianRowKey(
+            normalizedKey
+        );
+
+
+    const item =
+        penilaianList.find(
+            function(row) {
+
+                return (
+                    getPenilaianRowKey(
+                        row
+                    ) ===
+                    normalizedKey
+                );
+            }
+        );
+
+
+    if (!item) {
+
+        alert(
+            "Data penilaian tidak ditemukan."
+        );
 
         return;
     }
 
 
-    try{
+    const yakin =
+        confirm(
+            "Hapus penilaian " +
+            item.namaAnggota +
+            " untuk " +
+            namaBulan(
+                parsed.bulan
+            ) +
+            " " +
+            parsed.tahun +
+            "?"
+        );
+
+
+    if (!yakin) {
+        return;
+    }
+
+
+    try {
 
         const result =
             await API.deletePenilaian(
-                id
+                normalizedKey
             );
 
 
-        if(
+        if (
             !result ||
             !result.success
-        ){
+        ) {
 
             throw new Error(
                 result?.message ||
@@ -1830,17 +2415,20 @@ async function deletePenilaianConfirm(id){
         await loadPenilaianData();
 
 
-    }catch(error){
+    }
+    catch (err) {
 
         console.error(
             "deletePenilaian:",
-            error
+            err
         );
 
+
         alert(
-            error.message
+            err.message
         );
     }
+
 }
 
 
@@ -1849,9 +2437,18 @@ async function deletePenilaianConfirm(id){
  * ==========================================================
  */
 
-async function refreshPenilaian(){
+async function refreshPenilaian() {
+
+    /*
+     * Kembali ke mode normal.
+     */
+
+    penilaianEditId =
+        null;
+
 
     await initPenilaian();
+
 }
 
 
@@ -1860,22 +2457,25 @@ async function refreshPenilaian(){
  * ==========================================================
  */
 
-function filterPenilaian(){
+function filterPenilaian() {
 
     const search =
         document.getElementById(
             "searchPenilaian"
         );
 
+
     const filterBulan =
         document.getElementById(
             "filterBulan"
         );
 
+
     const filterTahun =
         document.getElementById(
             "filterTahun"
         );
+
 
     const filterStatus =
         document.getElementById(
@@ -1911,7 +2511,7 @@ function filterPenilaian(){
 
     const hasil =
         penilaianList.filter(
-            function(item){
+            function(item) {
 
                 const cocokNama =
                     String(
@@ -1951,6 +2551,7 @@ function filterPenilaian(){
                     cocokTahun &&
                     cocokStatus
                 );
+
             }
         );
 
@@ -1958,6 +2559,7 @@ function filterPenilaian(){
     renderPenilaianTable(
         hasil
     );
+
 }
 
 
@@ -1966,22 +2568,25 @@ function filterPenilaian(){
  * ==========================================================
  */
 
-function resetFilterPenilaian(){
+function resetFilterPenilaian() {
 
     const search =
         document.getElementById(
             "searchPenilaian"
         );
 
+
     const bulan =
         document.getElementById(
             "filterBulan"
         );
 
+
     const tahun =
         document.getElementById(
             "filterTahun"
         );
+
 
     const status =
         document.getElementById(
@@ -1989,26 +2594,22 @@ function resetFilterPenilaian(){
         );
 
 
-    if(search){
-
+    if (search) {
         search.value = "";
     }
 
 
-    if(bulan){
-
+    if (bulan) {
         bulan.value = "";
     }
 
 
-    if(tahun){
-
+    if (tahun) {
         tahun.value = "";
     }
 
 
-    if(status){
-
+    if (status) {
         status.value = "";
     }
 
@@ -2016,4 +2617,76 @@ function resetFilterPenilaian(){
     renderPenilaianTable(
         penilaianList
     );
+
 }
+
+
+/* ==========================================================
+ * EXPORT GLOBAL
+ * ==========================================================
+ */
+
+window.initPenilaian =
+    initPenilaian;
+
+
+window.openPenilaianModal =
+    openPenilaianModal;
+
+
+window.closePenilaianModal =
+    closePenilaianModal;
+
+
+window.savePenilaian =
+    savePenilaian;
+
+
+window.editPenilaian =
+    editPenilaian;
+
+
+window.deletePenilaianConfirm =
+    deletePenilaianConfirm;
+
+
+window.loadPenilaianData =
+    loadPenilaianData;
+
+
+window.refreshPenilaian =
+    refreshPenilaian;
+
+
+window.renderPenilaianTable =
+    renderPenilaianTable;
+
+
+window.renderPenilaianIndikator =
+    renderPenilaianIndikator;
+
+
+window.hitungNilaiPenilaian =
+    hitungNilaiPenilaian;
+
+
+window.filterPenilaian =
+    filterPenilaian;
+
+
+window.resetFilterPenilaian =
+    resetFilterPenilaian;
+
+
+window.getPenilaianDetail =
+    getPenilaianDetail;
+
+
+window.clearPenilaianForm =
+    clearPenilaianForm;
+
+
+/* ==========================================================
+ * END
+ * ==========================================================
+ */
